@@ -50,12 +50,6 @@ bld/
 *.user
 .vs/
 
-# 不显示加密解密的代码
-[Ee]ncrypt*
-SHA*
-AES*
-
-# 不显示反作弊系统的代码
 
 #不显示录制的视频文件
 *.mp4
@@ -65,3 +59,10 @@ AES*
 
 #不知道是什么奇怪的东西
 enc_temp_folder/
+
+#加密方案
+
+# 不显示加密解密的代码
+[Ee]ncrypt*
+SHA*
+AES*
