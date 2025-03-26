@@ -1,0 +1,132 @@
+#pragma once
+#include "pvzclass.h"
+#include <unordered_map>
+#include <array>
+#include <random>
+#include <string>
+
+// IZE主题类型
+enum class Theme : byte
+{
+	NIL = 0, // 占位符
+	COMPOSITE, // 综合
+	CONTROL, // 控制
+	INSTANT_KILL, // 即死
+	PEAS, // 输出
+	STAR_AND_SPIKE, // 倾斜
+	EXPLODING, // 爆炸
+	MAGNAT_AND_FUME, // 穿刺
+	SCARDY	// 胆小
+};
+
+// 根据主题获取植物类型
+#define pt PlantType
+constexpr std::array<pt::pt, 17> getThemePlantTypes(Theme theme)
+{
+	switch (theme)
+	{
+	case Theme::COMPOSITE:
+		return {
+			pt::Wallnut,
+			pt::Torchwood,
+			pt::PotatoMine,
+			pt::Chomper, pt::Chomper,
+			pt::Peashooter,
+			pt::SplitPea,
+			pt::Kernelpult,
+			pt::Threepeater,
+			pt::SnowPea,
+			pt::Squash,
+			pt::Fumeshroom,
+			pt::UmbrellaLeaf,
+			pt::Starfruit,
+			pt::Magnetshroom,
+			pt::Spickweed, pt::Spickweed,
+		};
+		break;
+	case Theme::CONTROL:
+		return {
+			pt::Torchwood,
+			pt::SplitPea, pt::SplitPea, pt::SplitPea,
+			pt::Repeater,
+			pt::Kernelpult, pt::Kernelpult, pt::Kernelpult,
+			pt::Threepeater,
+			pt::SnowPea, pt::SnowPea, pt::SnowPea,
+			pt::UmbrellaLeaf,
+			pt::Magnetshroom,
+			pt::Spickweed, pt::Spickweed, pt::Spickweed
+		};
+		break;
+	case Theme::INSTANT_KILL:
+		return {
+			pt::PotatoMine, pt::PotatoMine, pt::PotatoMine, pt::PotatoMine,
+			pt::Chomper, pt::Chomper, pt::Chomper,
+			pt::Squash, pt::Squash, pt::Squash,
+			pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom,
+			pt::Spickweed, pt::Spickweed, pt::Spickweed
+		};
+		break;
+	case Theme::PEAS:
+		return {
+			pt::SnowPea, pt::SnowPea, pt::SnowPea, pt::SnowPea, pt::SnowPea, pt::SnowPea, pt::SnowPea, pt::SnowPea, pt::SnowPea,
+			pt::SplitPea, pt::SplitPea, pt::SplitPea, pt::SplitPea,
+			pt::Repeater, pt::Repeater, pt::Repeater, pt::Repeater
+		};
+		break;
+	case Theme::STAR_AND_SPIKE:
+		return {
+			pt::Spickweed, pt::Spickweed, pt::Spickweed, pt::Spickweed, pt::Spickweed, pt::Spickweed, pt::Spickweed, pt::Spickweed, pt::Spickweed,
+			pt::Starfruit, pt::Starfruit, pt::Starfruit, pt::Starfruit, pt::Starfruit, pt::Starfruit, pt::Starfruit,pt::Starfruit
+		};
+		break;
+	case Theme::EXPLODING:
+		return {
+			pt::PotatoMine, pt::PotatoMine, pt::PotatoMine,pt::PotatoMine, pt::PotatoMine,pt::PotatoMine, pt::PotatoMine,pt::PotatoMine, pt::PotatoMine,
+			pt::Chomper, pt::Chomper, pt::Chomper, pt::Chomper, pt::Chomper, pt::Chomper, pt::Chomper, pt::Chomper
+		};
+		break;
+	case Theme::MAGNAT_AND_FUME:
+		return {
+			pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom, pt::Fumeshroom,
+			pt::Magnetshroom, pt::Magnetshroom, pt::Magnetshroom, pt::Magnetshroom, pt::Magnetshroom, pt::Magnetshroom, pt::Magnetshroom, pt::Magnetshroom
+		};
+		break;
+	case Theme::SCARDY:
+		return {
+			pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom, pt::Scaredyshroom,
+			pt::Sunflower, pt::Sunflower, pt::Sunflower, pt::Sunflower, pt::Sunflower
+		};
+		break;
+	default:
+		return std::array<pt::pt, 17>();
+		break;
+	}
+}
+#undef pt
+
+
+
+class GenerateLayoutCode {
+private:
+    static std::mt19937_64 gen;
+
+    std::unordered_map<PlantType::PlantType, std::string> type_iztStr_dict;
+    std::unordered_map<std::string, PlantType::PlantType> iztStr_type_dict;
+    std::array<int, 25> ssb6_flower_num_distribution;
+
+    std::array<Theme, 25> generate_ssb6_theme_distribution();
+    int generate_LevelRush_theme_index(int flag);
+    std::pair<std::array<int, 25>, size_t> generate_arr_seed(Theme theme);
+
+public:
+    GenerateLayoutCode();
+	const std::array<int, 25>& getSsb6FlowerNumDistribution();
+    static int getRandomInRange(int min, int max);
+    static int get_LevelRush_flower_num_distribution(int flag);
+    static std::array<PlantType::PlantType, 25> get_theme_plants(int flower_num, Theme theme);
+    static std::array<int, 25> get_shuffled_array(size_t seed);
+    static std::pair<int, int> get_plant_row_col(int order);
+
+    std::string generate_ssb6_code();
+    std::string generate_LevelRush_code(int flag);
+};
