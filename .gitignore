@@ -48,7 +48,7 @@ bld/
 
 #vstudio
 *.user
-.vs
+.vs/
 
 # 不显示加密解密的代码
 [Ee]ncrypt*
