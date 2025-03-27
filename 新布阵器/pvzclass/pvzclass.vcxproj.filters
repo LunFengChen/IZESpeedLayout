@@ -306,6 +306,9 @@
     <ClCompile Include="SHA256.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="disable_maid_cheat.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcessOpener.h">
@@ -330,9 +333,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Injectors.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Enums\CaptionStyle.h">

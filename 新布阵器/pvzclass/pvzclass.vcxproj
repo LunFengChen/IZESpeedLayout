@@ -190,6 +190,7 @@
     <ClCompile Include="Classes\Widget.cpp" />
     <ClCompile Include="Classes\ZenGarden.cpp" />
     <ClCompile Include="Creators.cpp" />
+    <ClCompile Include="disable_maid_cheat.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="EncryptUtils.cpp" />
     <ClCompile Include="Enums\CaptionStyle.cpp" />
@@ -325,7 +326,6 @@
     <ClInclude Include="Events\ImitaterPlantEvent.h" />
     <ClInclude Include="GenerateLayoutCode.h" />
     <ClInclude Include="iMemory.hpp" />
-    <ClInclude Include="Injectors.h" />
     <ClInclude Include="Events\PlantCreateEvent.h" />
     <ClInclude Include="Events\CoinCreateEvent.h" />
     <ClInclude Include="Events\PlantRemoveEvent.h" />

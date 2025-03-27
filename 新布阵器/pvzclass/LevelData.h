@@ -9,8 +9,11 @@ public:
     int initial_sun;               // 每关起始阳光
     int released_zombies_count;    // 每关释放的僵尸数量
     int zombie_cost;               // 本关僵尸花费
-    float kernelpult_butter_rate;  // 玉米投手的黄油率
     float score;                   // 更新分数：当前 flag + 吃的脑子数
+    float kernel_count;              // 每一局游戏的玉米数
+    float butter_count;
+    float kernelpult_butter_rate;  // 玉米投手的黄油率, 没有则为0.00
+    
 
     // 时间相关数据
     TimeStruct setlayout_time = TimeStruct::getNow();             // (1) 每关的开始时间：布阵时间

@@ -225,6 +225,18 @@
     <ClCompile Include="Classes\Definition.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Code.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AES.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Encrypt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SHA256.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcessOpener.h">
@@ -375,6 +387,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="iMemory.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Code.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AES.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Encrypt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SHA256.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

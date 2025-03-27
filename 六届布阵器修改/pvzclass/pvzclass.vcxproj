@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AES.cpp" />
     <ClCompile Include="Classes\Animation.cpp" />
     <ClCompile Include="Classes\Attachment.cpp" />
     <ClCompile Include="Classes\Caption.cpp" />
@@ -177,7 +178,9 @@
     <ClCompile Include="Classes\SaveData.cpp" />
     <ClCompile Include="Classes\SeedCard.cpp" />
     <ClCompile Include="Classes\ZenGarden.cpp" />
+    <ClCompile Include="Code.cpp" />
     <ClCompile Include="Creators.cpp" />
+    <ClCompile Include="Encrypt.cpp" />
     <ClCompile Include="Enums\CaptionStyle.cpp" />
     <ClCompile Include="Enums\CardType.cpp" />
     <ClCompile Include="Enums\CoinMotionType.cpp" />
@@ -224,10 +227,14 @@
     <ClCompile Include="Classes\Wave.cpp" />
     <ClCompile Include="Classes\Zombie.cpp" />
     <ClCompile Include="Classes\GardenPlant.cpp" />
+    <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="ZombieEvent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AES.h" />
+    <ClInclude Include="Code.h" />
     <ClInclude Include="Creators.h" />
+    <ClInclude Include="Encrypt.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="AsmFunctions.h" />
     <ClInclude Include="Enums\CaptionStyle.h" />
@@ -275,6 +282,7 @@
     <ClInclude Include="Enums\PVZVersionEnum.h" />
     <ClInclude Include="Extensions.h" />
     <ClInclude Include="pvzclass.h" />
+    <ClInclude Include="SHA256.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="iMemory.hpp" />
   </ItemGroup>
