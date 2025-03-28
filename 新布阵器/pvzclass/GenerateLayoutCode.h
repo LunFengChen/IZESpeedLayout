@@ -113,10 +113,11 @@ private:
 
     std::array<Theme, 25> generate_ssb6_theme_distribution();
     int generate_LevelRush_theme_index(int flag);
-    std::pair<std::array<int, 25>, size_t> generate_arr_seed(Theme theme);
 
 public:
     GenerateLayoutCode();
+	std::pair<std::array<int, 25>, size_t> generate_arr_seed(Theme theme);
+
 	const std::array<int, 25>& getSsb6FlowerNumDistribution();
     static int getRandomInRange(int min, int max);
     static int get_LevelRush_flower_num_distribution(int flag);

@@ -905,7 +905,6 @@ public:
 		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // 打开自动收集
 		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // 强制退出
 		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // 跳关
-		RegisterHotKey(NULL, 5, MOD_SHIFT, 'M'); // 开关女仆
 	}
 
 	void unregister_LevelRush_hotkey() {
@@ -913,7 +912,6 @@ public:
 		UnregisterHotKey(NULL, 2);
 		UnregisterHotKey(NULL, 3);
 		UnregisterHotKey(NULL, 4);
-		UnregisterHotKey(NULL, 5);
 	}
 
 	void register_SpeedRun_hotkey() {
@@ -924,6 +922,24 @@ public:
 	void unregister_SpeedRun_hotkey() {
 		UnregisterHotKey(NULL, 1);
 		UnregisterHotKey(NULL, 2);
+	}
+
+	void register_reviewMode_hotkey() {
+		RegisterHotKey(NULL, 1, MOD_SHIFT, 'D'); // ctrl+d打开加速
+		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // 打开自动收集
+		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // 强制退出
+		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // 跳关
+		RegisterHotKey(NULL, 5, MOD_SHIFT, 'R'); // 重开本局
+
+	}
+
+	void unregister_reviewMode_hotkey() {
+		UnregisterHotKey(NULL, 1);
+		UnregisterHotKey(NULL, 2);
+		UnregisterHotKey(NULL, 3);
+		UnregisterHotKey(NULL, 4);
+		UnregisterHotKey(NULL, 5);
+
 	}
 
 	int get_terminal_width() {
@@ -979,6 +995,204 @@ public:
 	}
 
 	
+	//
+	void lock_theme_flower_num(const int theme_index, const int flower_num) {
+
+		// 1. 找到 pvz
+		DWORD pid = ProcessOpener::Open();
+		if (!pid) {
+			std::cout << "未找到pvz!" << std::endl;
+			return; // 结束
+		}
+		std::cout << "已找到pvz!" << std::endl;
+		EnableBackgroundRunning(true); // 启用pvz后台运行
+
+		// 2. 实例化游戏控制类, 实例化冲关布阵码生成器
+		GameControl game_controler(pid);
+		GenerateLayoutCode code_generator;
+		// 3. 一直检测，直到进入ize
+		while (!game_controler.is_in_ize()) {
+			Sleep(1);
+		}
+		std::cout << "已经进入ize, 现在开始布阵" << std::endl;
+
+
+		// 记录存档
+		std::vector<LevelData> save_data;
+		std::vector<std::string> all_layout_code;
+
+		// 记录僵尸
+		std::unordered_set<int> processed_zombie_ids;
+
+		// 标志位
+		int current_flag = -1; std::string ls; 
+		bool is_speed_up = false; bool is_auto = false; bool has_started = false;
+		TimeStruct start_time = TimeStruct::getNow(); LevelData leveldata; int brains_count = 0;
+
+		// 1. 删掉植物
+		game_controler.clear_all_plants();
+		game_controler.board->GetMiscellaneous()->Round = 0;
+
+		game_controler.setInjectors();
+		game_controler.disable_maidCheat();
+
+
+		MSG msg = { 0 };
+		while (true) {
+			// 1. 监测快捷键并处理，全局热键消息
+			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+				if (msg.message == WM_HOTKEY) {
+					if (msg.wParam == 1) {  // shift+D 切换加速与原速
+						is_speed_up = !is_speed_up;
+						if (is_speed_up) {
+							game_controler.set_speed_10x();
+							std::cout << "进行了10x加速" << std::endl;
+
+						}
+						else {
+							game_controler.reset_speed();
+							std::cout << "关闭加速" << std::endl;
+
+						};
+					}
+					else if (msg.wParam == 2) { // shift+A 切换自动收集
+						is_auto = !is_auto;
+						game_controler.auto_collect(is_auto);
+						std::cout << std::string(is_auto ? "打开" : "关闭") + "自动收集" << std::endl;
+					}
+					else if (msg.wParam == 3) { // shift+q 强制结束
+						game_controler.auto_collect(false);
+						game_controler.reset_speed();
+						std::cout<< "结束复盘模式!" << std::endl;
+						return;
+					}
+					else if (msg.wParam == 4) { // shift+j 跳关
+						game_controler.board->Win();
+						std::cout<<"跳过第"<<game_controler.board->GetMiscellaneous()->Round + 1 << "关!" << std::endl;
+					}
+					else if (msg.wParam == 5) { // shift+r
+						// 切换禁用女仆
+					}
+				}
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			// 2. 跨关
+			if (game_controler.board->GetBaseAddress() &&
+				game_controler.board->GetMiscellaneous()->Round != current_flag &&
+				game_controler.pvz->GameState == PVZGameState::Playing) {
+
+				if (has_started) // 如果已经开始游戏了，说明是正常跨关
+				{
+					// 0. 先打印上一关数据
+					std::cout << (TimeStruct::getNow() - start_time).enPrint()
+					<< " 已经通过" << std::to_string(game_controler.board->GetMiscellaneous()->Round)
+					<< "关, 花费" << std::to_string(leveldata.zombie_cost)
+					<< std::endl;
+
+					std::cout << "反应时间:" << (leveldata.first_zombie_release_time - leveldata.setlayout_time).enPrint()
+						<< " 过关耗时: " << (leveldata.last_brain_eaten_time - start_time).enPrint()
+						<< std::endl;
+
+					std::cout << "吃脑时间依次为: ";
+					for (auto eaten_brain_time : leveldata.brain_eaten_times) {
+						std::cout << (eaten_brain_time - start_time).enPrint() << " ";
+					}
+					std::cout << std::endl;
+
+					// 1. 更新数据，初始化下一关要记录的数据
+					leveldata.zombie_cost = 0;
+					leveldata.score = current_flag;
+					leveldata.setlayout_time = TimeStruct::getNow();
+					leveldata.brain_eaten_times = {};
+					brains_count = 0;
+
+					// 2.5 关闭加速
+					game_controler.reset_speed();
+
+					has_started = false;
+				}
+
+
+
+				// 2.1 先布阵
+				game_controler.board->Sun = 2000;
+				current_flag = game_controler.board->GetMiscellaneous()->Round; //更新关数并且进行布阵
+
+				auto result = code_generator.generate_arr_seed(static_cast<Theme>(theme_index));
+				auto seed = result.second;
+				ls = std::to_string(theme_index) + "/" + std::to_string(result.second);
+				game_controler.set_layout(ls, flower_num); all_layout_code.push_back(ls);
+
+				leveldata.setlayout_time = TimeStruct::getNow();
+				std::cout << std::string(get_terminal_width(), '-') << std::endl;
+				std::cout << "第" << current_flag + 1 << "关布阵码为: " << ls << std::endl;
+
+			}
+
+
+			// 3. 检测是否开始游戏
+			if (!has_started) {
+				if (!game_controler.pvz->GetBaseAddress() ||
+					game_controler.pvz->LevelId != PVZLevel::I_Zombie_Endless ||
+					game_controler.pvz->GameState != PVZGameState::Playing)
+					continue;
+
+				// 判断释放僵尸条件
+				if (game_controler.board->ZombiesCount != 1) continue;
+
+				has_started = true;
+				start_time = TimeStruct::getNow();
+				// 开始时间
+				leveldata.first_zombie_release_time = start_time;
+				leveldata.last_brain_eaten_time = start_time;
+			}
+
+			// 4. 记录僵尸花费
+			std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
+			for (auto& zombie : zombies) {
+				// 如果僵尸死了，跳过
+				if (zombie->NotExist) {
+					processed_zombie_ids.erase(zombie->Id);
+					continue;
+				}
+				// 如果不是刚放置的僵尸, 跳过
+				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 500) continue; // 只检查新生成的【冲关的话得放宽】
+				// 如果这个僵尸已经处理过了, 跳过
+				if (processed_zombie_ids.count(zombie->Id)) continue; // 已处理则跳过
+
+				processed_zombie_ids.insert(zombie->Id); // 记录已处理
+
+				// 如果不是ize中的僵尸，而且现在又不是开局的话, 记录下来
+				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
+					// 重开的话需要先清除选卡界面的僵尸
+					std::cout<<"检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type) << std::endl;
+					continue;
+				}
+				// 如果是ize中的僵尸，但又不是伴舞僵尸，日志记录并且计算花费【每一关结束赋值】
+				if (zombie->Type == ZombieType::BackupDancer) continue;
+
+				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
+				leveldata.zombie_cost += zombie_info.first;
+
+				// 记录反应时间
+				if (leveldata.released_zombies_count == 1) {
+					leveldata.first_zombie_release_time = TimeStruct::getNow();
+				}
+			}
+
+
+			// 5. 监测脑子变化
+			if (brains_count != game_controler.countEatenBrain()) {
+				leveldata.last_brain_eaten_time = TimeStruct::getNow();
+				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
+				brains_count = game_controler.countEatenBrain();
+			}
+		}
+
+
+	}
 
 	// 冲关循环: 布阵器输入了4
 	void LevelRush(const bool is_cheat_check, bool is_ban_maidCheat) {
@@ -1992,7 +2206,19 @@ public:
 
 
 			}
-			else if (!s.compare("8")) {
+			else if (!s.compare("8")) { // 指定主题指定花数练习
+				std::cout << "请输入主题号: " << std::endl;
+				int theme;
+				std::cin >> theme;
+
+				std::cout << "请输入花数(1-8):" << std::endl;
+				int flower_num;
+				std::cin >> flower_num;
+
+				register_reviewMode_hotkey();
+				lock_theme_flower_num(theme, flower_num);
+				unregister_reviewMode_hotkey();
+
 
 			}
 			else if (!s.compare("9")) { // 3. 【每关计时】不限时冲关
