@@ -279,7 +279,7 @@
     <ClCompile Include="Classes\Zombie.cpp">
       <Filter>源文件\Classes</Filter>
     </ClCompile>
-    <ClCompile Include="IZESpeedLayout.cpp">
+    <ClCompile Include="pvzclass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="AsmCode.cpp">
@@ -307,6 +307,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="disable_maid_cheat.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="son_thread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -591,9 +594,6 @@
       <Filter>头文件\Events</Filter>
     </ClInclude>
     <ClInclude Include="AsmCode.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CheatCheck.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="GenerateLayoutCode.h">

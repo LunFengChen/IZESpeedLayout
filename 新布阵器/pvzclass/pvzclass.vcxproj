@@ -239,7 +239,7 @@
     <ClCompile Include="Events\PuzzlePhaseCompleteEvent.cpp" />
     <ClCompile Include="Events\ImitaterPlantEvent.cpp" />
     <ClCompile Include="GenerateLayoutCode.cpp" />
-    <ClCompile Include="IZESpeedLayout.cpp" />
+    <ClCompile Include="pvzclass.cpp" />
     <ClCompile Include="LevelData.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ProcessOpener.cpp" />
@@ -252,12 +252,12 @@
     <ClCompile Include="Events\VaseOpenEvent.cpp" />
     <ClCompile Include="Sexy.cpp" />
     <ClCompile Include="SHA256.cpp" />
+    <ClCompile Include="son_thread.cpp" />
     <ClCompile Include="TimeStruct.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES.h" />
     <ClInclude Include="AsmCode.h" />
-    <ClInclude Include="CheatCheck.h" />
     <ClInclude Include="Classes\ChallengeScreen.hpp" />
     <ClInclude Include="Classes.hpp" />
     <ClInclude Include="Draw.h" />

@@ -47,6 +47,9 @@
 #pragma comment(lib, "wbemuuid.lib")
 
 
+
+
+
 // 布阵器描述
 constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器";
 

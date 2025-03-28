@@ -303,7 +303,7 @@ private:
 			return true;
 		}
 		else if (check_shovel()) {
-			logger.log("检测出铲子", Logger::DEBUG);
+			logger.log("检测使用过铲子", Logger::DEBUG);
 			return true;
 		}
 		else if (check_dance()) {
@@ -370,6 +370,19 @@ public:
 
 	bool check_all() {
 		//std::cout << "正在反作弊检测" << std::endl;
+
+		// 记录所有僵尸移速
+		auto board = PVZ::GetBoard();
+		for (auto zombie : board->GetAllZombies()) {
+			if (!zombie->NotExist) {
+				logger.log(
+					"第" + std::to_string(zombie->Row + 1) + "行, 坐标为:" + std::to_string(zombie->ImageX) + ", 栈位为:" + std::to_string(zombie->Index) + "的" + ZombieType::ToString(zombie->Type)
+					+ "速度为: " + std::to_string(zombie->Speed)
+					, Logger::DEBUG
+				);
+			}
+		}
+
 		if (check_memory()) {
 			logger.log("检测出内存异常!", Logger::DEBUG);
 			return true;
@@ -382,7 +395,15 @@ public:
 		return false;
 	}
 
-
+	void check_envirnoment() {
+		if (check_all()) {
+			logger.log("当前pvz环境检测结果: 异常!", Logger::INFO);
+			return;
+		}
+		else {
+			logger.log("当前pvz环境检测结果: 正常，请继续游戏!", Logger::INFO);
+		}
+	}
 };
 
 // 控制游戏
@@ -910,7 +931,7 @@ public:
 
 
 	void log_game_end(Logger& logger, std::vector<LevelData> save_data) {
-		logger.log("所有关卡数据如下:", logger.DEBUG);
+		logger.log("所有关卡数据如下:", Logger::DEBUG);
 		int count = 0;
 		float kernel_count = 0; float butter_count = 0;
 		for (auto& leveldata : save_data) {
@@ -926,7 +947,7 @@ public:
 			logger.log("    所有脑子吃的时间列表: ", Logger::DEBUG);
 
 			for (auto& eat_brain_time : leveldata.brain_eaten_times) {
-				logger.log((eat_brain_time - leveldata.setlayout_time).enPrint(), logger.DEBUG);
+				logger.log((eat_brain_time - leveldata.setlayout_time).enPrint(), Logger::DEBUG);
 			}
 		};
 		if (butter_count + kernel_count == 0) {
@@ -1013,7 +1034,7 @@ public:
 		game_controler.clear_all_zombies();
 		game_controler.clear_all_bullets();
 		game_controler.clear_not_colleted_sun();
-		logger.log("初始化第一关信息，并进行第一关的布阵", logger.DEBUG);
+		logger.log("初始化第一关信息，并进行第一关的布阵", Logger::DEBUG);
 
 		// 记录存档
 		std::vector<LevelData> save_data;
@@ -1047,19 +1068,19 @@ public:
 						is_speed_up = !is_speed_up;
 						if (is_speed_up) {
 							game_controler.set_speed_10x();
-							logger.log("进行了10x加速", logger.DEBUG);
+							logger.log("进行了10x加速", Logger::DEBUG);
 
 						}
 						else {
 							game_controler.reset_speed();
-							logger.log("关闭加速", logger.DEBUG);
+							logger.log("关闭加速", Logger::DEBUG);
 
 						};
 					}
 					else if (msg.wParam == 2) { // shift+A 切换自动收集
 						is_auto = !is_auto;
 						game_controler.auto_collect(is_auto);
-                        logger.log(std::string(is_auto ? "打开" : "关闭") +"自动收集", logger.DEBUG);
+                        logger.log(std::string(is_auto ? "打开" : "关闭") +"自动收集", Logger::DEBUG);
 					}
 					else if (msg.wParam == 3) { // shift+q 强制结束
 						game_controler.auto_collect(false);
@@ -1076,12 +1097,12 @@ public:
 						logger.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ").append(std::to_string(std::round(leveldata.score * 10) / 10.0));
-						Creator::CreateCaption(timeStr.c_str(), timeStr.size() - 5, CaptionStyle::Lowermiddle);
+						Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
 						return;
 					}
 					else if (msg.wParam == 4) { // shift+j 跳关
 						game_controler.board->Win();
-						logger.log("跳关了", logger.DEBUG);
+						logger.log("跳关了", Logger::DEBUG);
 					}
 					else if (msg.wParam == 5) {
 						// 切换禁用女仆
@@ -1113,7 +1134,7 @@ public:
 				ls = code_generator.generate_LevelRush_code(current_flag);
 				flower_num = code_generator.get_LevelRush_flower_num_distribution(current_flag);
 				game_controler.set_layout(ls, flower_num); all_layout_code.push_back(ls);
-				logger.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, logger.DEBUG);
+				logger.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
 
 				if (!has_started) continue;
 
@@ -1191,7 +1212,7 @@ public:
 				// 如果不是ize中的僵尸，而且现在又不是开局的话, 记录下来
 				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
 					// 重开的话需要先清除选卡界面的僵尸
-					logger.log("检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type), logger.DEBUG);
+					logger.log("检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type), Logger::DEBUG);
 					continue;
 				}
 				// 如果是ize中的僵尸，但又不是伴舞僵尸，日志记录并且计算花费【每一关结束赋值】
@@ -1200,14 +1221,14 @@ public:
 				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
 				leveldata.zombie_cost += zombie_info.first;
 				leveldata.released_zombies_count += 1;
-				logger.log("在第" + std::to_string(zombie->Row + 1) + "行放置了" + std::string(zombie_info.second) + ",目前一共放了" + std::to_string(leveldata.released_zombies_count) + "个僵尸", logger.DEBUG);
+				logger.log("在第" + std::to_string(zombie->Row + 1) + "行放置了" + std::string(zombie_info.second) + ",目前一共放了" + std::to_string(leveldata.released_zombies_count) + "个僵尸", Logger::DEBUG);
 
 				// 记录反应时间
 				if (leveldata.released_zombies_count == 1) {
 					leveldata.first_zombie_release_time = TimeStruct::getNow();
 					leveldata.reaction_time = leveldata.first_zombie_release_time - leveldata.setlayout_time;
-					logger.log("第" + std::to_string(current_flag + 1) + "关，第一个僵尸释放时间: " + (leveldata.first_zombie_release_time-start_time).enPrint(), logger.DEBUG);
-					logger.log("第" + std::to_string(current_flag + 1) + "关，反应时间: " + leveldata.reaction_time.enPrint(), logger.DEBUG);
+					logger.log("第" + std::to_string(current_flag + 1) + "关，第一个僵尸释放时间: " + (leveldata.first_zombie_release_time-start_time).enPrint(), Logger::DEBUG);
+					logger.log("第" + std::to_string(current_flag + 1) + "关，反应时间: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
 				}
 			}
 
@@ -1222,12 +1243,12 @@ public:
 			}
 
 			// 5. 监测脑子变化
-			if (std::abs(leveldata.score - (current_flag + game_controler.countEatenBrain() * 0.2))>1e-1) { // 脑子被吃
+			if (std::abs(leveldata.score - (current_flag + game_controler.countEatenBrain() * 0.2))>1e-2) { // 脑子被吃
  				leveldata.score = game_controler.board->GetMiscellaneous()->Round + game_controler.countEatenBrain() * 0.2;
 				leveldata.last_brain_eaten_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
 
-				logger.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", logger.DEBUG);
+				logger.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
 			}
 
 			// 6. lose， 打印所有数据
@@ -1259,7 +1280,7 @@ public:
 				logger.log("本次冲关关卡布阵码为(已复制到剪切板): \n" + layout_codes, Logger::INFO);
 				copyToClipBoard(layout_codes);
 
-				logger.log("所有关卡数据如下:", logger.DEBUG);
+				logger.log("所有关卡数据如下:", Logger::DEBUG);
 				int count = 0;
 				for (auto& leveldata : save_data) {
 					logger.log("第" + std::to_string(++count) + "关数据如下:", Logger::DEBUG);
@@ -1270,7 +1291,7 @@ public:
 					logger.log("    所有脑子吃的时间列表: ", Logger::DEBUG);
 
 					for (auto& eat_brain_time : leveldata.brain_eaten_times) {
-						logger.log((eat_brain_time - leveldata.setlayout_time).enPrint(), logger.DEBUG);
+						logger.log((eat_brain_time - leveldata.setlayout_time).enPrint(), Logger::DEBUG);
 					}
 				};
 				// 退出本次冲关
@@ -1316,31 +1337,26 @@ public:
 		}
 
 		// 4. 准备开始开始记录日志
-		Logger logger(TimeStruct::getCurrentDateTime() + ".log", Logger::DEBUG); // 默认打印INFO, 但是记录的话全部记录
-		
+		std::string current_time = TimeStruct::getCurrentDateTime();
+		Logger logger_data(current_time + ".log", Logger::DEBUG); // 默认打印INFO, 但是记录的话全部记录
+		Logger logger_cheat(current_time + "_cheatCheck.log", Logger::DEBUG); // 默认打印INFO，检测出异常的时候打印到控制台
 
-		logger.log(std::string(get_terminal_width(), '-'), Logger::DEBUG);
-		logger.log("已经进入ize, 现在开始布阵", Logger::INFO);
+		logger_data.log(std::string(get_terminal_width(), '-'), Logger::DEBUG);
+		logger_data.log("已经进入ize, 现在开始布阵", Logger::INFO);
 
 
 		// 先检测环境是否异常
-		GameCheatCheck game_cheat_checker(2, logger); // 每2s检测一次
+		GameCheatCheck game_cheat_checker(2, logger_cheat); // 每2s检测一次
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "植物大战僵尸-IZE竞速反作弊窗口"); // 禁掉算血器
-			if (game_cheat_checker.check_all()) {
-				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-				logger.log("环境检测结果: 异常!", Logger::INFO);
-				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-				return;
-			}
-			else {
-				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-				logger.log("环境正常，请继续游戏!", Logger::INFO);
-				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-			}
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "pvz(cheatCheck: open)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
+			game_cheat_checker.check_envirnoment();
 		}
-		logger.log(
+		else { // 还原回标题
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
+		}
+
+		logger_cheat.log(
 			std::string("玩家已经进入ize, ")
 			+ "当前日期与时间为: " + TimeStruct::getCurrentDateTime() + "\n"
 			+ "本次布阵码为: " + ls + "\n"
@@ -1350,9 +1366,6 @@ public:
 			+ "游戏内玩家名字为: " + game_controler.get_player_name()
 			, Logger::DEBUG
 		);
-
-		// 禁mj
-		game_controler.ban_maidCheat(true, logger);
 
 		// 5. 初始化游戏信息
 		int current_flag = -1;
@@ -1380,7 +1393,9 @@ public:
 		while (getline(iss, token, '.')) {
 			parts.push_back(token);
 		}
-		logger.log("25个主题序号为：", Logger::INFO);
+
+		logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
+		logger_data.log("25个主题序号为：", Logger::INFO);
 		int count = 0;
 		std::ostringstream oss;
 		for (const auto& part : parts) {
@@ -1390,7 +1405,7 @@ public:
 				oss << std::endl;
 			}
 		}
-		logger.log(oss.str(), Logger::INFO);
+		logger_data.log(oss.str(), Logger::INFO);
 
 
 		// 开始布阵前工作
@@ -1410,7 +1425,7 @@ public:
 		game_controler.clear_all_zombies(); // 删僵尸
 		game_controler.clear_all_bullets(); // 删子弹
 		game_controler.clear_not_colleted_sun(); // 删掉没收集的阳光
-		logger.log("初始化第一关信息，并进行第一关的布阵", logger.DEBUG);
+		logger_cheat.log("初始化第一关信息，并进行第一关的布阵", Logger::DEBUG);
 
 
 		// 8. 游戏主循环
@@ -1422,18 +1437,21 @@ public:
 				if (msg.message == WM_HOTKEY) {
 					if (msg.wParam == 1) { // shift+q 强制结束
 						auto over_time = TimeStruct::getNow() - start_time;
-						logger.log(over_time.enPrint().append(" 提前结束游戏!"), Logger::INFO);
-						logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
+						logger_data.log(over_time.enPrint().append(" 提前结束游戏!"), Logger::INFO);
+						logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 
 						std::ostringstream oss;
 						oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 						std::string score_str = oss.str();
-						logger.log("游戏结束! 最终得分为——  " + score_str, Logger::INFO);
-						logger.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
-						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + std::to_string(leveldata.score);
-						Creator::CreateCaption(timeStr.c_str(), timeStr.size() - 5, CaptionStyle::Lowermiddle);
+						
+						logger_cheat.log("玩家主动提前结束游戏", Logger::DEBUG);
 
-						log_game_end(logger, save_data);
+
+						logger_data.log("游戏结束! 最终得分为——  " + score_str, Logger::INFO);
+						logger_data.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
+						Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
+						log_game_end(logger_data, save_data);
 
 						return;
 					}
@@ -1447,9 +1465,19 @@ public:
 						game_controler.board->Sun = current_flag == 0? 150: leveldata.initial_sun;
 						leveldata.released_zombies_count = 0;
 						leveldata.zombie_cost = 0;
+						if (current_flag == 0) {
+							has_started = false;
+							leveldata.brain_eaten_times.clear(); //清空吃脑记录
+							leveldata.score = 0.00;
+							leveldata.butter_count = 0;
+							leveldata.kernel_count = 0;
+							leveldata.zombie_cost = 0;
+						}
 
 						TimeStruct restart_time = TimeStruct::getNow() - start_time;
-						logger.log(restart_time.enPrint() + " 重开" + std::to_string(current_flag + 1) + "关!", Logger::INFO);
+						logger_data.log(restart_time.enPrint() + " 重开第" + std::to_string(current_flag + 1) + "关!", Logger::INFO);
+						logger_cheat.log("玩家在" + restart_time.enPrint() + "时进行重开，关数为" + std::to_string(current_flag + 1), Logger::DEBUG);
+
 						std::string restart_str = restart_time.enPrint().append("     ").append(std::string("Restart"));
 						Creator::CreateCaption(restart_str.c_str(), restart_str.size(), CaptionStyle::Lowermiddle); // 游戏白字，处于靠下居中位置
 
@@ -1472,14 +1500,14 @@ public:
 				game_controler.pvz->GameState == PVZGameState::Playing) {
 
 				if (game_controler.board->GetMiscellaneous()->Round >= 25) {
-					logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger.log(std::string("恭喜打通!!!!"), Logger::INFO);
-					logger.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
+					logger_data.log(std::string("恭喜打通!!!!"), Logger::INFO);
+					logger_data.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 					auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ").append(std::string("Congrats!"));
 					Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
 
-					log_game_end(logger, save_data);
+					log_game_end(logger_data, save_data);
 					return;
 				}
 
@@ -1488,7 +1516,7 @@ public:
 				layout_code = vec[current_flag];
 				flower_num = code_generator.getSsb6FlowerNumDistribution()[current_flag];
 				game_controler.set_layout(layout_code, flower_num);
-				logger.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + layout_code, logger.DEBUG);
+				logger_cheat.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + layout_code, Logger::DEBUG);
 
 
 
@@ -1501,8 +1529,9 @@ public:
 					leveldata.kernelpult_butter_rate = leveldata.butter_count / (leveldata.butter_count + leveldata.kernel_count);
 				}
 				save_data.push_back(leveldata);
+
 				// 2.2 打印数据
-				logger.log((TimeStruct::getNow() - start_time).enPrint()
+				logger_data.log((TimeStruct::getNow() - start_time).enPrint()
 					+ " 已经通过" + std::to_string(game_controler.board->GetMiscellaneous()->Round)
 					+ "关, 阳光" + std::to_string(game_controler.board->Sun)
 					+ "，花费" + std::to_string(leveldata.zombie_cost),
@@ -1537,21 +1566,20 @@ public:
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.reaction_time = leveldata.setlayout_time - leveldata.first_zombie_release_time;
 				leveldata.last_brain_eaten_time = start_time;
-				logger.log("开始游戏!  现实时间为: " + start_time.getCurrentTime(), Logger::LogLevel::INFO);
-				logger.log(std::string(get_terminal_width(), '-'), Logger::LogLevel::INFO);
+				logger_data.log("开始游戏!  现实时间为: " + start_time.getCurrentTime(), Logger::LogLevel::INFO);
+				logger_data.log(std::string(get_terminal_width(), '-'), Logger::LogLevel::INFO);
 			}
 
-			// 4. 每2s检测作弊与鼠标变化
+			// 4. 如果开启了反作弊检测检测作弊与鼠标变化
 			if (is_cheat_check) {
-				do {// 先检测一次
-					if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.check_interval) {
-						game_cheat_checker.check_all();
-						check_time = TimeStruct::getNow();
-						logger.log(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0xdc) ? "鼠标移出屏幕" : "鼠标还在屏幕内", Logger::DEBUG);
-						logger.log("鼠标坐标: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x5558)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x555c)), Logger::DEBUG);
-
+				if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.check_interval) {
+					if (game_cheat_checker.check_all()) {
+						logger_cheat.log("检测到作弊!", Logger::INFO);
 					}
-				} while (0);
+					check_time = TimeStruct::getNow();
+					logger_cheat.log(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0xdc) ? "鼠标移出屏幕" : "鼠标还在屏幕内", Logger::DEBUG);
+					logger_cheat.log("鼠标坐标: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x5558)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x555c)), Logger::DEBUG);
+				}
 			}
 
 
@@ -1571,9 +1599,9 @@ public:
 				processed_zombie_ids.insert(zombie->Id); // 记录已处理
 
 				// 如果不是ize中的僵尸，而且现在又不是开局的话, 记录下来
-				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
+				if (!game_controler.ZombieSunCost.count(zombie->Type) && current_flag != 0) {
 					// 重开的话需要先清除选卡界面的僵尸
-					logger.log("检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type), logger.DEBUG);					
+					logger_cheat.log("检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type), Logger::INFO);					
 					continue;
 				}
 				// 如果是ize中的僵尸，但又不是伴舞僵尸，日志记录并且计算花费【每一关结束赋值】
@@ -1582,14 +1610,14 @@ public:
 				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
 				leveldata.zombie_cost += zombie_info.first;
 				leveldata.released_zombies_count += 1;
-				logger.log("在第" + std::to_string(zombie->Row + 1) + "行放置了" + std::string(zombie_info.second) + ",目前一共放了" + std::to_string(leveldata.released_zombies_count) + "个僵尸", logger.DEBUG);
+				logger_cheat.log("在第" + std::to_string(zombie->Row + 1) + "行放置了" + std::string(zombie_info.second) + ",目前一共放了" + std::to_string(leveldata.released_zombies_count) + "个僵尸", Logger::DEBUG);
 
 				// 记录反应时间
 				if (leveldata.released_zombies_count == 1) {
 					leveldata.first_zombie_release_time = TimeStruct::getNow();
 					leveldata.reaction_time = leveldata.first_zombie_release_time - leveldata.setlayout_time;
-					logger.log("第" + std::to_string(current_flag + 1) + "关，第一个僵尸释放时间: " + (leveldata.first_zombie_release_time - start_time).enPrint(), logger.DEBUG);
-					logger.log("第" + std::to_string(current_flag + 1) + "关，反应时间: " + leveldata.reaction_time.enPrint(), logger.DEBUG);
+					logger_cheat.log("第" + std::to_string(current_flag + 1) + "关，第一个僵尸释放时间: " + (leveldata.first_zombie_release_time - start_time).enPrint(), Logger::DEBUG);
+					logger_cheat.log("第" + std::to_string(current_flag + 1) + "关，反应时间: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
 				}
 			}
 
@@ -1609,43 +1637,51 @@ public:
 				// 
 				if (projectile->Type == ProjectileType::Kernel) {
 					leveldata.kernel_count += 1;
-					logger.log("第"+std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个玉米粒", Logger::DEBUG);
+					logger_cheat.log("第"+std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个玉米粒", Logger::DEBUG);
 				}
 				else if (projectile->Type == ProjectileType::Butter) {
 					leveldata.butter_count += 1;
-					logger.log("第"+std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个黄油", Logger::DEBUG);
+					logger_cheat.log("第"+std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个黄油", Logger::DEBUG);
 				}
 			}
 
 			// 5. 监测脑子变化
-			if (std::abs(leveldata.score - (current_flag + game_controler.countEatenBrain() * 0.2)) > 1e-2) {
+			// 过关一瞬间会多打印一次, 加一个特判，源于current_flag没来得及更新
+
+			if (std::abs(leveldata.score - (current_flag + game_controler.countEatenBrain() * 0.2)) > 1e-4
+				&& !(int(leveldata.score) - current_flag == 1 && game_controler.countEatenBrain() == 0)
+				) { 
+
+				std::cout << leveldata.score << " " << game_controler.countEatenBrain() << " " << (current_flag + game_controler.countEatenBrain() * 0.2) << std::endl;
+
+
 				leveldata.score = game_controler.board->GetMiscellaneous()->Round + game_controler.countEatenBrain() * 0.2;
 				leveldata.last_brain_eaten_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
 
-				logger.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", logger.DEBUG);
+				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
 			}
 
 			// 6. 超时
 			if ((TimeStruct::getNow() - start_time).minute >= 30)
 			{
 				auto over_time = TimeStruct::getNow() - start_time; // 用时
-				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
+				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 
-				logger.log("超时，游戏结束!", Logger::DEBUG);
+				logger_data.log("超时，游戏结束!", Logger::DEBUG); logger_cheat.log("玩家由于超时结束游戏!", Logger::DEBUG);
 
 				std::ostringstream oss;
 				oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 				std::string score_str = oss.str();
-				logger.log("游戏结束! 最终得分为——  " + score_str, Logger::INFO);
-				logger.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+				logger_data.log("游戏结束! 最终得分为——  " + score_str, Logger::INFO);
+				logger_data.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 
-				auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ").append(std::to_string(leveldata.score));
-				Creator::CreateCaption(time_str.c_str(), time_str.size() - 5, CaptionStyle::Lowermiddle); // 去掉浮点数的两位小数
+				auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
+				Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // 去掉浮点数的两位小数
 
-
-				log_game_end(logger, save_data);
+				// 游戏结束，记录本局信息
+				log_game_end(logger_data, save_data);
 
 				return;
 			}
@@ -1658,17 +1694,21 @@ public:
 					if (coin->Type == CoinType::NormalSun) is_dead = false;
 				}
 				if (is_dead) {
-					auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ").append(std::to_string(leveldata.score));
+
+					logger_cheat.log("玩家由于阳光用完结束游戏!", Logger::DEBUG);
+
 					std::ostringstream oss;
 					oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 					std::string score_str = oss.str();
 
-					logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 游戏结束--  得分: " + score_str, Logger::INFO);
 
-					Creator::CreateCaption(time_str.c_str(), time_str.size() - 5, CaptionStyle::Lowermiddle); // 去掉浮点数的两位小数
+					auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
 
-					log_game_end(logger, save_data);
+					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
+					logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 游戏结束--  得分: " + score_str, Logger::INFO);
+					Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // 去掉浮点数的两位小数
+
+					log_game_end(logger_data, save_data);
 
 					return;
 				}
@@ -1692,15 +1732,14 @@ public:
 				std::cout << USE_GUIDES << std::endl;
 			}
 			else if (!s.compare("1")) { // 30min限时玩法
-				std::cout << "请先重开游戏保证植物栈位正确! " << std::endl;
-				std::cout << "请输入布阵码: " << std::endl;
+				std::cout << "请先重开游戏, 并输入布阵码: " << std::endl;
 				std::string ls;
 				std::cin >> ls;
 				// 添加快捷键: shift+R, shift+q
 				register_SpeedRun_hotkey();
 				// 30min限时玩法: 默认不开启反作弊
 				std::cout << std::string(get_terminal_width(), '-') << std::endl;
-				SpeedRun30min(ls, true);
+				SpeedRun30min(ls, false);
 				// 注销全局热键
 				unregister_SpeedRun_hotkey();
 			}
@@ -1763,9 +1802,15 @@ public:
 				std::cin >> machine_codeB;
 				//std::cout << "已经拿到机器码A" << machine_codeB << std::endl;
 
+				std::cout << "是否设置布阵码有效期(0则不设置): " << std::endl;
+				std::string expire_minute;
+				std::cin >> expire_minute;
 
 				std::string key = EncryptUtils::sha256("xiaofeng");
-				auto combie_machine_code = machine_codeA + "/" + machine_codeB;
+				std::string timeSecond_expire;
+				auto combie_machine_code = machine_codeA + "/" + machine_codeB + "/" + std::to_string(static_cast<std::size_t>(std::time(nullptr)))+"/" + expire_minute;
+
+				// TODO: 写成加密文件，比赛模式的时候导入文件解密验证
 				//std::cout << combie_machine_code << std::endl;
 
 				std::string layout_code_key = EncryptUtils::aes128ECBEncrypt(combie_machine_code, key);
@@ -1809,17 +1854,55 @@ public:
 				}
 
 
-				size_t pos = combie_machine_code.find('/');
-				if (pos == std::string::npos) {
+				// 查找第一个 `/`
+				size_t first_pos = combie_machine_code.find('/');
+				if (first_pos == std::string::npos) {
 					std::cout << "解密密钥出错!" << std::endl;
 					continue;
 				}
-				std::string machine_code_1 = combie_machine_code.substr(0, pos);
-				std::string machine_code_2 = combie_machine_code.substr(pos + 1);
+
+				// 查找第二个 `/`（从第一个 `/` 后开始）
+				size_t second_pos = combie_machine_code.find('/', first_pos + 1);
+				if (second_pos == std::string::npos) {
+					std::cout << "解密密钥出错!" << std::endl;
+					continue;
+				}
+
+				// 查找第三个 `/`（从第一个 `/` 后开始）
+				size_t third_pos = combie_machine_code.find('/', second_pos + 1);
+				if (third_pos == std::string::npos) {
+					std::cout << "解密密钥出错!" << std::endl;
+					continue;
+				}
+
+				// 分割字符串
+				std::string machine_code_1 = combie_machine_code.substr(0, first_pos);
+				std::string machine_code_2 = combie_machine_code.substr(first_pos + 1, second_pos - first_pos - 1);
+				std::string timeSecond_expire = combie_machine_code.substr(second_pos + 1, third_pos - second_pos - 1);
+				std::string expire_minute_str = combie_machine_code.substr(third_pos + 1);
+
+				char* end_ptr = nullptr;
+				unsigned long long timeStamp = strtoull(timeSecond_expire.c_str(), &end_ptr, 10);
+
+				char* end_ptr2 = nullptr;
+				int expire_minute = strtoull(expire_minute_str.c_str(), &end_ptr2, 10);
+
 				if (machine_code_1.find(machine_code) == std::string::npos && (machine_code_2.find(machine_code) == std::string::npos)) {
 					std::cout << "机器码异常!" << std::endl;
 					continue;
 				}
+
+				if (expire_minute != 0) { // 如果设置了0代表是不加有效期，如果没设置就是设置了有效期的
+					if ((TimeStruct::getNow() - TimeStruct(static_cast<size_t>(timeStamp))).minute > expire_minute) {
+						std::cout << "布阵码已经超过有效期:" << expire_minute << "min! 请裁判重新刷一个" << std::endl;
+						continue;
+					}
+					else {
+						std::cout << "此布阵码有效期为" << expire_minute << "min" << std::endl;
+					}
+				}
+				// 有效期设置为0则直接放行
+
 
 				// 玩家解密
 				std::string ls;
