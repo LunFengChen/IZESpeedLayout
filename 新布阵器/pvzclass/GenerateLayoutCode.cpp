@@ -108,11 +108,19 @@ std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
     }
 
     std::array<Theme, 25> ret = {};
-    std::array<int, 5> tmp1 = {
-        getRandomInRange(1, 4), getRandomInRange(0, 4),
-        getRandomInRange(0, 4), getRandomInRange(0, 4),
-        getRandomInRange(0, 4)
-    };
+    // 动态生成位置索引
+    std::array<int, 5> tmp1;
+    for (size_t i = 0; i < 5; ++i) {
+        // 特殊处理 BOrder[2] 为 SCARDY 的情况
+        if (BOrder[i] == Theme::SCARDY && i == 2) { // 胆小是第三个B类阵，只能生成在11-12
+            tmp1[i] = getRandomInRange(0, 1); 
+        }
+        else 
+        {
+            // 其他情况保持原有逻辑
+            tmp1[i] = (i == 0) ? getRandomInRange(1, 4) : getRandomInRange(0, 4);
+        }
+    }
 
     for (size_t i = 0; i < 5; i++) {
         ret[tmp1[i] + 5 * i] = BOrder[i];

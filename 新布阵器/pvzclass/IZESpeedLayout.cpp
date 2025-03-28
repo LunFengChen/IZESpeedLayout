@@ -25,8 +25,10 @@ std::mt19937_64 gen(rd()); // 全局随机数生成器
 // 反作弊检测
 class GameCheatCheck {
 private:
+	Logger& logger;
+
 	// 检查速度是否异常
-	bool check_speed(Logger& logger) {
+	bool check_speed() {
 		// 检测修改帧间隔加速
 		int time_ms = PVZ::Memory::ReadMemory<int>(PVZ::Memory::ReadMemory<int>(0x6a9ec0) + 0x454);
 		if (time_ms != 10) {
@@ -47,7 +49,7 @@ private:
 	}
 
 	// 检测相对速度常量是否被修改
-	bool check_speed_constant(Logger& logger) {
+	bool check_speed_constant() {
 
 		bool data_changed = false; // 记录是否有数据变化
 		// 定义速度和预期值的对照表
@@ -89,7 +91,7 @@ private:
 	}
 
 	// 检测是否开启免费种植
-	bool check_free_plant(Logger& logger) {
+	bool check_free_plant() {
 		if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x814)) {
 			logger.log("检测到开启了免费种植!", Logger::DEBUG);
 			return true;
@@ -100,11 +102,7 @@ private:
 	// 检测是否跳关了
 	
 	// 检测是否锁玉米或者黄油
-	bool check_Kernelpult(Logger& logger) {
-		if (PVZ::Memory::ReadMemory<byte>(0x45F1EC) != byte(117)) {
-			logger.log("检测到玉米子弹异常!", Logger::DEBUG);
-			return true;
-		}
+	bool check_Kernelpult() {
 		if (PVZ::Memory::ReadMemory<byte>(0x45F1EC) == byte(235)) {
 			logger.log("检测到锁玉米粒!", Logger::DEBUG);
 			return true;
@@ -113,12 +111,18 @@ private:
 			logger.log("检测到锁黄油!", Logger::DEBUG);
 			return true;
 		}
+		if (PVZ::Memory::ReadMemory<byte>(0x45F1EC) != byte(117)) {
+			logger.log("检测到玉米子弹异常!", Logger::DEBUG);
+			return true;
+		}
+		
 
 		return false;
 	}
 
+	//
 	// 检测是否开启dance
-	bool check_dance(Logger& logger) {
+	bool check_dance() {
 		if (PVZ::Memory::ReadPointer(0x6A9EC0, 0x768, 0x5765) == 33554433) { // 读不到bool值
 			logger.log("检测到开启dance!, "+std::to_string(PVZ::Memory::ReadMemory<bool>(PVZ::Memory::ReadPointer(0x6A9EC0, 0x768) + 0x5765)), Logger::DEBUG);
 			return true;
@@ -127,7 +131,7 @@ private:
 	}
 
 	// rnd检测
-	bool check_rnd(Logger& logger) {
+	bool check_rnd() {
 		bool data_changed = false; // 记录是否有数据变化
 		// 定义速度和预期值的对照表
 		struct RndFloatCheck {
@@ -227,7 +231,7 @@ private:
 	}
 
 	// 检测是否使用过铲子
-	bool check_shovel(Logger& logger) {
+	bool check_shovel() {
 		if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x579c) != 0) {
 			logger.log("铲过植物数量: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x579c)), Logger::DEBUG);
 			return true;
@@ -235,59 +239,149 @@ private:
 		return false;
 	}
 
-	// 监测后台进程
-	bool monitor_background_process() {
+
+	// 检测僵尸状态
+	bool check_zombie_speed() {
+		if (PVZ::Memory::ReadMemory<byte>(0x52b215) != byte(117)) {
+			logger.log("开启僵尸速度加快", Logger::DEBUG);
+			return true;
+		}
+		if (PVZ::Memory::ReadMemory<short int>(0x0052F103) != 21620) {
+			logger.log("开启僵尸速度更快", Logger::DEBUG);
+			return true;
+		}
+		if (PVZ::Memory::ReadMemory<byte>(0x52aaad) != byte(116)) {
+			logger.log("开启僵尸匀速前进", Logger::DEBUG);
+			return true;
+		}
+		if (PVZ::Memory::ReadMemory<byte>(0x00531045) != byte(200)) {
+			logger.log("僵尸状态异常", Logger::DEBUG);
+			return true;
+		}
+		return false;
+	}
+
+	bool check_zombie_status() {
+		if (PVZ::Memory::ReadMemory<byte>(0x0053095C) != byte(132)) {
+			logger.log("开启僵尸免疫减速", Logger::DEBUG);
+			return true;
+		}
+		if (PVZ::Memory::ReadMemory<byte>(0x00531A1A) != byte(116)) {
+			logger.log("开启僵尸免疫黄油", Logger::DEBUG);
+			return true;
+		}
+		if (PVZ::Memory::ReadMemory<byte>(0x004620C5) != byte(2)
+			|| PVZ::Memory::ReadMemory<byte>(0x004620CA) != byte(3)
+			|| PVZ::Memory::ReadMemory<byte>(0x004620D5) != byte(1)
+			|| PVZ::Memory::ReadMemory<byte>(0x004620DA) != byte(3)
+			|| PVZ::Memory::ReadMemory<byte>(0x004620DF) != byte(15)
+			|| PVZ::Memory::ReadMemory<byte>(0x004620ED) != byte(0)
+			) {
+			logger.log("开启僵尸免疫磁力菇", Logger::DEBUG);
+			return true;
+		}
+		return false;
+	}
+
+
+
+	bool check_memory() {
+		if (check_speed()) {
+			logger.log("检测到速度异常", Logger::DEBUG);
+			return true;
+		}
+		else if (check_speed_constant()) {
+			logger.log("检测到速度异常", Logger::DEBUG);
+			return true;
+		}
+		else if (check_Kernelpult()) {
+			logger.log("检测到玉米异常", Logger::DEBUG);
+			return true;
+		}
+		else if (check_rnd()) {
+			logger.log("检测到随机数异常", Logger::DEBUG);
+			return true;
+		}
+		else if (check_shovel()) {
+			logger.log("检测出铲子", Logger::DEBUG);
+			return true;
+		}
+		else if (check_dance()) {
+			logger.log("检测出dance", Logger::DEBUG);
+			return true;
+		}
+		else if (check_free_plant()) {
+			logger.log("检测出免费种植", Logger::DEBUG);
+			return true;
+		}
+		else if (check_zombie_speed()) {
+			logger.log("检测出僵尸速度异常", Logger::DEBUG);
+			return true;
+		}
+		else if (check_zombie_status()) {
+			logger.log("检测出僵尸状态异常", Logger::DEBUG);
+			return true;
+		}
+		return false;
+	}
+
+
+	// TODO: 监测后台进程
+	bool check_process() {
 		// 监测后台进程是否有算血器：常规信息中的描述为"IZECalculatorV1.5.10.exe"
 		// 监测后台进程是否有IZ布阵器：常规信息中的描述为"IZ_Format_Designer_V2"
-
-
 		// 监测后台进程是否有Rnd：常规信息中的描述为"Rnd_3_4.exe"
 		// 监测后台进程是否有pt：常规信息中的描述为"PvZ Tools"
 		// 监测后台进程是否有ptk：常规信息中的描述为"PvZ Toolkit"
 		// 监测后台进程是否有终极修改器：常规信息中的描述为"PVZWPF修改器"
+		const wchar_t* blacklist[] = {
+			L"cheatengine-x86_64.exe",
+			L"cheatengine.exe",
+		};
+
+		PROCESSENTRY32W pe32;
+		pe32.dwSize = sizeof(PROCESSENTRY32W);
+		HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+		if (Process32FirstW(hSnapshot, &pe32)) {
+			do {
+				for (auto name : blacklist) {
+					if (wcscmp(pe32.szExeFile, name) == 0) {
+						CloseHandle(hSnapshot);
+						return true; // 发现可疑进程
+					}
+				}
+			} while (Process32NextW(hSnapshot, &pe32));
+		}
+		CloseHandle(hSnapshot);
+		return false;
 
 	}
 
 public:
-	int interval;
+	int check_interval;
 
-	GameCheatCheck(int interval) {
-		this->interval = interval;
+
+	GameCheatCheck(int interval, Logger& logger_ref)
+		: check_interval(interval), logger(logger_ref) // 初始化列表
+	{
+
 	}
 
-	bool check_all(Logger& logger) {
+	bool check_all() {
 		//std::cout << "正在反作弊检测" << std::endl;
-		if (check_speed(logger)) {
-			logger.log("检测到速度异常", Logger::DEBUG);
+		if (check_memory()) {
+			logger.log("检测出内存异常!", Logger::DEBUG);
 			return true;
 		}
-		else if (check_speed_constant(logger)) {
-			logger.log("检测到速度异常", Logger::DEBUG);
+		/*else if (check_process(logger)) {
+			logger.log("检测出后台进程异常!", Logger::DEBUG);
 			return true;
-		}
-		else if (check_Kernelpult(logger)) {
-			logger.log("检测到玉米异常", Logger::DEBUG);
-			return true;
-		}
-		else if (check_rnd(logger)) {
-			logger.log("检测到随机数异常", Logger::DEBUG);
-			return true;
-		}
-		else if (check_shovel(logger)) {
-			logger.log("检测出铲子", Logger::DEBUG);
-			return true;
-		}
-		else if (check_dance(logger)) {
-			logger.log("检测出dance", Logger::DEBUG);
-			return true;
-		}
-		else if (check_free_plant(logger)) {
-			logger.log("检测出免费种植", Logger::DEBUG);
-			return true;
-		}
+		}*/
 
 		return false;
 	}
+
 
 };
 
@@ -751,16 +845,6 @@ public:
 			}
 		}
 	}
-
-    // 开启反作弊
-    void cheat_check(bool is_cheat_check, Logger& logger) {
-		if (is_in_ize() && is_cheat_check) {
-			GameCheatCheck game_cheat_checker(1);
-			if (game_cheat_checker.check_all(logger)) {
-				logger.log("检测到异常!", Logger::INFO);
-			}
-		}
-    }
 };
 
 
@@ -825,6 +909,32 @@ public:
 	}
 
 
+	void log_game_end(Logger& logger, std::vector<LevelData> save_data) {
+		logger.log("所有关卡数据如下:", logger.DEBUG);
+		int count = 0;
+		float kernel_count = 0; float butter_count = 0;
+		for (auto& leveldata : save_data) {
+			logger.log("第" + std::to_string(++count) + "关数据如下:", Logger::DEBUG);
+			logger.log("    放置的僵尸数: " + std::to_string(leveldata.released_zombies_count), Logger::DEBUG);
+			logger.log("    僵尸花费: " + std::to_string(leveldata.zombie_cost), Logger::DEBUG);
+			logger.log("    反应时间: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
+			logger.log("    玉米粒数量: " + std::to_string(leveldata.kernel_count) + ", 黄油数量: " + std::to_string(leveldata.butter_count) + " 黄油率为: " + std::to_string(leveldata.kernelpult_butter_rate), Logger::DEBUG);
+			kernel_count += leveldata.kernel_count;
+			butter_count += leveldata.butter_count;
+
+			logger.log("    最后一个脑子吃的时间: " + (leveldata.last_brain_eaten_time - leveldata.setlayout_time).enPrint(), Logger::DEBUG);
+			logger.log("    所有脑子吃的时间列表: ", Logger::DEBUG);
+
+			for (auto& eat_brain_time : leveldata.brain_eaten_times) {
+				logger.log((eat_brain_time - leveldata.setlayout_time).enPrint(), logger.DEBUG);
+			}
+		};
+		if (butter_count + kernel_count == 0) {
+			logger.log("没有黄油", Logger::DEBUG);
+			return;
+		}
+		logger.log("黄油率为: " + std::to_string(butter_count / (butter_count + kernel_count)), Logger::DEBUG);
+	}
 
 	
 
@@ -854,10 +964,10 @@ public:
 
 
 		// 4. 如果开启反作弊，先检测一次判断环境是否异常
-		GameCheatCheck game_cheat_checker(1);
+		GameCheatCheck game_cheat_checker(2, logger);
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			if (game_cheat_checker.check_all(logger)) {
+			if (game_cheat_checker.check_all()) {
 				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 				logger.log("环境检测结果: 异常!", Logger::INFO);
 				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
@@ -1060,16 +1170,7 @@ public:
 			}
 
 			// 4. 检测作弊
-			if (is_cheat_check) // 如果开启了
-			{
-				do {// 先检测一次
-					if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.interval) {
-						game_controler.cheat_check(true, logger);
-						check_time = TimeStruct::getNow();
-						//logger.log("当前正在检测是否作弊！", logger.DEBUG);
-					}
-				} while (0);
-			}
+
 
 
 			// 5. 监测放置的僵尸以及计算花费
@@ -1183,33 +1284,6 @@ public:
 
 	}
 
-	void log_game_end(Logger& logger, std::vector<LevelData> save_data){
-		logger.log("所有关卡数据如下:", logger.DEBUG);
-		int count = 0;
-		float kernel_count = 0; float butter_count = 0;
-		for (auto& leveldata : save_data) {
-			logger.log("第" + std::to_string(++count) + "关数据如下:", Logger::DEBUG);
-			logger.log("    放置的僵尸数: " + std::to_string(leveldata.released_zombies_count), Logger::DEBUG);
-			logger.log("    僵尸花费: " + std::to_string(leveldata.zombie_cost), Logger::DEBUG);
-			logger.log("    反应时间: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
-			logger.log("    玉米粒数量: " + std::to_string(leveldata.kernel_count) + ", 黄油数量: " + std::to_string(leveldata.butter_count) + " 黄油率为: " + std::to_string(leveldata.kernelpult_butter_rate), Logger::DEBUG);
-			kernel_count += leveldata.kernel_count;
-			butter_count += leveldata.butter_count;
-			
-			logger.log("    最后一个脑子吃的时间: " + (leveldata.last_brain_eaten_time - leveldata.setlayout_time).enPrint(), Logger::DEBUG);
-			logger.log("    所有脑子吃的时间列表: ", Logger::DEBUG);
-
-			for (auto& eat_brain_time : leveldata.brain_eaten_times) {
-				logger.log((eat_brain_time - leveldata.setlayout_time).enPrint(), logger.DEBUG);
-			}
-		};
-		if (butter_count + kernel_count == 0) {
-			logger.log("没有黄油" , Logger::DEBUG);
-			return;
-		}
-		logger.log("黄油率为: " + std::to_string(butter_count / (butter_count + kernel_count)), Logger::DEBUG);
-	}
-
 	// 30min限时循环
 	void SpeedRun30min(std::string ls, const bool is_cheat_check) {
 		// 0. 拿到所有关卡的布阵代码
@@ -1243,26 +1317,18 @@ public:
 
 		// 4. 准备开始开始记录日志
 		Logger logger(TimeStruct::getCurrentDateTime() + ".log", Logger::DEBUG); // 默认打印INFO, 但是记录的话全部记录
-		logger.log(
-			std::string("玩家已经进入ize, ")
-			+ "当前日期与时间为: " + TimeStruct::getCurrentDateTime() + "\n"
-			+ "本次布阵码为: " + ls + "\n"
-			+ "游戏进程号: " + std::to_string(pid) + "\n"
-			+ "游戏宽高: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc0)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc4)) + "\n"
-			+ "游戏窗口坐标: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x30)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x34)) + "\n"
-			+ "游戏内玩家名字为: " + game_controler.get_player_name()
-			, Logger::DEBUG
-		);
+		
 
 		logger.log(std::string(get_terminal_width(), '-'), Logger::DEBUG);
 		logger.log("已经进入ize, 现在开始布阵", Logger::INFO);
 
 
 		// 先检测环境是否异常
-		GameCheatCheck game_cheat_checker(2); // 每2s检测一次
+		GameCheatCheck game_cheat_checker(2, logger); // 每2s检测一次
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			if (game_cheat_checker.check_all(logger)) {
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "植物大战僵尸-IZE竞速反作弊窗口"); // 禁掉算血器
+			if (game_cheat_checker.check_all()) {
 				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 				logger.log("环境检测结果: 异常!", Logger::INFO);
 				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
@@ -1274,7 +1340,16 @@ public:
 				logger.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 			}
 		}
-
+		logger.log(
+			std::string("玩家已经进入ize, ")
+			+ "当前日期与时间为: " + TimeStruct::getCurrentDateTime() + "\n"
+			+ "本次布阵码为: " + ls + "\n"
+			+ "游戏进程号: " + std::to_string(pid) + "\n"
+			+ "游戏宽高: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc0)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc4)) + "\n"
+			+ "游戏窗口坐标: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x30)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x34)) + "\n"
+			+ "游戏内玩家名字为: " + game_controler.get_player_name()
+			, Logger::DEBUG
+		);
 
 		// 禁mj
 		game_controler.ban_maidCheat(true, logger);
@@ -1469,8 +1544,8 @@ public:
 			// 4. 每2s检测作弊与鼠标变化
 			if (is_cheat_check) {
 				do {// 先检测一次
-					if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.interval) {
-						game_controler.cheat_check(true, logger);
+					if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.check_interval) {
+						game_cheat_checker.check_all();
 						check_time = TimeStruct::getNow();
 						logger.log(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0xdc) ? "鼠标移出屏幕" : "鼠标还在屏幕内", Logger::DEBUG);
 						logger.log("鼠标坐标: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x5558)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x555c)), Logger::DEBUG);

@@ -30,6 +30,7 @@
 #include <VersionHelpers.h>
 #include <wincrypt.h>
 #include <windows.h>
+#include <tlhelp32.h>
 
 #include <comdef.h>
 #include <Wbemidl.h>
