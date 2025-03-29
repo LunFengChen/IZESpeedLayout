@@ -52,6 +52,15 @@ void Logger::setLogLevel(LogLevel level) {
     logLevel = level;
 }
 
+
+// 线程安全的非阻塞输出函数
+void Logger::safe_print(const std::string& msg) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD written;
+    WriteConsoleA(hConsole, msg.c_str(), msg.size(), &written, NULL);
+}
+
+
 void Logger::log(const std::string& message, LogLevel level) {
     if (level < logLevel) {
         return; // 如果日志级别低于设置的最低级别，则不记录任何日志
@@ -70,7 +79,7 @@ void Logger::log(const std::string& message, LogLevel level) {
 
     // 控制台输出：只有 INFO 及以上级别才打印原始消息
     if (level >= INFO) {
-        std::cout << message << std::endl;
+        safe_print(message+"\n");
     }
 
     // 文件输出：记录完整的日志消息

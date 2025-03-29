@@ -21,6 +21,9 @@ public:
     ~Logger();
 
     void setLogLevel(LogLevel level);
+    // 线程安全的非阻塞输出函数
+    void safe_print(const std::string& msg);
+
     void log(const std::string& message, LogLevel level);
     void debug(const std::string& message);
     void info(const std::string& message);

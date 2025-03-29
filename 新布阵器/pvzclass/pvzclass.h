@@ -20,7 +20,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
+#include <limits>
 #include <iomanip>
 #include <numeric>
 #include<unordered_set>
@@ -41,6 +41,12 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+
+#include <condition_variable>
+#include <queue>
+#include <chrono>
+#include <atomic>
+#include "mutex"
 
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -65,7 +71,7 @@ github地址:https://github.com/LunFengChen/IZESpeedLayout/\n\
 5: 生成当前电脑机器码【比赛模式】\n\
 6：生成随机阵型代码【比赛模式】\n\
 7：布阵【比赛模式】\n\
-8：娱乐模式\n\
+8：锁主题锁花数，带单关计时\n\
 9：弹出工具-磁铁倒计时\n\
 a：生成25关随机阵型代码【自定义花数分布】\n\
 b：布阵，不限时玩法【可以布1-n个阵】\n\
@@ -94,7 +100,7 @@ constexpr char USE_GUIDES[] = "1.布阵: 根据拿到的25关布阵码进行布�
 	(1)拿到加密布阵码输入布阵器；\n\
 	(2)输入密钥解密布阵码；\n\
 	后正常游戏\n\
-8.【还没写好】娱乐模式：什么消消乐模式（，考验眼力和反应力\n\
+8.【还没写好】锁主题锁花数，带单关计时，其实8应该是娱乐模式：什么消消乐模式（，考验眼力和反应力\n\
 9.【还没写好】弹出磁铁倒计时: 类似雪线那种\n\
 a.【还没写好】生成自定义花数分布随机码：\n\
 b.【还没写好】复盘模式布阵：与正常布阵无异，但是加了很多方便的快捷键\n\
