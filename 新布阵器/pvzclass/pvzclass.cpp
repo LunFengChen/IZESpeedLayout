@@ -164,7 +164,8 @@ private:
 
 		return false;
 	}
-	// 检测是否跳关了
+	
+
 	
 	// 检测是否锁玉米或者黄油
 	bool check_Kernelpult() {
@@ -188,7 +189,8 @@ private:
 	//
 	// 检测是否开启dance
 	bool check_dance() {
-		if (PVZ::Memory::ReadPointer(0x6A9EC0, 0x768, 0x5765) == 33554433) { // 读不到bool值
+		auto board = PVZ::GetBoard();
+		if (board->Dance) { 
 			logger.log("检测到开启dance!, "+std::to_string(PVZ::Memory::ReadMemory<bool>(PVZ::Memory::ReadPointer(0x6A9EC0, 0x768) + 0x5765)), Logger::DEBUG);
 			return true;
 		}
@@ -345,6 +347,10 @@ private:
 			logger.log("开启僵尸免疫磁力菇", Logger::DEBUG);
 			return true;
 		}
+		if (PVZ::Memory::ReadMemory<byte>(0x004248AA) != byte(117)) {
+			logger.log("开启僵尸快跑", Logger::DEBUG);
+			return true;
+		}
 
 
 
@@ -458,6 +464,17 @@ public:
 			return true;
 		}
 
+		return false;
+	}
+
+
+	// 检测是否开启自动收集
+	bool check_auto_collected() {
+		if (PVZ::Memory::ReadMemory<byte>(0x0043158f) == 0x75) {
+			logger.log("检测到开启自动收集", Logger::DEBUG);
+			PVZ::Memory::WriteMemory<byte>(0x0043158f, 0x75);
+			return true;
+		}
 		return false;
 	}
 
@@ -606,6 +623,7 @@ public:
 
 			auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme)); // 获取不同主题的植物生成顺序
 			auto orders = GenerateLayoutCode::get_shuffled_array(seed);
+			//for (auto it : orders) std::cout << it << " ";
 
 
 			////调用游戏刷新函数0x41ca10:(1)先写入字节数组(2)后写入标志位（3）游戏根据标志位，读写入的字节数组
@@ -1467,6 +1485,7 @@ public:
 		// 记录已经监测并处理的僵尸，子弹
 		std::unordered_set<int> processed_zombie_ids;
 		std::unordered_set<int> processed_projectile_ids;
+		std::unordered_set<int> processed_coin_ids;
 
 		// 结束条件： 阳光用完
 		int lowestSun = 50;
@@ -1491,6 +1510,7 @@ public:
 		// 7.初始化第一关数据并布阵
 		game_controler.board->GetMiscellaneous()->Round = 0; // 从第一关开始
 		game_controler.board->Sun = 150; // 设置初始阳光
+		leveldata.initial_sun = 150;
 		game_controler.update_brains(); // 脑子初始化为0
 		game_controler.clear_all_zombies();
 		game_controler.clear_all_bullets();
@@ -1657,16 +1677,23 @@ public:
 				}
 
 				// 2.3 更新关数，初始化下一关记录的数据
-
+				if (leveldata.eaten_brain_count != 5) logger_cheat.log("检测到跳关!", Logger::INFO);
+				if (game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
+					logger_cheat.log("检测到修改阳光!", Logger::INFO);
+					//std::cout << game_controler.board->Sun << " ? " << leveldata.initial_sun << " " << leveldata.collected_sun << " " << leveldata.zombie_cost << std::endl;
+				}
 				leveldata.initial_sun = game_controler.board->Sun;
 				leveldata.released_zombies_count = 0;
 				leveldata.zombie_cost = 0;
+				leveldata.collected_sun = 0;
 				leveldata.kernel_count = 0;
 				leveldata.butter_count = 0;
 				leveldata.kernelpult_butter_rate = 0.00;
 				leveldata.score = current_flag;
 				leveldata.setlayout_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times = {};
+
+
 				leveldata.eaten_brain_count = 0;
 
 				// 2.5 关闭加速
@@ -1773,6 +1800,22 @@ public:
 				}
 			}
 
+			// 5. 检测收集的阳光
+			for (auto& coin : game_controler.board->GetAllCoins()) {
+
+				if (processed_coin_ids.count(coin->Id)) continue; // 已处理则跳过
+				if (coin->Type == CoinType::NormalSun && coin->Collected && !coin->NotExist) {
+					logger_cheat.log("点了阳光", Logger::DEBUG);
+					leveldata.collected_sun += 25;
+					processed_coin_ids.insert(coin->Id); // 记录已处理
+				}
+				if (coin->NotExist) {
+					processed_coin_ids.erase(coin->Id);
+					continue;
+				}
+			}
+
+
 			// 5. 监测脑子变化
 			if (leveldata.eaten_brain_count != game_controler.countEatenBrain() && leveldata.eaten_brain_count != 5) {
 				leveldata.score = game_controler.board->GetMiscellaneous()->Round + game_controler.countEatenBrain() * 0.2;
@@ -1876,7 +1919,7 @@ public:
 		GameCheatCheck game_cheat_checker(2, logger_cheat); // 每2s检测一次
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: diable)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
 			game_cheat_checker.check_envirnoment(); 
 		}
 		else { // 还原回标题
@@ -1904,6 +1947,7 @@ public:
 		// 记录已经监测并处理的僵尸
 		std::unordered_set<int> processed_zombie_ids;
 		std::unordered_set<int> processed_projectile_ids;
+		std::unordered_set<int> processed_coin_ids;
 
 		// 结束条件
 		int lowestSun = 50;
@@ -1952,6 +1996,7 @@ public:
 		// 7. 初始化第一关数据
 		game_controler.board->GetMiscellaneous()->Round = 0; // 从第一关开始
 		game_controler.board->Sun = 150; // 设置初始阳光
+		leveldata.initial_sun = 150;
 		game_controler.update_brains(); // 恢复脑子
 		game_controler.clear_all_zombies(); // 删僵尸
 		game_controler.clear_all_bullets(); // 删子弹
@@ -2102,16 +2147,27 @@ public:
 					Logger::INFO);
 
 				// 2.1 初始化数据
+				// 检测跳关或者改了阳光
+				if (leveldata.eaten_brain_count != 5) logger_cheat.log("检测到跳关!", Logger::INFO);
+				if (game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
+					logger_cheat.log("检测到修改阳光!", Logger::INFO);
+					//std::cout << game_controler.board->Sun << " ? " << leveldata.initial_sun << " " << leveldata.collected_sun << " " << leveldata.zombie_cost << std::endl;
+				}
 				leveldata.initial_sun = game_controler.board->Sun;
 				leveldata.released_zombies_count = 0;
 				leveldata.zombie_cost = 0;
+				leveldata.collected_sun = 0;
 				leveldata.kernel_count = 0;
 				leveldata.butter_count = 0;
 				leveldata.kernelpult_butter_rate = 0.00;
 				leveldata.score = current_flag;
 				leveldata.setlayout_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times = {};
+
+
 				leveldata.eaten_brain_count = 0;
+
+				
 
 			}
 
@@ -2138,7 +2194,7 @@ public:
 			// 4. 如果开启了反作弊检测检测作弊与鼠标变化
 			if (is_cheat_check) {
 				if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.check_interval) {
-					if (game_cheat_checker.check_all()) {
+					if (game_cheat_checker.check_all()&& game_cheat_checker.check_auto_collected()) {
 						logger_cheat.log("检测到作弊!", Logger::INFO);
 					}
 					check_time = TimeStruct::getNow();
@@ -2210,9 +2266,22 @@ public:
 				}
 			}
 
-			// 5. 监测脑子变化
-			// 过关一瞬间会多打印一次, 加一个特判，源于current_flag没来得及更新
+			// 5. 检测收集的阳光
+			for (auto& coin : game_controler.board->GetAllCoins()) {
 
+				if (processed_coin_ids.count(coin->Id)) continue; // 已处理则跳过
+				if (coin->Type == CoinType::NormalSun && coin->Collected && !coin->NotExist) {
+					logger_cheat.log("点了阳光", Logger::DEBUG);
+					leveldata.collected_sun += 25;
+					processed_coin_ids.insert(coin->Id); // 记录已处理
+				}
+				if(coin->NotExist) {
+					processed_coin_ids.erase(coin->Id);
+					continue;
+				}
+			}
+
+			// 5. 监测脑子变化
 			if (leveldata.eaten_brain_count != game_controler.countEatenBrain() && leveldata.eaten_brain_count != 5) {
 
 				leveldata.score = game_controler.board->GetMiscellaneous()->Round + game_controler.countEatenBrain() * 0.2;
@@ -2638,10 +2707,8 @@ public:
 
 
 
-int main() {
-
-	LayoutControler layout_controler;
-	layout_controler.main();
-
-	return 0;
-};
+//int main() {
+//	LayoutControler layout_controler;
+//	layout_controler.main();
+//	return 0;
+//};

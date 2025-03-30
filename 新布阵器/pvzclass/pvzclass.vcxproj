@@ -239,6 +239,7 @@
     <ClCompile Include="Events\PlantSquishEvent.cpp" />
     <ClCompile Include="Events\PuzzlePhaseCompleteEvent.cpp" />
     <ClCompile Include="Events\ImitaterPlantEvent.cpp" />
+    <ClCompile Include="export_layoutcode.cpp" />
     <ClCompile Include="GenerateLayoutCode.cpp" />
     <ClCompile Include="pvzclass.cpp" />
     <ClCompile Include="LevelData.cpp" />

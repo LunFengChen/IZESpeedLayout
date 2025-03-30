@@ -315,6 +315,9 @@
     <ClCompile Include="compress_str.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="export_layoutcode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcessOpener.h">

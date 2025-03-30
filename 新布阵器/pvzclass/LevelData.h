@@ -14,6 +14,7 @@ public:
     float butter_count;
     float kernelpult_butter_rate;  // 玉米投手的黄油率, 没有则为0.00
     int eaten_brain_count;
+    int collected_sun;
 
     // 时间相关数据
     TimeStruct setlayout_time = TimeStruct::getNow();             // (1) 每关的开始时间：布阵时间
