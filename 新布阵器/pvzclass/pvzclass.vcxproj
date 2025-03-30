@@ -189,6 +189,7 @@
     <ClCompile Include="Classes\TrackInstance.cpp" />
     <ClCompile Include="Classes\Widget.cpp" />
     <ClCompile Include="Classes\ZenGarden.cpp" />
+    <ClCompile Include="compress_str.cpp" />
     <ClCompile Include="Creators.cpp" />
     <ClCompile Include="disable_maid_cheat.cpp" />
     <ClCompile Include="Draw.cpp" />

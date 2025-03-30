@@ -26,6 +26,71 @@ std::mt19937_64 gen(rd()); // 全局随机数生成器
 class GameCheatCheck {
 private:
 	Logger& logger;
+	struct WindowInfo {
+		DWORD pid;
+		std::wstring title;
+	};
+	std::vector<WindowInfo> windows;
+
+	// 用于窗口遍历的回调函数
+	static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
+		std::vector<WindowInfo>* pWindows = reinterpret_cast<std::vector<WindowInfo>*>(lParam);
+
+		// 过滤不可见窗口
+		if (!IsWindowVisible(hwnd)) return TRUE;
+
+		// 获取窗口标题
+		wchar_t titleBuffer[256];
+		if (GetWindowTextW(hwnd, titleBuffer, 256) == 0) return TRUE; // 无标题跳过
+
+		// 获取进程ID
+		DWORD pid;
+		GetWindowThreadProcessId(hwnd, &pid);
+
+		// 添加到列表
+		pWindows->push_back({ pid, titleBuffer });
+
+		return TRUE; // 继续遍历
+	}
+	// 将宽字符串转换为 UTF-8 编码的窄字符串
+	std::string WideToUTF8(const std::wstring& wstr) {
+		if (wstr.empty()) return "";
+
+		int size_needed = WideCharToMultiByte(
+			CP_UTF8, 0,
+			wstr.c_str(), (int)wstr.size(),
+			nullptr, 0, nullptr, nullptr
+		);
+
+		std::string str(size_needed, 0);
+		WideCharToMultiByte(
+			CP_UTF8, 0,
+			wstr.c_str(), (int)wstr.size(),
+			&str[0], size_needed, nullptr, nullptr
+		);
+
+		return str;
+	}
+
+	// 将宽字符串转换为系统本地编码的窄字符串
+	std::string WideToANSI(const std::wstring& wstr) {
+		if (wstr.empty()) return "";
+
+		int size_needed = WideCharToMultiByte(
+			CP_ACP, 0,
+			wstr.c_str(), (int)wstr.size(),
+			nullptr, 0, nullptr, nullptr
+		);
+
+		std::string str(size_needed, 0);
+		WideCharToMultiByte(
+			CP_ACP, 0,
+			wstr.c_str(), (int)wstr.size(),
+			&str[0], size_needed, nullptr, nullptr
+		);
+
+		return str;
+	}
 
 	// 检查速度是否异常
 	bool check_speed() {
@@ -255,7 +320,7 @@ private:
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x00531045) != byte(200)) {
-			logger.log("僵尸状态异常", Logger::DEBUG);
+			logger.log("僵尸状态异常: 疑似开了僵尸无敌", Logger::DEBUG);
 			return true;
 		}
 		return false;
@@ -280,18 +345,34 @@ private:
 			logger.log("开启僵尸免疫磁力菇", Logger::DEBUG);
 			return true;
 		}
+
+
+
+		return false;
+	}
+
+	//
+	bool check_plant_status() {
+		if (PVZ::Memory::ReadMemory<byte>(0x0045EE0A) != byte(117)
+			|| PVZ::Memory::ReadMemory<byte>(0x0052FCF3) != byte(252)
+			|| PVZ::Memory::ReadMemory<byte>(0x0052FCF1) != byte(70)
+			) {
+			logger.log("开启植物虚弱", Logger::DEBUG);
+			return true;
+		}
 		return false;
 	}
 
 
 
 	bool check_memory() {
-		if (check_speed()) {
+		// 速度就不检查了
+		/*if (check_speed()) {
 			logger.log("检测到速度异常", Logger::DEBUG);
 			return true;
-		}
-		else if (check_speed_constant()) {
-			logger.log("检测到速度异常", Logger::DEBUG);
+		}*/
+		if (check_speed_constant()) {
+			logger.log("检测到速度常量异常", Logger::DEBUG);
 			return true;
 		}
 		else if (check_Kernelpult()) {
@@ -323,40 +404,32 @@ private:
 			logger.log("检测出僵尸状态异常", Logger::DEBUG);
 			return true;
 		}
+		else if (check_plant_status()) {
+			logger.log("检测出僵尸状态异常", Logger::DEBUG);
+			return true;
+		}
 		return false;
 	}
 
 
-	// TODO: 监测后台进程
-	bool check_process() {
+	// 扫描后台进程
+	void log_background_process() {
 		// 监测后台进程是否有算血器：常规信息中的描述为"IZECalculatorV1.5.10.exe"
 		// 监测后台进程是否有IZ布阵器：常规信息中的描述为"IZ_Format_Designer_V2"
 		// 监测后台进程是否有Rnd：常规信息中的描述为"Rnd_3_4.exe"
 		// 监测后台进程是否有pt：常规信息中的描述为"PvZ Tools"
 		// 监测后台进程是否有ptk：常规信息中的描述为"PvZ Toolkit"
 		// 监测后台进程是否有终极修改器：常规信息中的描述为"PVZWPF修改器"
-		const wchar_t* blacklist[] = {
-			L"cheatengine-x86_64.exe",
-			L"cheatengine.exe",
-		};
 
-		PROCESSENTRY32W pe32;
-		pe32.dwSize = sizeof(PROCESSENTRY32W);
-		HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&windows));
 
-		if (Process32FirstW(hSnapshot, &pe32)) {
-			do {
-				for (auto name : blacklist) {
-					if (wcscmp(pe32.szExeFile, name) == 0) {
-						CloseHandle(hSnapshot);
-						return true; // 发现可疑进程
-					}
-				}
-			} while (Process32NextW(hSnapshot, &pe32));
+		// 去重（按进程ID和标题）
+		std::unordered_set<std::wstring> uniqueTitles;
+		for (const auto& win : windows) {
+			if (!win.title.empty() && uniqueTitles.insert(win.title).second) {
+				logger.log("应用标题: " + WideToANSI(win.title) + " (PID: " + std::to_string(win.pid) + ")", Logger::DEBUG);
+			}
 		}
-		CloseHandle(hSnapshot);
-		return false;
-
 	}
 
 public:
@@ -370,20 +443,64 @@ public:
 	}
 
 	bool check_all() {
-		//std::cout << "正在反作弊检测" << std::endl;
 
-		// 记录所有僵尸移速
+		if (check_speed()) {
+			logger.log("检测到速度异常", Logger::DEBUG);
+			return true;
+		}
+
+		log_zombie_plant(); 
+		
+		log_background_process();
+
+		if (check_memory()) {
+			logger.log("检测出内存异常!", Logger::DEBUG);
+			return true;
+		}
+
+		return false;
+	}
+
+
+	void log_zombie_plant() {
+		// 记录所有僵尸移速和血量
 		auto board = PVZ::GetBoard();
 		for (auto zombie : board->GetAllZombies()) {
 			if (!zombie->NotExist) {
+
+				int bodyhp, max_bodyhp;
+				zombie->GetBodyHp(&bodyhp, &max_bodyhp);
+				PVZ::Zombie::AccessoriesType1 acctype1 = zombie->GetAccessoriesType1();
+				PVZ::Zombie::AccessoriesType2 acctype2 = zombie->GetAccessoriesType2();
+
 				logger.log(
 					"第" + std::to_string(zombie->Row + 1) + "行, 坐标为:" + std::to_string(zombie->ImageX) + ", 栈位为:" + std::to_string(zombie->Index) + "的" + ZombieType::ToString(zombie->Type)
-					+ "速度为: " + std::to_string(zombie->Speed)
+					+ "速度为: " + std::to_string(zombie->Speed) + "僵尸本体血量: " + std::to_string(bodyhp)
+					+ ", 一类防具: " + std::to_string(acctype1.Hp) + "/" + std::to_string(acctype1.MaxHp)
+					+ ", 二类防具: " + std::to_string(acctype2.Hp) + "/" + std::to_string(acctype2.MaxHp)
+					+ ", 存在时间: " + std::to_string(zombie->ExistedTime)
+					, Logger::DEBUG
+				);
+
+			}
+		}
+
+		// 记录植物血量: 用于检测血量是否异常
+		for (auto plant : board->GetAllPlants()) {
+			if (!plant->NotExist) {
+				logger.log(
+					"第" + std::to_string(plant->Row + 1) + "行, 坐标为:" + std::to_string(plant->ImageX) + ", 栈位为:" + std::to_string(plant->Index) + "的" + PlantType::ToString(plant->Type)
+					+ "hp为: " + std::to_string(plant->Hp) + ", 最大血量为: " + std::to_string(plant->MaxHp) + ", 属性倒计时(一般是磁力菇): " + std::to_string(plant->AttributeCountdown)
 					, Logger::DEBUG
 				);
 			}
 		}
+	}
 
+	bool check_all_not_speed() {
+		//std::cout << "正在反作弊检测" << std::endl;
+		log_zombie_plant();
+		log_background_process();
 		if (check_memory()) {
 			logger.log("检测出内存异常!", Logger::DEBUG);
 			return true;
@@ -395,6 +512,7 @@ public:
 
 		return false;
 	}
+
 
 	void check_envirnoment() {
 		if (check_all()) {
@@ -1303,7 +1421,7 @@ public:
 		GameCheatCheck game_cheat_checker(2, logger_cheat);
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "pvz(cheatCheck: open)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
 			game_cheat_checker.check_envirnoment();
 		}
 		else { // 还原回标题
@@ -1583,7 +1701,7 @@ public:
 			// 4. 如果开启了反作弊检测：检测作弊与鼠标变化
 			if (is_cheat_check) {
 				if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.check_interval) {
-					if (game_cheat_checker.check_all()) {
+					if (game_cheat_checker.check_all_not_speed()) {
 						logger_cheat.log("检测到作弊!", Logger::INFO);
 					}
 					check_time = TimeStruct::getNow();
@@ -1758,8 +1876,8 @@ public:
 		GameCheatCheck game_cheat_checker(2, logger_cheat); // 每2s检测一次
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "pvz(cheatCheck: open)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
-			game_cheat_checker.check_envirnoment();
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: diable)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
+			game_cheat_checker.check_envirnoment(); 
 		}
 		else { // 还原回标题
 			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies"); // 禁掉一些寻找游戏是通过窗口名的：如算血器

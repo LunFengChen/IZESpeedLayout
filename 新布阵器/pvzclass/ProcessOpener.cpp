@@ -1,6 +1,7 @@
 ﻿#include "ProcessOpener.h"
 #include <TLHELP32.H>
 #include <direct.h>
+
 LPCWSTR ProcessOpener::ProcessName = TEXT("PlantsVsZombies.exe");
 LPCWSTR ProcessOpener::WindowTitle = TEXT("Plants vs. Zombies");
 LPCWSTR ProcessOpener::Directory = TEXT(".");
