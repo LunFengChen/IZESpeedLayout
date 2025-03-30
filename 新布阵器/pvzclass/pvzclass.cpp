@@ -663,6 +663,34 @@ public:
 		};
 	}
 
+	void set_layout_test(const std::string& ls) {
+		int theme_index = 0;
+		int flower_num = 0;
+		std::array<int, 25> order = {};
+		decode_layout_string(ls, theme_index, flower_num, order);
+		auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index)); // 获取不同主题的植物生成顺序
+
+		// 汇编一次种
+		spawn_all_plants(plantTypes, order);
+
+		// 设置小喷偏移
+		std::mt19937 genPuffshroom(theme_index*66+flower_num*88);
+		std::uniform_int_distribution<int> rngPuffshroomX(-5, 4);
+		std::uniform_int_distribution<int> rngPuffshroomY(-3, 2);
+
+		for (auto& plant : board->GetAllPlants()) {
+			if (plant->Type == PlantType::Puffshroom) {
+				float x = 40.0 + 80.0 * plant->Column;
+				float y = 80.0 + 100.0 * plant->Row;
+				plant->ImageX = static_cast<int>(x) + rngPuffshroomX(genPuffshroom);
+				plant->ImageY = static_cast<int>(y) + rngPuffshroomX(genPuffshroom);
+				//std::cout << "修改了小喷偏移" << plant->ImageX << "/" << plant->ImageY;
+			};
+		};
+
+
+	}
+
 	// 删除场上还没收集的阳光
 	void clear_not_colleted_sun() {
 		auto board = PVZ::GetBoard();
@@ -1045,6 +1073,181 @@ public:
 				//std::cerr << "Error: Null pointer in injectors vector at index " << injectors.size() - i - 1 << std::endl;
 			}
 		}
+	}
+
+
+
+
+	// 新版export_layout_string
+	bool export_layout_string(std::string& result) {
+		if (is_in_ize()) {
+			std::array<int, 25> positions = {};               // 对应位置
+
+			// 1.判断当前主题
+			std::unordered_map<PlantType::PlantType, int> plantCount;
+			for (auto plant : board->GetAllPlants()) {
+				if (plant->NotExist) continue;
+				plantCount[plant->Type]++;
+			}
+
+			int theme_index = 0;
+			// 1.1 获取主题
+			{
+				if (
+					plantCount[PlantType::SnowPea] == 9 && plantCount[PlantType::Peashooter] == 4 && plantCount[PlantType::SplitPea] == 4
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 4;
+				else if (
+					plantCount[PlantType::Starfruit] == 8 && plantCount[PlantType::Spickweed] == 9
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 5;
+				else if (
+					plantCount[PlantType::Chomper] == 8 && plantCount[PlantType::PotatoMine] == 9
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 6;
+				else if (
+					plantCount[PlantType::Fumeshroom] == 9 && plantCount[PlantType::Magnetshroom] == 8
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 7;
+				else if (
+					plantCount[PlantType::Scaredyshroom] == 12
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 13)
+					&& plantCount[PlantType::Sunflower] >= 1 + 5 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 8;
+
+				// 判断A : 虽然下面的条件效率不高，但是简单啊（
+				if (
+					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
+					&& plantCount[PlantType::Wallnut] == 1
+					&& plantCount[PlantType::Torchwood] == 1
+					&& plantCount[PlantType::PotatoMine] == 1
+					&& plantCount[PlantType::Chomper] == 2
+					&& plantCount[PlantType::Peashooter] == 1
+					&& plantCount[PlantType::SplitPea] == 1
+					&& plantCount[PlantType::Kernelpult] == 1
+					&& plantCount[PlantType::Threepeater] == 1
+					&& plantCount[PlantType::SnowPea] == 1
+					&& plantCount[PlantType::Squash] == 1
+					&& plantCount[PlantType::Fumeshroom] == 1
+					&& plantCount[PlantType::UmbrellaLeaf] == 1
+					&& plantCount[PlantType::Starfruit] == 1
+					&& plantCount[PlantType::Magnetshroom] == 1
+					&& plantCount[PlantType::Spickweed] == 2
+					) theme_index = 1;
+				else if (
+					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
+					&& plantCount[PlantType::Torchwood] == 1
+					&& plantCount[PlantType::SplitPea] == 3
+					&& plantCount[PlantType::Repeater] == 1
+					&& plantCount[PlantType::Kernelpult] == 3
+					&& plantCount[PlantType::Threepeater] == 1
+					&& plantCount[PlantType::SnowPea] == 3
+					&& plantCount[PlantType::UmbrellaLeaf] == 1
+					&& plantCount[PlantType::Magnetshroom] == 1
+					&& plantCount[PlantType::Spickweed] == 3
+					) theme_index = 2;
+				else if (
+					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
+					&& plantCount[PlantType::PotatoMine] == 4
+					&& plantCount[PlantType::Chomper] == 3
+					&& plantCount[PlantType::Squash] == 3
+					&& plantCount[PlantType::Fumeshroom] == 4
+					&& plantCount[PlantType::Spickweed] == 3
+					) theme_index = 3;
+			}
+
+			// 1.2 检测主题是否合法
+			if (theme_index > 9 || theme_index < 1) {
+				std::cout << "主题不合规, 请检查!" << std::endl;
+				return false; // 返回失败
+			}
+
+			// 2. 依次获取植物顺序
+			std::array<PlantType::PlantType, 25> plant_types =
+				GenerateLayoutCode::get_theme_plants(plantCount[PlantType::Sunflower], static_cast<Theme>(theme_index));
+
+			// 使用vector存储植物类型及其位置
+			std::vector<std::pair<PlantType::PlantType, std::vector<int>>> plants_position;
+
+			// 收集植物位置
+			for (auto plant : board->GetAllPlants()) {
+				if (plant->NotExist) continue;
+				bool found = false;
+				for (auto& plant_pair : plants_position) {
+					if (plant_pair.first == plant->Type) {
+						if ((plant->Type == PlantType::Wallnut || plant->Type == PlantType::Torchwood) && plant->Column < 2) {
+							std::cout << "坚果火炬不合规!" <<  plant->Column + 1 << std::endl;
+							return false; // 返回失败
+
+						}
+
+						plant_pair.second.push_back(plant->Row * 5 + plant->Column);
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					plants_position.push_back({ plant->Type, {plant->Row * 5 + plant->Column} });
+				}
+			}
+
+			// 3. 随机打乱每个类型的位置
+			std::random_device rd;
+			std::mt19937 rng(rd());
+			for (auto& pair : plants_position) {
+				std::shuffle(pair.second.begin(), pair.second.end(), rng);
+			}
+
+			// 4. 按主题顺序填充位置
+			int order = 0;
+
+			for (int i = 0; i < 25; ++i) {
+				PlantType::PlantType required_type = plant_types[i];
+				bool found = false;
+
+				// 在plants_position中查找该类型
+				for (auto& pair : plants_position) {
+					if (pair.first == required_type && !pair.second.empty()) {
+						// 取出最后一个位置（已随机打乱）
+						positions[order++] = pair.second.back();
+						pair.second.pop_back();
+						found = true;
+						break;
+					}
+				}
+
+				// 处理未找到的情况
+				if (!found) {
+					std::cerr << "错误：类型 " << PlantType::ToString(required_type)
+						<< " 在位置 " << i << " 没有可用植物" << std::endl;
+					positions[order++] = -1; // 用-1标记错误
+				}
+			}
+
+			// 5. 生成返回结果
+			result = std::to_string(theme_index) + std::to_string(plantCount[PlantType::Sunflower]) 
+				+ GenerateLayoutCode::encrypt_to_base25(positions);  
+
+			return true; // 返回成功
+		}
+
+		return false; // 如果不在ize模式下
+	}
+
+
+	bool decode_layout_string(const std::string& ls, int& theme_index, int& flower_num, std::array<int, 25> &positions) {
+		theme_index = static_cast<int>(ls[0] - '0');
+		flower_num = static_cast<int>(ls[1] - '0');
+
+		positions = GenerateLayoutCode::decrypt_from_base25(ls.substr(2));
+		return true;
 	}
 };
 
@@ -2707,8 +2910,24 @@ public:
 
 
 
-//int main() {
-//	LayoutControler layout_controler;
-//	layout_controler.main();
-//	return 0;
-//};
+int main() {
+	/*LayoutControler layout_controler;
+	layout_controler.main();*/
+
+	DWORD pid = ProcessOpener::Open();
+	if (!pid) return 1;
+	PVZ::InitPVZ(pid);
+
+	GameControl game_controler(pid);
+	
+	std::string ls;
+	if (!game_controler.export_layout_string(ls)) return 1;
+	std::cout << ls << std::endl;
+	
+	game_controler.set_layout_test(ls);
+
+	PVZ::QuitPVZ();
+	
+
+	return 0;
+};

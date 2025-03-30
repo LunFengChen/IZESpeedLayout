@@ -198,3 +198,36 @@ std::string GenerateLayoutCode::generate_LevelRush_code(int flag) {
     auto result = generate_arr_seed(theme);
     return std::to_string(theme_index) + "/" + std::to_string(result.second);
 }
+
+
+
+// 25进制加密函数
+ std::string GenerateLayoutCode::encrypt_to_base25(const std::array<int, 25>& positions) {
+     std::string encrypted = "";
+
+     for (int i = 0; i < 25; ++i) {
+         // 将数字0-24映射到字符Y-A
+         encrypted += char('Y' - positions[i]);
+     }
+
+     return encrypted;
+ }
+
+// 25进制解密函数
+ std::array<int, 25> GenerateLayoutCode::decrypt_from_base25(const std::string& encrypted) {
+     std::array<int, 25> positions = {};
+
+     if (encrypted.length() != 25) {
+         std::cerr << "错误：加密字符串长度应为25" << std::endl;
+         return positions;  // 返回一个空的数组
+     }
+
+     for (int i = 0; i < 25; ++i) {
+         // 将字符Y-A映射回数字0-24
+         positions[i] = 'Y' - encrypted[i];
+     }
+
+     return positions;
+ }
+
+
