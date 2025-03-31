@@ -2,6 +2,8 @@
 #include "pvzclass.h"
 
 
+constexpr size_t BASE = 66;
+
 // IZE主题类型
 enum class Theme : byte
 {
@@ -9,7 +11,7 @@ enum class Theme : byte
 	COMPOSITE, // 综合
 	CONTROL, // 控制
 	INSTANT_KILL, // 即死
-	PEAS, // 输出
+	PEAS, // 输出 
 	STAR_AND_SPIKE, // 倾斜
 	EXPLODING, // 爆炸
 	MAGNAT_AND_FUME, // 穿刺
@@ -102,24 +104,23 @@ constexpr std::array<pt::pt, 17> getThemePlantTypes(Theme theme)
 #undef pt
 
 
-
 class GenerateLayoutCode {
 private:
     static std::mt19937_64 gen;
-
-    std::unordered_map<PlantType::PlantType, std::string> type_iztStr_dict;
-    std::unordered_map<std::string, PlantType::PlantType> iztStr_type_dict;
-    std::array<int, 25> ssb6_flower_num_distribution;
+    //std::unordered_map<PlantType::PlantType, std::string> type_iztStr_dict;
+    //std::unordered_map<std::string, PlantType::PlantType> iztStr_type_dict;
 
     std::array<Theme, 25> generate_ssb6_theme_distribution();
     int generate_LevelRush_theme_index(int flag);
 
 public:
     GenerateLayoutCode();
-	std::pair<std::array<int, 25>, size_t> generate_arr_seed(Theme theme);
 
-	const std::array<int, 25>& getSsb6FlowerNumDistribution();
-    static int getRandomInRange(int min, int max);
+
+	static int get_ssb6_flowerNum_distribution(int flag);
+
+	std::pair<std::array<int, 25>, size_t> generate_arr_seed(Theme theme);
+    static int get_random_in_range(int min, int max);
     static int get_LevelRush_flower_num_distribution(int flag);
     static std::array<PlantType::PlantType, 25> get_theme_plants(int flower_num, Theme theme);
     static std::array<int, 25> get_shuffled_array(size_t seed);
@@ -127,7 +128,16 @@ public:
 
     std::string generate_ssb6_code();
     std::string generate_LevelRush_code(int flag);
-	
+
 	static std::string encrypt_to_base25(const std::array<int, 25>& positions);
 	static std::array<int, 25> decrypt_from_base25(const std::string& encrypted);
+	// 指定ascii码转换为[0, BASE)范围内的数字
+	static size_t char_to_number(char c);
+	// [0, BASE)范围内的数字转换为指定ascii码
+	static char number_to_char(size_t i);
+	// size_t范围内的整数指数幂
+	static size_t calc_power(size_t base, size_t power);
+	static std::string encode_seed(const size_t& seed);
+
+	static bool decode_layout_string(const std::string& ls, int& theme_index, int& flower_num, int& sun, std::array<int, 25>& orders);
 };

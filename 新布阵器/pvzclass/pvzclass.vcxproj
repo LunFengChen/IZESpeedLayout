@@ -189,7 +189,6 @@
     <ClCompile Include="Classes\TrackInstance.cpp" />
     <ClCompile Include="Classes\Widget.cpp" />
     <ClCompile Include="Classes\ZenGarden.cpp" />
-    <ClCompile Include="compress_str.cpp" />
     <ClCompile Include="Creators.cpp" />
     <ClCompile Include="disable_maid_cheat.cpp" />
     <ClCompile Include="Draw.cpp" />
@@ -239,7 +238,6 @@
     <ClCompile Include="Events\PlantSquishEvent.cpp" />
     <ClCompile Include="Events\PuzzlePhaseCompleteEvent.cpp" />
     <ClCompile Include="Events\ImitaterPlantEvent.cpp" />
-    <ClCompile Include="export_layoutcode.cpp" />
     <ClCompile Include="GenerateLayoutCode.cpp" />
     <ClCompile Include="pvzclass.cpp" />
     <ClCompile Include="LevelData.cpp" />
@@ -254,7 +252,6 @@
     <ClCompile Include="Events\VaseOpenEvent.cpp" />
     <ClCompile Include="Sexy.cpp" />
     <ClCompile Include="SHA256.cpp" />
-    <ClCompile Include="son_thread.cpp" />
     <ClCompile Include="TimeStruct.cpp" />
   </ItemGroup>
   <ItemGroup>

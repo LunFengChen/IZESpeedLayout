@@ -649,10 +649,8 @@ public:
 
 			for (auto& plant : board->GetAllPlants()) {
 				if (plant->Type == PlantType::Puffshroom) {
-					float x = 40.0 + 80.0 * plant->Column;
-					float y = 80.0 + 100.0 * plant->Row;
-					plant->ImageX = static_cast<int>(x)  + rngPuffshroomX(genPuffshroom);
-					plant->ImageY = static_cast<int>(y)  + rngPuffshroomX(genPuffshroom);
+					plant->ImageX = 40 + 80 * plant->Column + rngPuffshroomX(genPuffshroom);
+					plant->ImageY = 80 + 100 * plant->Row + rngPuffshroomX(genPuffshroom);
 					//std::cout << "修改了小喷偏移" << plant->ImageX << "/" << plant->ImageY;
 				};
 			};
@@ -662,31 +660,35 @@ public:
 
 		};
 	}
+	// 布阵，并且截图
+	void set_layout_test(const std::string& ls, const int theme_index, const int flower_num, const int sun, const std::array<int, 25>orders) {
+		if (is_in_ize()) {
+			// 获得种植顺序
+			// 获得种植位置
+			auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index)); // 获取不同主题的植物生成顺序
+			if (sun != 0) {
+				PVZ::GetBoard()->Sun = sun;
+			}
+			// 汇编一次种
+			spawn_all_plants(plantTypes, orders);
 
-	void set_layout_test(const std::string& ls) {
-		int theme_index = 0;
-		int flower_num = 0;
-		std::array<int, 25> order = {};
-		decode_layout_string(ls, theme_index, flower_num, order);
-		auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index)); // 获取不同主题的植物生成顺序
+			// 设置小喷偏移
+			std::mt19937 genPuffshroom(theme_index * 66 + flower_num * 88);
+			std::uniform_int_distribution<int> rngPuffshroomX(-5, 4);
+			std::uniform_int_distribution<int> rngPuffshroomY(-3, 2);
 
-		// 汇编一次种
-		spawn_all_plants(plantTypes, order);
-
-		// 设置小喷偏移
-		std::mt19937 genPuffshroom(theme_index*66+flower_num*88);
-		std::uniform_int_distribution<int> rngPuffshroomX(-5, 4);
-		std::uniform_int_distribution<int> rngPuffshroomY(-3, 2);
-
-		for (auto& plant : board->GetAllPlants()) {
-			if (plant->Type == PlantType::Puffshroom) {
-				float x = 40.0 + 80.0 * plant->Column;
-				float y = 80.0 + 100.0 * plant->Row;
-				plant->ImageX = static_cast<int>(x) + rngPuffshroomX(genPuffshroom);
-				plant->ImageY = static_cast<int>(y) + rngPuffshroomX(genPuffshroom);
-				//std::cout << "修改了小喷偏移" << plant->ImageX << "/" << plant->ImageY;
+			for (auto& plant : board->GetAllPlants()) {
+				if (plant->Type == PlantType::Puffshroom) {
+					plant->ImageX = 40 + 80 * plant->Column + rngPuffshroomX(genPuffshroom);
+					plant->ImageY = 80 + 100 * plant->Row + rngPuffshroomX(genPuffshroom);
+				};
 			};
-		};
+
+			// TOdo: 截图
+
+
+		}
+
 
 
 	}
@@ -1169,9 +1171,14 @@ public:
 				return false; // 返回失败
 			}
 
+
+			// 胆小特殊处理
+			int flower_num = theme_index == 8 ? plantCount[PlantType::Sunflower] - 5 : plantCount[PlantType::Sunflower]; 
+			
+
 			// 2. 依次获取植物顺序
 			std::array<PlantType::PlantType, 25> plant_types =
-				GenerateLayoutCode::get_theme_plants(plantCount[PlantType::Sunflower], static_cast<Theme>(theme_index));
+				GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index));
 
 			// 使用vector存储植物类型及其位置
 			std::vector<std::pair<PlantType::PlantType, std::vector<int>>> plants_position;
@@ -1183,9 +1190,8 @@ public:
 				for (auto& plant_pair : plants_position) {
 					if (plant_pair.first == plant->Type) {
 						if ((plant->Type == PlantType::Wallnut || plant->Type == PlantType::Torchwood) && plant->Column < 2) {
-							std::cout << "坚果火炬不合规!" <<  plant->Column + 1 << std::endl;
+							std::cout << "坚果火炬不合规!" << plant->Column + 1 << std::endl;
 							return false; // 返回失败
-
 						}
 
 						plant_pair.second.push_back(plant->Row * 5 + plant->Column);
@@ -1198,13 +1204,33 @@ public:
 				}
 			}
 
+			
+
+
 			// 3. 随机打乱每个类型的位置
 			std::random_device rd;
 			std::mt19937 rng(rd());
 			for (auto& pair : plants_position) {
 				std::shuffle(pair.second.begin(), pair.second.end(), rng);
 			}
+			// 如果是胆小，则需要从plant_position[0].second中取出5个，并且删除原有的，最后塞到positions后面5个
+			 // 3. 胆小模式特殊处理：从plant_position[0].second中取出5个植物并将其删除，最后添加到positions后面5个
+			if (theme_index == 8) {
+				std::vector<int> shy_plants = {};
 
+				// 获取前5个植物的位置
+				shy_plants = { plants_position[0].second.begin(), plants_position[0].second.begin() + 5 };
+				// 删除这5个植物的位置
+				plants_position[0].second.erase(plants_position[0].second.begin(), plants_position[0].second.begin() + 5);
+				
+				// 将这5个植物的位置添加到positions的后5个位置
+				for (int i = 0; i < 5; ++i) {
+					positions[20 + i] = shy_plants[i];
+				}
+			}
+
+
+			
 			// 4. 按主题顺序填充位置
 			int order = 0;
 
@@ -1224,36 +1250,33 @@ public:
 				}
 
 				// 处理未找到的情况
-				if (!found) {
+				if (!found && theme_index !=8 ) {
 					std::cerr << "错误：类型 " << PlantType::ToString(required_type)
 						<< " 在位置 " << i << " 没有可用植物" << std::endl;
 					positions[order++] = -1; // 用-1标记错误
 				}
 			}
 
-			// 5. 生成返回结果
-			result = std::to_string(theme_index) + std::to_string(plantCount[PlantType::Sunflower]) 
-				+ GenerateLayoutCode::encrypt_to_base25(positions);  
+			// 5. 
+			std::string a = std::to_string(theme_index);
+			std::string b = std::to_string(flower_num);
+			std::string c = GenerateLayoutCode::encrypt_to_base25(positions);
+
+			result = std::to_string(theme_index) 
+				+ std::to_string(flower_num)
+				+ "00"
+				+ GenerateLayoutCode::encrypt_to_base25(positions);
 
 			return true; // 返回成功
 		}
 
 		return false; // 如果不在ize模式下
 	}
-
-
-	bool decode_layout_string(const std::string& ls, int& theme_index, int& flower_num, std::array<int, 25> &positions) {
-		theme_index = static_cast<int>(ls[0] - '0');
-		flower_num = static_cast<int>(ls[1] - '0');
-
-		positions = GenerateLayoutCode::decrypt_from_base25(ls.substr(2));
-		return true;
-	}
 };
 
 
 // 布阵器控制
-class LayoutControler {
+class ConsoleControler {
 private:
 	std::atomic<bool> stop_flag;       // 全局停止标志
 	std::thread worker_thread;         // 线程对象
@@ -1262,37 +1285,28 @@ private:
 	std::queue<int> result_queue; // 结果队列
 
 
-public:
-	LayoutControler() {
-		//布阵器实现
-		setlocale(LC_ALL, ".936"); // 设置编码格式
-		SetConsoleTitle(WINDOW_NAME);
-	}
-
-
-
-	void register_LevelRush_hotkey(){
-		RegisterHotKey(NULL, 1, MOD_SHIFT, 'D'); // ctrl+d打开加速
-		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // 打开自动收集
+	// 启用冲关快捷键：加速 自收 强制退出 跳关 切换女仆
+	void register_RushMode_hotkey() {
+		RegisterHotKey(NULL, 1, MOD_SHIFT, 'D'); // 切换加速
+		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // 切换自动收集
 		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // 强制退出
 		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // 跳关
-		RegisterHotKey(NULL, 5, MOD_SHIFT, 'M'); // 开关女仆
+		RegisterHotKey(NULL, 5, MOD_SHIFT, 'M'); // 切换女仆
 	}
-
-	void unregister_LevelRush_hotkey() {
+	// 销毁冲关快捷键
+	void unregister_RushMode_hotkey() {
 		UnregisterHotKey(NULL, 1);
 		UnregisterHotKey(NULL, 2);
 		UnregisterHotKey(NULL, 3);
 		UnregisterHotKey(NULL, 4);
 		UnregisterHotKey(NULL, 5);
 	}
-
-	void register_SpeedRun_hotkey() {
+	// 比赛模式：强制退出，重开
+	void register_RaceMode_hotkey() {
 		RegisterHotKey(NULL, 1, MOD_SHIFT, 'Q'); // 强制退出
 		RegisterHotKey(NULL, 2, MOD_SHIFT, 'R'); // 重开
 	}
-
-	void unregister_SpeedRun_hotkey() {
+	void unregister_RaceMode_hotkey() {
 		UnregisterHotKey(NULL, 1);
 		UnregisterHotKey(NULL, 2);
 	}
@@ -1312,10 +1326,7 @@ public:
 		UnregisterHotKey(NULL, 3);
 		UnregisterHotKey(NULL, 4);
 		UnregisterHotKey(NULL, 5);
-
 	}
-
-
 
 	// 禁掉快速编辑模式，但是坏消息是没法复制文本内容
 	void disable_quick_edit_mode() {
@@ -1337,6 +1348,7 @@ public:
 		SetConsoleMode(hStdin, mode);
 	}
 
+	// 获取控制台当前宽度
 	int get_terminal_width() {
 		int width = 80; // 默认宽度
 		CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -1346,6 +1358,8 @@ public:
 		return width;
 	}
 
+
+	// 把字符串丢进剪切板
 	void copyToClipBoard(const std::string& str)
 	{
 		auto hGlobalMemorry = GlobalAlloc(GPTR, static_cast<DWORD>(str.length()) + 1);
@@ -1362,6 +1376,7 @@ public:
 	}
 
 
+	// 记录游戏结束日志
 	void log_game_end(Logger& logger, std::vector<LevelData> save_data) {
 		logger.log("所有关卡数据如下:", Logger::DEBUG);
 		int count = 0;
@@ -1389,7 +1404,7 @@ public:
 		logger.log("黄油率为: " + std::to_string(butter_count / (butter_count + kernel_count)), Logger::DEBUG);
 	}
 
-	
+
 	// 锁主题锁花数
 	void lock_theme_flower_num(const int theme_index, const int flower_num) {
 
@@ -1420,9 +1435,13 @@ public:
 		std::unordered_set<int> processed_zombie_ids;
 
 		// 标志位
-		int current_flag = -1; std::string ls; 
+		int current_flag = -1; std::string ls;
 		bool is_speed_up = false; bool is_auto = false; bool has_started = false;
+		auto current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
+		std::array<int, 25> orders;
+
 		TimeStruct start_time = TimeStruct::getNow(); LevelData leveldata;
+
 
 		// 1. 删掉植物
 		game_controler.update_brains();
@@ -1461,12 +1480,12 @@ public:
 					else if (msg.wParam == 3) { // shift+q 强制结束
 						game_controler.auto_collect(false);
 						game_controler.reset_speed();
-						std::cout<< "结束复盘模式!" << std::endl;
+						std::cout << "结束复盘模式!" << std::endl;
 						return;
 					}
 					else if (msg.wParam == 4) { // shift+j 跳关
 						game_controler.board->Win();
-						std::cout<<"跳过第"<<game_controler.board->GetMiscellaneous()->Round + 1 << "关!" << std::endl;
+						std::cout << "跳过第" << game_controler.board->GetMiscellaneous()->Round + 1 << "关!" << std::endl;
 					}
 					else if (msg.wParam == 5) { // shift+r
 						game_controler.clear_not_colleted_sun();
@@ -1487,12 +1506,52 @@ public:
 
 						// 重新布阵一下
 						leveldata.setlayout_time = TimeStruct::getNow();
-						game_controler.set_layout(ls, flower_num);
+						game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
+
 					}
 				}
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
+
+			// 检测重开
+			do {
+				if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) == 0
+					|| current_adress == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)
+					|| game_controler.pvz->GameState != PVZGameState::Playing) continue;
+
+				else { // 重开了
+					game_controler.board = PVZ::GetBoard(); // 重新拿一下board 
+					Sleep(5);
+
+					current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
+					current_flag = PVZ::GetBoard()->GetMiscellaneous()->Round;
+
+					game_controler.clear_not_colleted_sun();
+					game_controler.update_brains();
+					game_controler.clear_all_zombies();
+					game_controler.clear_all_bullets();
+					game_controler.clear_all_plants();
+					// 恢复阳光
+					game_controler.board->Sun = 2000;
+					leveldata.released_zombies_count = 0;
+					leveldata.zombie_cost = 0;
+					has_started = false;
+					leveldata.brain_eaten_times.clear(); //清空吃脑记录
+
+					auto result = code_generator.generate_arr_seed(static_cast<Theme>(theme_index));
+					auto seed = result.second;
+					orders = result.first;
+					ls = std::to_string(theme_index)
+						+ std::to_string(flower_num)
+						+ "00"
+						+ code_generator.encode_seed(result.second);
+					all_layout_code.clear(); all_layout_code.push_back(ls);
+					game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
+				}
+			} while (0);
+
+
 
 			// 2. 跨关
 			if (game_controler.board->GetBaseAddress() &&
@@ -1503,9 +1562,9 @@ public:
 				{
 					// 0. 先打印上一关数据
 					std::cout << (TimeStruct::getNow() - start_time).enPrint()
-					<< " 已经通过" << std::to_string(game_controler.board->GetMiscellaneous()->Round)
-					<< "关, 花费" << std::to_string(leveldata.zombie_cost)
-					<< std::endl;
+						<< " 已经通过" << std::to_string(game_controler.board->GetMiscellaneous()->Round)
+						<< "关, 花费" << std::to_string(leveldata.zombie_cost)
+						<< std::endl;
 
 					std::cout << "反应时间:" << (leveldata.first_zombie_release_time - leveldata.setlayout_time).enPrint()
 						<< " 过关耗时: " << (leveldata.last_brain_eaten_time - start_time).enPrint()
@@ -1530,16 +1589,21 @@ public:
 					has_started = false;
 				}
 
-
-
 				// 2.1 先布阵
 				game_controler.board->Sun = 2000;
 				current_flag = game_controler.board->GetMiscellaneous()->Round; //更新关数并且进行布阵
 
 				auto result = code_generator.generate_arr_seed(static_cast<Theme>(theme_index));
 				auto seed = result.second;
-				ls = std::to_string(theme_index) + "/" + std::to_string(result.second);
-				game_controler.set_layout(ls, flower_num); all_layout_code.push_back(ls);
+				orders = result.first;
+
+				ls = std::to_string(theme_index)
+					+ std::to_string(flower_num)
+					+ "00"
+					+ code_generator.encode_seed(result.second);
+				all_layout_code.push_back(ls);
+				game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
+
 
 				leveldata.setlayout_time = TimeStruct::getNow();
 				std::cout << std::string(get_terminal_width(), '-') << std::endl;
@@ -1583,7 +1647,7 @@ public:
 				// 如果不是ize中的僵尸，而且现在又不是开局的话, 记录下来
 				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
 					// 重开的话需要先清除选卡界面的僵尸
-					std::cout<<"检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type) << std::endl;
+					std::cout << "检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type) << std::endl;
 					continue;
 				}
 				// 如果是ize中的僵尸，但又不是伴舞僵尸，日志记录并且计算花费【每一关结束赋值】
@@ -1591,7 +1655,7 @@ public:
 
 				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
 				leveldata.zombie_cost += zombie_info.first;
-				
+
 				// 记录反应时间
 				if (leveldata.released_zombies_count == 1) {
 					leveldata.first_zombie_release_time = TimeStruct::getNow();
@@ -1619,7 +1683,7 @@ public:
 			std::cout << "未找到pvz!" << std::endl;
 			return; // 结束
 		}
-		std::cout<<"已找到pvz!"<<std::endl;
+		std::cout << "已找到pvz!" << std::endl;
 		EnableBackgroundRunning(true); // 启用pvz后台运行
 
 		// 2. 实例化游戏控制类, 实例化冲关布阵码生成器
@@ -1677,12 +1741,12 @@ public:
 		game_controler.reset_speed(); // 恢复原速
 
 		// 记录关卡和游戏开始时间
-		int current_flag = -1; 
+		int current_flag = -1;
 		bool has_started = false;
 		TimeStruct start_time = TimeStruct::getNow();
 		auto current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 		// 记录胆小数量
-		int scardy_theme_count = 0; 
+		int scardy_theme_count = 0;
 
 
 		// 记录已经监测并处理的僵尸，子弹
@@ -1700,7 +1764,7 @@ public:
 
 
 		// 7. 开始游戏，保存第一关数据，并对第一关进行布阵
-		LevelData leveldata; 
+		LevelData leveldata;
 
 		std::string ls;
 		int flower_num;
@@ -1743,7 +1807,7 @@ public:
 					else if (msg.wParam == 2) { // shift+A 切换自动收集
 						is_auto = !is_auto;
 						game_controler.auto_collect(is_auto);
-						logger_data.log(std::string(is_auto ? "打开" : "关闭") +"自动收集", Logger::DEBUG);
+						logger_data.log(std::string(is_auto ? "打开" : "关闭") + "自动收集", Logger::DEBUG);
 					}
 					else if (msg.wParam == 3) { // shift+q 强制结束
 						game_controler.auto_collect(false);
@@ -1779,7 +1843,7 @@ public:
 					}
 					else if (msg.wParam == 5) {
 						is_ban_maidCheat = !is_ban_maidCheat;
-						if (is_ban_maidCheat){ 
+						if (is_ban_maidCheat) {
 							game_controler.disable_maidCheat();
 							logger_data.log("切换女仆: 禁用!", Logger::INFO);
 						}
@@ -1788,7 +1852,7 @@ public:
 							game_controler.enable_maidCheat();
 							logger_data.log("切换女仆: 不禁用!", Logger::INFO);
 						}
-						
+
 					}
 				}
 				TranslateMessage(&msg);
@@ -1796,7 +1860,7 @@ public:
 			}
 
 			// 1. 监测崩溃
-			if(!ProcessOpener::Open()){
+			if (!ProcessOpener::Open()) {
 				logger_data.log("游戏关闭!", Logger::INFO);
 
 				break;
@@ -1807,7 +1871,7 @@ public:
 				if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) == 0
 					|| current_adress == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)
 					|| game_controler.pvz->GameState != PVZGameState::Playing) continue;
-				
+
 				else { // 重开了
 					game_controler.board = PVZ::GetBoard(); // 重新拿一下board 
 
@@ -1832,9 +1896,17 @@ public:
 					leveldata.butter_count = 0;
 					leveldata.kernel_count = 0;
 
-					ls = code_generator.generate_LevelRush_code(current_flag);
-					flower_num = code_generator.get_LevelRush_flower_num_distribution(current_flag);
-					game_controler.set_layout(ls, flower_num); all_layout_code.push_back(ls);
+					ls = code_generator.generate_LevelRush_code(current_flag); 
+					all_layout_code.clear(); all_layout_code.push_back(ls);
+					int theme_index = 0; int flower_num = 0; int sun = 0;
+					std::array<int, 25> orders = {};
+					// 检测布阵码是否合法
+					if (!GenerateLayoutCode::decode_layout_string(ls, theme_index, flower_num, sun, orders)) {
+						std::cout << "布阵码不合法" << std::endl;
+						return;
+					}
+					game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
+					
 					logger_cheat.log("现在对第" + std::to_string(current_flag) + "关重新进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
 					has_started = false;
 				}
@@ -1849,9 +1921,17 @@ public:
 				current_flag = game_controler.board->GetMiscellaneous()->Round; //更新关数并且进行布阵
 
 
-				ls = code_generator.generate_LevelRush_code(current_flag);
-				flower_num = code_generator.get_LevelRush_flower_num_distribution(current_flag);
-				game_controler.set_layout(ls, flower_num); all_layout_code.push_back(ls);
+				ls = code_generator.generate_LevelRush_code(current_flag); all_layout_code.push_back(ls);
+				int theme_index = 0; int flower_num = 0; int sun = 0;
+				std::array<int, 25> orders = {};
+				// 检测布阵码是否合法
+				if (!GenerateLayoutCode::decode_layout_string(ls, theme_index, flower_num, sun, orders)) {
+					std::cout << "布阵码不合法" << std::endl;
+					return;
+				}
+				game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
+
+
 				logger_cheat.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
 
 				if (!has_started) continue;
@@ -1875,15 +1955,15 @@ public:
 				// 2.3 记录胆小
 				if (ls[0] == '8')
 				{
-					logger_data.log("遇到了一次胆小, 目前胆小次数为: "+std::to_string(scardy_theme_count), Logger::DEBUG);
+					logger_data.log("遇到了一次胆小, 目前胆小次数为: " + std::to_string(scardy_theme_count), Logger::DEBUG);
 					scardy_theme_count += 1;
 				}
 
 				// 2.3 更新关数，初始化下一关记录的数据
-				if (leveldata.eaten_brain_count != 5) logger_cheat.log("检测到跳关!", Logger::INFO);
-				if (game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
+				if (is_cheat_check && leveldata.eaten_brain_count != 5) logger_cheat.log("检测到跳关!", Logger::INFO);
+				if (is_cheat_check && game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
 					logger_cheat.log("检测到修改阳光!", Logger::INFO);
-					//std::cout << game_controler.board->Sun << " ? " << leveldata.initial_sun << " " << leveldata.collected_sun << " " << leveldata.zombie_cost << std::endl;
+					std::cout << game_controler.board->Sun << " ? " << leveldata.initial_sun << " " << leveldata.collected_sun << " " << leveldata.zombie_cost << std::endl;
 				}
 				leveldata.initial_sun = game_controler.board->Sun;
 				leveldata.released_zombies_count = 0;
@@ -1922,7 +2002,7 @@ public:
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.reaction_time = leveldata.setlayout_time - leveldata.first_zombie_release_time;
 				leveldata.last_brain_eaten_time = start_time;
-					
+
 				logger_data.log("开始游戏!  现实时间为: " + start_time.getCurrentTime(), Logger::INFO);
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 			}
@@ -1974,7 +2054,7 @@ public:
 				if (leveldata.released_zombies_count == 1) {
 					leveldata.first_zombie_release_time = TimeStruct::getNow();
 					leveldata.reaction_time = leveldata.first_zombie_release_time - leveldata.setlayout_time;
-					logger_cheat.log("第" + std::to_string(current_flag + 1) + "关，第一个僵尸释放时间: " + (leveldata.first_zombie_release_time-start_time).enPrint(), Logger::DEBUG);
+					logger_cheat.log("第" + std::to_string(current_flag + 1) + "关，第一个僵尸释放时间: " + (leveldata.first_zombie_release_time - start_time).enPrint(), Logger::DEBUG);
 					logger_cheat.log("第" + std::to_string(current_flag + 1) + "关，反应时间: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
 				}
 			}
@@ -2004,8 +2084,8 @@ public:
 			}
 
 			// 5. 检测收集的阳光
-			for (auto& coin : game_controler.board->GetAllCoins()) {
-
+			if (is_cheat_check){
+				for (auto& coin : game_controler.board->GetAllCoins()) {
 				if (processed_coin_ids.count(coin->Id)) continue; // 已处理则跳过
 				if (coin->Type == CoinType::NormalSun && coin->Collected && !coin->NotExist) {
 					logger_cheat.log("点了阳光", Logger::DEBUG);
@@ -2017,7 +2097,7 @@ public:
 					continue;
 				}
 			}
-
+			}
 
 			// 5. 监测脑子变化
 			if (leveldata.eaten_brain_count != game_controler.countEatenBrain() && leveldata.eaten_brain_count != 5) {
@@ -2073,8 +2153,8 @@ public:
 			}
 		}
 
-			
-			
+
+
 
 	}
 
@@ -2088,7 +2168,24 @@ public:
 		if (vec.size() != 25) {
 			std::cout << "输入不合法" << std::endl;
 			return;
-		}
+		};
+
+		for (auto it : vec) {
+			int theme_index = static_cast<int>(it[0] - '0');
+			int flower_num = static_cast<int>(it[1] - '0');
+			int sun = std::stoi(it.substr(2, 2)) * 25;
+			std::string order_str = it.substr(4);
+			if (theme_index > 8 || theme_index < 1) {
+				std::cout << "输入不合法" << std::endl;
+			}
+			if (flower_num < 1 || flower_num > 8) {
+				std::cout << "输入不合法" << std::endl;
+			}
+			if (sun != 0) { // 常规模式不可设置阳光
+				std::cout << "输入不合法" << std::endl;
+			}
+		};
+
 
 		// 1. 找到 pvz
 		DWORD pid = ProcessOpener::Open();
@@ -2096,14 +2193,14 @@ public:
 			std::cout << "未找到pvz!" << std::endl;
 			return; // 结束
 		}
-		std::cout<<"已找到pvz!"<<std::endl;
+		std::cout << "已找到pvz!" << std::endl;
 
 		EnableBackgroundRunning(true); // 启用pvz后台运行
 
 		// 2. 实例化游戏控制器,实例化布阵码生成器【为了拿花数】
 		GameControl game_controler(pid);
 		GenerateLayoutCode code_generator;
-			
+
 		// 3. 一直检测，直到进入ize
 		while (!game_controler.is_in_ize()) {
 			Sleep(1);
@@ -2123,15 +2220,14 @@ public:
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
 			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
-			game_cheat_checker.check_envirnoment(); 
+			game_cheat_checker.check_envirnoment();
 		}
 		else { // 还原回标题
 			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
 		}
 
 
-
-		logger_cheat.log(
+		if (is_cheat_check) logger_cheat.log(
 			std::string("玩家已经进入ize, ")
 			+ "当前日期与时间为: " + TimeStruct::getCurrentDateTime() + "\n"
 			+ "本次布阵码为: " + ls + "\n"
@@ -2145,7 +2241,7 @@ public:
 		// 5. 初始化游戏信息
 		int current_flag = -1;
 		bool has_started = false;
-		TimeStruct start_time = TimeStruct::getNow(); 
+		TimeStruct start_time = TimeStruct::getNow();
 		auto current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 		// 记录已经监测并处理的僵尸
 		std::unordered_set<int> processed_zombie_ids;
@@ -2157,7 +2253,7 @@ public:
 
 
 		// 6. 记录存档
-		std::vector<LevelData> save_data; 
+		std::vector<LevelData> save_data;
 		// 6.1. 初始化每关要记载的数据
 		LevelData leveldata;
 
@@ -2185,15 +2281,12 @@ public:
 		logger_data.log(oss.str(), Logger::INFO);
 
 
-		// 开始布阵前工作
-		std::string layout_code;
-		int flower_num;
 
 		// 删掉第一关的植物
 		game_controler.clear_all_plants();
 		// 禁女仆, 禁掉游戏生成植物，禁掉植物种植音效
 		game_controler.disable_maidCheat();
-		game_controler.setInjectors(); 
+		game_controler.setInjectors();
 
 
 		// 7. 初始化第一关数据
@@ -2222,7 +2315,7 @@ public:
 						std::ostringstream oss;
 						oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 						std::string score_str = oss.str();
-						
+
 						logger_cheat.log("玩家主动提前结束游戏", Logger::DEBUG);
 
 
@@ -2241,7 +2334,7 @@ public:
 						game_controler.clear_all_bullets();
 						game_controler.clear_all_plants();
 						// 恢复阳光
-						game_controler.board->Sun = current_flag == 0? 150: leveldata.initial_sun;
+						game_controler.board->Sun = current_flag == 0 ? 150 : leveldata.initial_sun;
 						leveldata.released_zombies_count = 0;
 						leveldata.zombie_cost = 0;
 						if (current_flag == 0) {
@@ -2260,9 +2353,16 @@ public:
 						Creator::CreateCaption(restart_str.c_str(), restart_str.size(), CaptionStyle::Lowermiddle); // 游戏白字，处于靠下居中位置
 
 						// 重新布阵一下
-						layout_code = vec[current_flag];
-						flower_num = code_generator.getSsb6FlowerNumDistribution()[current_flag];
-						game_controler.set_layout(layout_code, flower_num);
+						current_flag = game_controler.board->GetMiscellaneous()->Round;
+						std::string layout_code = vec[current_flag];
+						int theme_index = 0; int flower_num = 0; int sun = 0;
+						std::array<int, 25> orders = {};
+						// 检测布阵码是否合法
+						if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
+							std::cout << "布阵码不合法" << std::endl;
+							return;
+						}
+						game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
 					}
 				}
 				TranslateMessage(&msg);
@@ -2280,7 +2380,6 @@ public:
 				game_controler.board = PVZ::GetBoard(); // 重新拿一下board 
 
 				current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
-				Sleep(5);
 				logger_cheat.log("使用了游戏内的restart", Logger::DEBUG);
 				current_flag = game_controler.board->GetMiscellaneous()->Round;
 
@@ -2299,13 +2398,20 @@ public:
 				leveldata.butter_count = 0;
 				leveldata.kernel_count = 0;
 
-				layout_code = vec[current_flag];
-				flower_num = code_generator.getSsb6FlowerNumDistribution()[current_flag];
-				game_controler.set_layout(layout_code, flower_num);
+				current_flag = game_controler.board->GetMiscellaneous()->Round;
+				std::string layout_code = vec[current_flag];
+				int theme_index = 0; int flower_num = 0; int sun = 0;
+				std::array<int, 25> orders = {};
+				// 检测布阵码是否合法
+				if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
+					std::cout << "布阵码不合法" << std::endl;
+					return;
+				}
+				game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
 				logger_cheat.log("现在对第" + std::to_string(current_flag) + "关重新进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + layout_code, Logger::DEBUG);
 
 			} while (0);
-			
+
 			// 2. 跨关更新
 			if (game_controler.board->GetBaseAddress() &&
 				game_controler.board->GetMiscellaneous()->Round != current_flag &&
@@ -2325,9 +2431,15 @@ public:
 
 				// 2.0 先布阵
 				current_flag = game_controler.board->GetMiscellaneous()->Round;
-				layout_code = vec[current_flag];
-				flower_num = code_generator.getSsb6FlowerNumDistribution()[current_flag];
-				game_controler.set_layout(layout_code, flower_num);
+				std::string layout_code = vec[current_flag];
+				int theme_index = 0; int flower_num = 0; int sun = 0;
+				std::array<int, 25> orders = {};
+				// 检测布阵码是否合法
+				if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
+					std::cout << "布阵码不合法" << std::endl;
+					return;
+				}
+				game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
 				logger_cheat.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + layout_code, Logger::DEBUG);
 
 
@@ -2351,8 +2463,8 @@ public:
 
 				// 2.1 初始化数据
 				// 检测跳关或者改了阳光
-				if (leveldata.eaten_brain_count != 5) logger_cheat.log("检测到跳关!", Logger::INFO);
-				if (game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
+				if (is_cheat_check && leveldata.eaten_brain_count != 5) logger_cheat.log("检测到跳关!", Logger::INFO);
+				if (is_cheat_check && game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
 					logger_cheat.log("检测到修改阳光!", Logger::INFO);
 					//std::cout << game_controler.board->Sun << " ? " << leveldata.initial_sun << " " << leveldata.collected_sun << " " << leveldata.zombie_cost << std::endl;
 				}
@@ -2370,7 +2482,7 @@ public:
 
 				leveldata.eaten_brain_count = 0;
 
-				
+
 
 			}
 
@@ -2397,7 +2509,7 @@ public:
 			// 4. 如果开启了反作弊检测检测作弊与鼠标变化
 			if (is_cheat_check) {
 				if ((TimeStruct::getNow() - check_time).second > game_cheat_checker.check_interval) {
-					if (game_cheat_checker.check_all()&& game_cheat_checker.check_auto_collected()) {
+					if (game_cheat_checker.check_all() && game_cheat_checker.check_auto_collected()) {
 						logger_cheat.log("检测到作弊!", Logger::INFO);
 					}
 					check_time = TimeStruct::getNow();
@@ -2425,7 +2537,7 @@ public:
 				// 如果不是ize中的僵尸，而且现在又不是开局的话, 记录下来
 				if (!game_controler.ZombieSunCost.count(zombie->Type) && current_flag != 0) {
 					// 重开的话需要先清除选卡界面的僵尸
-					logger_cheat.log("检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type), Logger::INFO);					
+					logger_cheat.log("检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type), Logger::INFO);
 					continue;
 				}
 				// 如果是ize中的僵尸，但又不是伴舞僵尸，日志记录并且计算花费【每一关结束赋值】
@@ -2447,7 +2559,7 @@ public:
 
 			// 5. 检测玉米粒和黄油
 			for (auto& projectile : game_controler.board->GetAllProjectile()) {
-			
+
 				if (projectile->NotExist) {
 					processed_projectile_ids.erase(projectile->Id);
 					continue;
@@ -2461,11 +2573,11 @@ public:
 				// 
 				if (projectile->Type == ProjectileType::Kernel) {
 					leveldata.kernel_count += 1;
-					logger_cheat.log("第"+std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个玉米粒", Logger::DEBUG);
+					logger_cheat.log("第" + std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个玉米粒", Logger::DEBUG);
 				}
 				else if (projectile->Type == ProjectileType::Butter) {
 					leveldata.butter_count += 1;
-					logger_cheat.log("第"+std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个黄油", Logger::DEBUG);
+					logger_cheat.log("第" + std::to_string(projectile->Row + 1) + "行" + std::to_string(projectile->ImageX) + "坐标处出现了一个黄油", Logger::DEBUG);
 				}
 			}
 
@@ -2478,7 +2590,7 @@ public:
 					leveldata.collected_sun += 25;
 					processed_coin_ids.insert(coin->Id); // 记录已处理
 				}
-				if(coin->NotExist) {
+				if (coin->NotExist) {
 					processed_coin_ids.erase(coin->Id);
 					continue;
 				}
@@ -2550,322 +2662,343 @@ public:
 		}
 
 
-		
+
 	}
+
+
+public:
+	ConsoleControler() {
+		//布阵器实现
+		setlocale(LC_ALL, ".936"); // 设置编码格式
+		SetConsoleTitle(WINDOW_NAME);
+	}
+	
 
 	// 布阵器循环
 	void main() {
 		while (true) {
+			// 打印功能卡
 			std::cout << std::string(get_terminal_width(), '*') << std::endl;
 			std::cout << INIT_WORDS << std::endl;
 			std::cout << std::string(get_terminal_width(), '*') << std::endl;
-
+			// 读指令
 			std::string s;
 			std::cin >> s;
-			if (!s.compare("0")) {// 使用说明
-				std::cout << USE_GUIDES << std::endl;
-			}
-			else if (!s.compare("1")) { // 30min限时玩法
-				std::cout << "请先重开游戏, 并输入布阵码: " << std::endl;
-				std::string ls;
-				std::cin >> ls;
+			// 指令实现
+			{ 
+				// 使用说明
+				if (!s.compare("0")) {// 使用说明
+					std::cout << USE_GUIDES << std::endl;
+				}
+				// 30min布阵
+				else if (!s.compare("1")) { // 30min限时玩法
+					std::cout << "请先重开游戏, 并输入布阵码: " << std::endl;
+					std::string ls;
+					std::cin >> ls;
 
-				std::cout << "是否开启反作弊(1为开启, 0为关闭): " << std::endl;
-				std::string cmd1;
-				std::cin >> cmd1;
-				bool is_cheat_check = !cmd1.compare("1") ? true : false;
+					std::cout << "是否开启反作弊(1为开启, 0为关闭): " << std::endl;
+					std::string cmd1;
+					std::cin >> cmd1;
+					bool is_cheat_check = !cmd1.compare("1") ? true : false;
 
-				// 创建并启动新线程（立即执行）
-				disable_quick_edit_mode();
-				std::thread worker([this, ls, is_cheat_check] {
-					try {
-						register_SpeedRun_hotkey();
+					// 创建并启动新线程（立即执行）
+					disable_quick_edit_mode();
+					std::thread worker([this, ls, is_cheat_check] {
+						register_RaceMode_hotkey();
 						SpeedRun30min(ls, is_cheat_check);
-						unregister_SpeedRun_hotkey();
+						register_RaceMode_hotkey();
+						});
 
-					}
-					catch (...) {
-						// 异常处理（可选）
-						std::cerr << "任务执行异常!" << std::endl;
-					}
-					});
+					// 主线程在此等待子线程完成
+					worker.join();  // 阻塞直到线程结束
+					enable_quick_edit_mode();
+				}
+				// 生成25关随机阵型代码
+				else if (!s.compare("2")) { 
+					GenerateLayoutCode code_generator;
+					auto ls = code_generator.generate_ssb6_code();
+					std::cout << ls << std::endl;
+					copyToClipBoard(ls);
+					std::cout << "已复制到剪贴板,可直接粘贴使用" << std::endl;
+					continue;
+				}
+				// 残局玩法
+				else if (!s.compare("3")) { 
 
-				// 主线程在此等待子线程完成
-				worker.join();  // 阻塞直到线程结束
-				enable_quick_edit_mode();
-			}
-			else if (!s.compare("2")) { // 2：生成25关随机阵型代码
-				GenerateLayoutCode code_generator;
-				auto ls = code_generator.generate_ssb6_code();
-				std::cout << ls << std::endl;
-				copyToClipBoard(ls);
-				std::cout << "已复制到剪贴板,可直接粘贴使用" << std::endl;
-				continue;
-			}
-			else if (!s.compare("3")) { // 残局玩法
+				}
+				// 冲关玩法
+				else if (!s.compare("4")) {
+					// 处理用户输入
+					std::cout << "是否开启反作弊(1为开启, 0为关闭): " << std::endl;
+					std::string cmd1;
+					std::cin >> cmd1;
+					bool is_cheat_check = (cmd1 == "1");
 
-			}
+					std::cout << "有女仆输入1(1为开启, 0为关闭): " << std::endl;
+					std::string cmd2;
+					std::cin >> cmd2;
+					bool is_ban_maidCheat = (cmd2 != "1");
 
-			else if (!s.compare("4")) {
-				// 处理用户输入
-				std::cout << "是否开启反作弊(1为开启, 0为关闭): " << std::endl;
-				std::string cmd1;
-				std::cin >> cmd1;
-				bool is_cheat_check = (cmd1 == "1");
-
-				std::cout << "有女仆输入1(1为开启, 0为关闭): " << std::endl;
-				std::string cmd2;
-				std::cin >> cmd2;
-				bool is_ban_maidCheat = (cmd2 != "1");
-
-				// 创建并启动新线程（立即执行）
-				disable_quick_edit_mode();
-				std::thread worker([this, is_cheat_check, is_ban_maidCheat] {
-					try {
-						register_LevelRush_hotkey();
-						LevelRush(is_cheat_check, is_ban_maidCheat);
-						unregister_LevelRush_hotkey();
+					// 创建并启动新线程（立即执行）
+					disable_quick_edit_mode();
+					std::thread worker([this, is_cheat_check, is_ban_maidCheat] {
+						try {
+							register_RushMode_hotkey();
+							LevelRush(is_cheat_check, is_ban_maidCheat);
+							unregister_RushMode_hotkey();
 					
+						}
+						catch (...) {
+							// 异常处理（可选）
+							std::cerr << "任务执行异常!" << std::endl;
+						}
+						});
+
+					// 主线程在此等待子线程完成
+					worker.join();  // 阻塞直到线程结束
+					enable_quick_edit_mode();
+
+				}
+				// 选手生成唯一机器码 发给裁判
+				else if (!s.compare("5")) { 
+					auto machine_code = EncryptUtils::generate_machine_code();
+					std::cout << machine_code << std::endl;
+					copyToClipBoard(machine_code);
+					std::cout << "本台机器的机器码已复制到剪贴板,请私发给裁判" << std::endl;
+					continue;
+				}
+				// 裁判输入双机器码及有效期
+				else if (!s.compare("6")) {
+					std::vector<std::string> machine_codes;
+					std::string input;
+
+					std::cout << "请输入机器码（输入 -1 结束）：" << std::endl;
+					while (true) {
+						std::cin >> input;
+						if (input == "-1") break;
+						machine_codes.push_back(input);
 					}
-					catch (...) {
-						// 异常处理（可选）
-						std::cerr << "任务执行异常!" << std::endl;
+
+					std::cout << "是否设置布阵码有效期(0则不设置): " << std::endl;
+					std::string expire_minute;
+					std::cin >> expire_minute;
+
+					// 获取当前时间戳
+					std::string timeSecond_expire = std::to_string(static_cast<std::size_t>(std::time(nullptr)));
+
+					// 拼接所有机器码
+					std::string combie_machine_code;
+					for (const auto& code : machine_codes) {
+						combie_machine_code += code + "/";
 					}
-					});
+					combie_machine_code += timeSecond_expire + "/" + expire_minute;
 
-				// 主线程在此等待子线程完成
-				worker.join();  // 阻塞直到线程结束
-				enable_quick_edit_mode();
+					std::string key = EncryptUtils::sha256("xiaofeng");
+					// TODO: 写成加密文件，比赛模式的时候导入文件解密验证
+					//std::cout << combie_machine_code << std::endl;
 
-			}
+					std::string layout_code_key = EncryptUtils::aes128ECBEncrypt(combie_machine_code, key);
+					//std::cout << layout_code_key << std::endl;
 
-			/*1. 玩家AB分别生成自己电脑的机器码。【已实现】
-			2. 加密布阵码过程（裁判执行）：
-			2.1 生成密钥：裁判利用两个机器码利用特定密钥如“xiaofeng”进行加密得到K作为加密密钥。
-			2.2 加密消息：使用K对目标字符串进行对称加密，得到密文C。
+					GenerateLayoutCode code_geneator;
+					auto ls = code_geneator.generate_ssb6_code();
+					//std::cout << ls << std::endl;
+					auto enc_ls = EncryptUtils::aes128ECBEncrypt(ls, layout_code_key);
 
-			3. 玩家后续操作
-			3.1 玩家A和B拿到K和C后，根据特定密钥进行解密，拿到两个机器码组合的内容
-			3.2 玩家电脑根据解密后的内容判断是否包含本机机器码，如果有的话，使用K对C进行解密拿到C的明文
-			*/
-			else if (!s.compare("5")) { // 生成机器码A和B
-				auto machine_code = EncryptUtils::generate_machine_code();
-				std::cout << machine_code << std::endl;
-				copyToClipBoard(machine_code);
-				std::cout << "本机机器码已复制到剪贴板,请私发给裁判" << std::endl;
-				continue;
-			}
-			else if (!s.compare("6")) {
-				std::cout << "请输入机器码A: " << std::endl;
-				std::string machine_codeA;
-				std::cin >> machine_codeA;
-				//std::cout << "已经拿到机器码A" << machine_codeA << std::endl;
+					copyToClipBoard(enc_ls);
+					std::cout << enc_ls << std::endl;
+					std::cout << "加密布阵码已复制到剪贴板,请私发给选手" << std::endl;
 
-				std::cout << "请输入机器码B: " << std::endl;
-				std::string machine_codeB;
-				std::cin >> machine_codeB;
-				//std::cout << "已经拿到机器码A" << machine_codeB << std::endl;
+					std::cout << "输入1拿解密密钥: " << std::endl;
+					std::string cmd;
+					std::cin >> cmd;
 
-				std::cout << "是否设置布阵码有效期(0则不设置): " << std::endl;
-				std::string expire_minute;
-				std::cin >> expire_minute;
-
-				std::string key = EncryptUtils::sha256("xiaofeng");
-				std::string timeSecond_expire;
-				auto combie_machine_code = machine_codeA + "/" + machine_codeB + "/" + std::to_string(static_cast<std::size_t>(std::time(nullptr)))+"/" + expire_minute;
-
-				// TODO: 写成加密文件，比赛模式的时候导入文件解密验证
-				//std::cout << combie_machine_code << std::endl;
-
-				std::string layout_code_key = EncryptUtils::aes128ECBEncrypt(combie_machine_code, key);
-				//std::cout << layout_code_key << std::endl;
-
-				GenerateLayoutCode code_geneator;
-				auto ls = code_geneator.generate_ssb6_code();
-				//std::cout << ls << std::endl;
-				auto enc_ls = EncryptUtils::aes128ECBEncrypt(ls, layout_code_key);
-
-				copyToClipBoard(enc_ls);
-				std::cout << enc_ls << std::endl;
-				std::cout << "加密布阵码已复制到剪贴板,请私发给选手" << std::endl;
-
-				std::cout << "输入1拿解密密钥: " << std::endl;
-				std::string cmd;
-				std::cin >> cmd;
-
-				copyToClipBoard(layout_code_key);
-				std::cout << layout_code_key << std::endl;
-				std::cout << "用于解密的密钥已复制到剪贴板,请私发给选手" << std::endl;
-			}
-			else if (!s.compare("7")) {
-				std::cout << "请输入被加密的布阵码: " << std::endl;
-				std::string enc_ls;
-				std::cin >> enc_ls;
-
-				std::cout << "请输入解密密钥:" << std::endl;
-				std::string layout_code_key;
-				std::cin >> layout_code_key;
-
-				std::string key = EncryptUtils::sha256("xiaofeng");
-				auto machine_code = EncryptUtils::generate_machine_code();
-				std::string combie_machine_code;
-				try { // 尝试解密密钥
-					combie_machine_code = EncryptUtils::aes128ECBDecrypt(layout_code_key, key);
+					copyToClipBoard(layout_code_key);
+					std::cout << layout_code_key << std::endl;
+					std::cout << "用于解密的密钥已复制到剪贴板,请私发给选手" << std::endl;
 				}
-				catch (...) {  // 捕获异常，异常类型可以根据实际情况设定
-					std::cout << "解密密钥出错!" << std::endl;
-					continue;
-				}
+				// 裁判生成加密布阵码和解密密钥
+				else if (!s.compare("7")) {
+					std::cout << "请输入被加密的布阵码: " << std::endl;
+					std::string enc_ls;
+					std::cin >> enc_ls;
 
+					std::cout << "请输入解密密钥:" << std::endl;
+					std::string layout_code_key;
+					std::cin >> layout_code_key;
 
-				// 查找第一个 `/`
-				size_t first_pos = combie_machine_code.find('/');
-				if (first_pos == std::string::npos) {
-					std::cout << "解密密钥出错!" << std::endl;
-					continue;
-				}
-
-				// 查找第二个 `/`（从第一个 `/` 后开始）
-				size_t second_pos = combie_machine_code.find('/', first_pos + 1);
-				if (second_pos == std::string::npos) {
-					std::cout << "解密密钥出错!" << std::endl;
-					continue;
-				}
-
-				// 查找第三个 `/`（从第一个 `/` 后开始）
-				size_t third_pos = combie_machine_code.find('/', second_pos + 1);
-				if (third_pos == std::string::npos) {
-					std::cout << "解密密钥出错!" << std::endl;
-					continue;
-				}
-
-				// 分割字符串
-				std::string machine_code_1 = combie_machine_code.substr(0, first_pos);
-				std::string machine_code_2 = combie_machine_code.substr(first_pos + 1, second_pos - first_pos - 1);
-				std::string timeSecond_expire = combie_machine_code.substr(second_pos + 1, third_pos - second_pos - 1);
-				std::string expire_minute_str = combie_machine_code.substr(third_pos + 1);
-
-				char* end_ptr = nullptr;
-				unsigned long long timeStamp = strtoull(timeSecond_expire.c_str(), &end_ptr, 10);
-
-				char* end_ptr2 = nullptr;
-				int expire_minute = strtoull(expire_minute_str.c_str(), &end_ptr2, 10);
-
-				if (machine_code_1.find(machine_code) == std::string::npos && (machine_code_2.find(machine_code) == std::string::npos)) {
-					std::cout << "机器码异常!" << std::endl;
-					continue;
-				}
-
-				if (expire_minute != 0) { // 如果设置了0代表是不加有效期，如果没设置就是设置了有效期的
-					if ((TimeStruct::getNow() - TimeStruct(static_cast<size_t>(timeStamp))).minute > expire_minute) {
-						std::cout << "布阵码已经超过有效期:" << expire_minute << "min! 请裁判重新刷一个" << std::endl;
+					std::string key = EncryptUtils::sha256("xiaofeng");
+					auto machine_code = EncryptUtils::generate_machine_code();
+					std::string combie_machine_code;
+					try { // 尝试解密密钥
+						combie_machine_code = EncryptUtils::aes128ECBDecrypt(layout_code_key, key);
+					}
+					catch (...) {  // 捕获异常，异常类型可以根据实际情况设定
+						std::cout << "解密密钥出错!" << std::endl;
 						continue;
 					}
-					else {
-						std::cout << "此布阵码有效期为" << expire_minute << "min" << std::endl;
+
+
+					// 查找第一个 `/`
+					size_t first_pos = combie_machine_code.find('/');
+					if (first_pos == std::string::npos) {
+						std::cout << "解密密钥出错!" << std::endl;
+						continue;
 					}
-				}
-				// 有效期设置为0则直接放行
 
-
-				// 玩家解密
-				std::string ls;
-				try { // 尝试解密布阵码
-					ls = EncryptUtils::aes128ECBDecrypt(enc_ls, layout_code_key);
-				}
-				catch (...) {  // 捕获异常，异常类型可以根据实际情况设定
-					std::cout << "解密密钥出错!" << std::endl;
-					continue;
-				}
-
-				// 添加快捷键
-				register_SpeedRun_hotkey();
-				// 30min限时玩法
-				SpeedRun30min(ls, true);
-				// 注销全局热键
-				unregister_SpeedRun_hotkey();
-
-
-			}
-			else if (!s.compare("8")) { // 指定主题指定花数练习
-				std::cout << "请输入主题号(1-8): " << std::endl;
-				int theme;
-				std::cin >> theme;
-
-				// 检测输入是否失败或者数字范围不合法
-				if (std::cin.fail() || theme < 1 || theme > 8) {
-					std::cout << "输入不合法!\n";
-					// 清除错误标志
-					std::cin.clear();
-					// 忽略当前行剩余的输入
-					std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
-					continue;
-				}
-
-				std::cout << "请输入花数(1-8):" << std::endl;
-				int flower_num;
-				std::cin >> flower_num;
-
-				if (std::cin.fail() || flower_num < 1 || flower_num > 8) {
-					std::cout << "输入不合法!\n";
-					std::cin.clear();
-					std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
-					continue;
-				}
-
-				// 如果输入都合法，可以跳出循环或者进行后续操作
-				std::cout << "你输入的主题号为: " << theme
-					<< "，花数为: " << flower_num << std::endl;
-
-
-
-				// 创建并启动新线程（立即执行）
-				disable_quick_edit_mode();
-				std::thread worker([this, theme, flower_num] {
-					try {
-						register_reviewMode_hotkey();
-						lock_theme_flower_num(theme, flower_num);
-						unregister_reviewMode_hotkey();
+					// 查找第二个 `/`（从第一个 `/` 后开始）
+					size_t second_pos = combie_machine_code.find('/', first_pos + 1);
+					if (second_pos == std::string::npos) {
+						std::cout << "解密密钥出错!" << std::endl;
+						continue;
 					}
-					catch (...) {
-						// 异常处理（可选）
-						std::cerr << "任务执行异常!" << std::endl;
+
+					// 查找第三个 `/`（从第一个 `/` 后开始）
+					size_t third_pos = combie_machine_code.find('/', second_pos + 1);
+					if (third_pos == std::string::npos) {
+						std::cout << "解密密钥出错!" << std::endl;
+						continue;
 					}
-					});
 
-				// 主线程在此等待子线程完成
-				worker.join();  // 阻塞直到线程结束
-				enable_quick_edit_mode();
+					// 分割字符串
+					std::string machine_code_1 = combie_machine_code.substr(0, first_pos);
+					std::string machine_code_2 = combie_machine_code.substr(first_pos + 1, second_pos - first_pos - 1);
+					std::string timeSecond_expire = combie_machine_code.substr(second_pos + 1, third_pos - second_pos - 1);
+					std::string expire_minute_str = combie_machine_code.substr(third_pos + 1);
 
-			}
-			else if (!s.compare("9")) { // 3. 【每关计时】不限时冲关
+					char* end_ptr = nullptr;
+					unsigned long long timeStamp = strtoull(timeSecond_expire.c_str(), &end_ptr, 10);
+
+					char* end_ptr2 = nullptr;
+					int expire_minute = strtoull(expire_minute_str.c_str(), &end_ptr2, 10);
+
+					if (machine_code_1.find(machine_code) == std::string::npos && (machine_code_2.find(machine_code) == std::string::npos)) {
+						std::cout << "机器码异常!" << std::endl;
+						continue;
+					}
+
+					if (expire_minute != 0) { // 如果设置了0代表是不加有效期，如果没设置就是设置了有效期的
+						if ((TimeStruct::getNow() - TimeStruct(static_cast<size_t>(timeStamp))).minute > expire_minute) {
+							std::cout << "布阵码已经超过有效期:" << expire_minute << "min! 请裁判重新刷一个" << std::endl;
+							continue;
+						}
+						else {
+							std::cout << "此布阵码有效期为" << expire_minute << "min" << std::endl;
+						}
+					}
+					// 有效期设置为0则直接放行
 
 
-			}
-			else if (!s.compare("a")) {
+					// 玩家解密
+					std::string ls;
+					try { // 尝试解密布阵码
+						ls = EncryptUtils::aes128ECBDecrypt(enc_ls, layout_code_key);
+					}
+					catch (...) {  // 捕获异常，异常类型可以根据实际情况设定
+						std::cout << "解密密钥出错!" << std::endl;
+						continue;
+					}
 
-			}
+					// 添加快捷键
+					register_RaceMode_hotkey();
+					// 30min限时玩法
+					SpeedRun30min(ls, true);
+					// 注销全局热键
+					unregister_RaceMode_hotkey();
 
-			else if (!s.compare("b")) {
 
-			}
+				}
+				// 缩主题练习
+				else if (!s.compare("8")) { // 指定主题指定花数练习
+					std::cout << "请输入主题号(1-8): " << std::endl;
+					int theme;
+					std::cin >> theme;
 
-			else if (!s.compare("c")) {
+					// 检测输入是否失败或者数字范围不合法
+					if (std::cin.fail() || theme < 1 || theme > 8) {
+						std::cout << "输入不合法!\n";
+						// 清除错误标志
+						std::cin.clear();
+						// 忽略当前行剩余的输入
+						std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+						continue;
+					}
 
+					std::cout << "请输入花数(1-8):" << std::endl;
+					int flower_num;
+					std::cin >> flower_num;
+
+					if (std::cin.fail() || flower_num < 1 || flower_num > 8) {
+						std::cout << "输入不合法!\n";
+						std::cin.clear();
+						std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+						continue;
+					}
+
+					// 如果输入都合法，可以跳出循环或者进行后续操作
+					std::cout << "你输入的主题号为: " << theme
+						<< "，花数为: " << flower_num << std::endl;
+
+
+
+					// 创建并启动新线程（立即执行）
+					disable_quick_edit_mode();
+					std::thread worker([this, theme, flower_num] {
+						try {
+							register_reviewMode_hotkey();
+							lock_theme_flower_num(theme, flower_num);
+							unregister_reviewMode_hotkey();
+						}
+						catch (...) {
+							// 异常处理（可选）
+							std::cerr << "任务执行异常!" << std::endl;
+						}
+						});
+
+					// 主线程在此等待子线程完成
+					worker.join();  // 阻塞直到线程结束
+					enable_quick_edit_mode();
+
+				}
+				else if (!s.compare("9")) { // 3. 【每关计时】不限时冲关
+					std::cout << "还没写" << std::endl;
+
+				}
+				else if (!s.compare("a")) {
+					std::cout << "还没写" << std::endl;
+
+				}
+
+				else if (!s.compare("b")) {
+					std::cout << "还没写" << std::endl;
+
+				}
+
+				else if (!s.compare("c")) {
+					DWORD pid = ProcessOpener::Open();
+					if (!pid) continue;
+					PVZ::InitPVZ(pid);
+					GameControl game_controler(pid);
+
+					std::string ls;
+					game_controler.export_layout_string(ls);
+
+					copyToClipBoard(ls);
+					std::cout << ls << std::endl;
+					std::cout << "当前阵型已导出为阵型代码,已复制到剪贴板,可直接粘贴使用" << std::endl;
+					PVZ::QuitPVZ();
+				}
 			}
 		}
 	}
 
 
+	// 子线程启动游戏检测->一定程度上减轻控制台卡住的情况
 	void level_rush_thread() {
 		try {
-			register_LevelRush_hotkey();
-
-
+			register_RushMode_hotkey();
 			LevelRush(false, true);  // 仅执行一次
-
-
-			unregister_LevelRush_hotkey();
+			unregister_RushMode_hotkey();
 		}
 		catch (...) {
 			std::lock_guard<std::mutex> lock(mtx);
@@ -2882,52 +3015,14 @@ public:
 		}
 	}
 
-	void main_test() {
-
-
-		while (true) {
-			std::cout << "请输入指令" << std::endl;
-			std::string s;
-			std::cin >> s;
-
-			if (!s.compare("-1")) {
-				return;
-			}
-			else if (!s.compare("1")) 
-			{
-
-
-			}
-		}
-	}
 	
 };
 
 
 
-
-
-
-
-
 int main() {
-	/*LayoutControler layout_controler;
-	layout_controler.main();*/
-
-	DWORD pid = ProcessOpener::Open();
-	if (!pid) return 1;
-	PVZ::InitPVZ(pid);
-
-	GameControl game_controler(pid);
-	
-	std::string ls;
-	if (!game_controler.export_layout_string(ls)) return 1;
-	std::cout << ls << std::endl;
-	
-	game_controler.set_layout_test(ls);
-
-	PVZ::QuitPVZ();
-	
-
+	// 实例化布阵器控制
+	ConsoleControler console_controler;
+	console_controler.main();
 	return 0;
 };

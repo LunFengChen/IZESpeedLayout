@@ -1,79 +1,39 @@
 #include "GenerateLayoutCode.h"
 #include <algorithm>
 #include <random>
+#include <cassert>
 
+// 种子
 std::mt19937_64 GenerateLayoutCode::gen(std::random_device{}());
 
-GenerateLayoutCode::GenerateLayoutCode()
-    : type_iztStr_dict({
-        {PlantType::Peashooter, "1"},
-        {PlantType::Sunflower, "h"},
-        {PlantType::Wallnut, "o"},
-        {PlantType::PotatoMine, "t"},
-        {PlantType::SnowPea, "b"},
-        {PlantType::Chomper, "z"},
-        {PlantType::Repeater, "2"},
-        {PlantType::Puffshroom, "p"},
-        {PlantType::Fumeshroom, "d"},
-        {PlantType::Scaredyshroom, "x"},
-        {PlantType::Squash, "w"},
-        {PlantType::Threepeater, "3"},
-        {PlantType::Torchwood, "j"},
-        {PlantType::SplitPea, "l"},
-        {PlantType::Starfruit, "5"},
-        {PlantType::Magnetshroom, "c"},
-        {PlantType::Kernelpult, "y"},
-        {PlantType::Spickweed, "_"},
-        {PlantType::UmbrellaLeaf, "s"}
-        }),
-    iztStr_type_dict({
-      {"1", PlantType::Peashooter},
-      {"h", PlantType::Sunflower},
-      {"o", PlantType::Wallnut},
-      {"t", PlantType::PotatoMine},
-      {"b", PlantType::SnowPea},
-      {"z", PlantType::Chomper},
-      {"2", PlantType::Repeater},
-      {"p", PlantType::Puffshroom},
-      {"d", PlantType::Fumeshroom},
-      {"x", PlantType::Scaredyshroom},
-      {"w", PlantType::Squash},
-      {"3", PlantType::Threepeater},
-      {"j", PlantType::Torchwood},
-      {"l", PlantType::SplitPea},
-      {"5", PlantType::Starfruit},
-      {"c", PlantType::Magnetshroom},
-      {"y", PlantType::Kernelpult},
-      {"_", PlantType::Spickweed},
-      {"s", PlantType::UmbrellaLeaf}
-        }),
-    ssb6_flower_num_distribution({
-      8, 7, 6, 5, 5,
-      4, 4, 3, 3, 2,
-      1, 1, 2, 2, 3,
-      3 ,3 ,3 ,3, 3,
-      3, 3, 3, 3, 3
-        }) {
-}
-const std::array<int, 25>& GenerateLayoutCode::getSsb6FlowerNumDistribution() {
-    return GenerateLayoutCode::ssb6_flower_num_distribution;
+// 构造函数
+GenerateLayoutCode::GenerateLayoutCode() {};
+
+// 获取六届手速杯花数分布
+int GenerateLayoutCode::get_ssb6_flowerNum_distribution(int flag) {
+    std::array<int, 25> tmp = { 8, 7, 6, 5, 5, 4, 4, 3, 3, 2, 1, 1, 2, 2, 3, 3 ,3 ,3 ,3, 3, 3, 3, 3, 3, 3 };
+    return  tmp[flag];
 }
 
-int GenerateLayoutCode::getRandomInRange(int min, int max) {
+// 获取冲关花数分布
+int GenerateLayoutCode::get_LevelRush_flower_num_distribution(int flag) {
+    if (flag == 0) return 8;
+    if (flag == 1) return 7;
+    if (flag == 2) return get_random_in_range(4, 6);
+    if (flag == 3) return get_random_in_range(4, 5);
+    if (flag >= 4 && flag <= 5) return get_random_in_range(3, 5);
+    if (flag >= 6 && flag <= 9) return get_random_in_range(2, 4);
+    return get_random_in_range(1, 3);
+}
+
+// 获取min-max的随机数，闭区间
+int GenerateLayoutCode::get_random_in_range(int min, int max) {
     std::uniform_int_distribution<> dist(min, max);
     return dist(gen);
 }
 
-int GenerateLayoutCode::get_LevelRush_flower_num_distribution(int flag) {
-    if (flag == 0) return 8;
-    if (flag == 1) return 7;
-    if (flag == 2) return getRandomInRange(4, 6);
-    if (flag == 3) return getRandomInRange(4, 5);
-    if (flag >= 4 && flag <= 5) return getRandomInRange(3, 5);
-    if (flag >= 6 && flag <= 9) return getRandomInRange(2, 4);
-    return getRandomInRange(1, 3);
-}
 
+// 根据主题获取对应植物类型（包含顺序）: 花数+主题
 std::array<PlantType::PlantType, 25> GenerateLayoutCode::get_theme_plants(int flower_num, Theme theme) {
     std::array<PlantType::PlantType, 25> ret = {};
     for (size_t i = 0; i < flower_num; i++) ret[i] = PlantType::Sunflower;
@@ -83,6 +43,8 @@ std::array<PlantType::PlantType, 25> GenerateLayoutCode::get_theme_plants(int fl
     return ret;
 }
 
+
+//根据种子获取0-24的随机序列
 std::array<int, 25> GenerateLayoutCode::get_shuffled_array(size_t seed) {
     std::array<int, 25> arr = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 };
     std::mt19937_64 local_gen(seed);
@@ -90,10 +52,12 @@ std::array<int, 25> GenerateLayoutCode::get_shuffled_array(size_t seed) {
     return arr;
 }
 
+// 根据植物种植位置获取对应行和列 
 std::pair<int, int> GenerateLayoutCode::get_plant_row_col(int order) {
     return { order / 5, order % 5 };
 }
 
+// 获取六届手速杯主题分布: 每5关必出一个B类，2-12必出胆小
 std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
     std::array<Theme, 5> BOrder = {
         Theme::PEAS,
@@ -113,12 +77,12 @@ std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
     for (size_t i = 0; i < 5; ++i) {
         // 特殊处理 BOrder[2] 为 SCARDY 的情况
         if (BOrder[i] == Theme::SCARDY && i == 2) { // 胆小是第三个B类阵，只能生成在11-12
-            tmp1[i] = getRandomInRange(0, 1); 
+            tmp1[i] = get_random_in_range(0, 1); 
         }
         else 
         {
             // 其他情况保持原有逻辑
-            tmp1[i] = (i == 0) ? getRandomInRange(1, 4) : getRandomInRange(0, 4);
+            tmp1[i] = (i == 0) ? get_random_in_range(1, 4) : get_random_in_range(0, 4);
         }
     }
 
@@ -137,6 +101,7 @@ std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
     return ret;
 }
 
+// 冲关主题分布
 int GenerateLayoutCode::generate_LevelRush_theme_index(int flag) {
     if (flag == 0) {
         std::discrete_distribution<> dist({ 50, 33, 17 });// 1/2 1/3 1/6
@@ -148,6 +113,43 @@ int GenerateLayoutCode::generate_LevelRush_theme_index(int flag) {
     }
 }
 
+// 生成六届手速杯阵型代码
+std::string GenerateLayoutCode::generate_ssb6_code() {
+    std::string layout_code;
+    auto themes = generate_ssb6_theme_distribution();
+    for (size_t flag = 0; flag < 25; flag++) {
+        auto theme = themes[flag];
+        auto result = generate_arr_seed(theme);
+        auto plant_order_arr = result.first;
+        auto seed = result.second;
+        int flower_num = get_ssb6_flowerNum_distribution(flag);
+        auto plants_types_dict = get_theme_plants(flower_num, theme);
+        std::array<PlantType::PlantType, 25> plants_types_arr;
+        for (size_t i = 0; i < 25; i++) {
+            plants_types_arr[i] = plants_types_dict[plant_order_arr[i]];
+        }
+        layout_code += std::to_string(static_cast<int>(theme))
+            + std::to_string(flower_num)
+            + "00"
+            + encode_seed(seed)
+            + ".";
+    }
+    return layout_code.substr(0, layout_code.size() - 1);
+}
+
+// 生成冲关阵型代码
+std::string GenerateLayoutCode::generate_LevelRush_code(int flag) {
+    int theme_index = generate_LevelRush_theme_index(flag);
+    auto theme = static_cast<Theme>(theme_index);
+    auto flower_num = get_LevelRush_flower_num_distribution(flag);
+    auto result = generate_arr_seed(theme);
+    return std::to_string(theme_index)
+        + std::to_string(flower_num)
+        + "00"
+        + encode_seed(result.second);
+}
+
+// 获取火炬坚果合规种子
 std::pair<std::array<int, 25>, size_t> GenerateLayoutCode::generate_arr_seed(Theme theme) {
     switch (theme) {
     case Theme::COMPOSITE:
@@ -172,37 +174,9 @@ std::pair<std::array<int, 25>, size_t> GenerateLayoutCode::generate_arr_seed(The
     }
 }
 
-std::string GenerateLayoutCode::generate_ssb6_code() {
-    std::string layout_code;
-    auto themes = generate_ssb6_theme_distribution();
-    for (size_t flag = 0; flag < 25; flag++) {
-        auto theme = themes[flag];
-        auto result = generate_arr_seed(theme);
-        auto plant_order_arr = result.first;
-        auto seed = result.second;
-        int flower_num = ssb6_flower_num_distribution[flag];
-        auto plants_types_dict = get_theme_plants(flower_num, theme);
-        std::array<PlantType::PlantType, 25> plants_types_arr;
-        for (size_t i = 0; i < 25; i++) {
-            plants_types_arr[i] = plants_types_dict[plant_order_arr[i]];
-        }
-        layout_code += std::to_string(static_cast<int>(theme)) + "/" + std::to_string(seed) + ".";
-    }
-    return layout_code.substr(0, layout_code.size()-1);
-}
 
-std::string GenerateLayoutCode::generate_LevelRush_code(int flag) {
-    int theme_index = generate_LevelRush_theme_index(flag);
-    auto theme = static_cast<Theme>(theme_index);
-    auto flower_num = get_LevelRush_flower_num_distribution(flag);
-    auto result = generate_arr_seed(theme);
-    return std::to_string(theme_index) + "/" + std::to_string(result.second);
-}
-
-
-
-// 25进制加密函数
- std::string GenerateLayoutCode::encrypt_to_base25(const std::array<int, 25>& positions) {
+// 把植物的种植位置映射到25进制
+std::string GenerateLayoutCode::encrypt_to_base25(const std::array<int, 25>& positions) {
      std::string encrypted = "";
 
      for (int i = 0; i < 25; ++i) {
@@ -213,21 +187,77 @@ std::string GenerateLayoutCode::generate_LevelRush_code(int flag) {
      return encrypted;
  }
 
-// 25进制解密函数
- std::array<int, 25> GenerateLayoutCode::decrypt_from_base25(const std::string& encrypted) {
+// 把植物的种植位置从25进制反映射到种植位置数组
+std::array<int, 25> GenerateLayoutCode::decrypt_from_base25(const std::string& encrypted) {
      std::array<int, 25> positions = {};
-
      if (encrypted.length() != 25) {
          std::cerr << "错误：加密字符串长度应为25" << std::endl;
          return positions;  // 返回一个空的数组
      }
-
      for (int i = 0; i < 25; ++i) {
          // 将字符Y-A映射回数字0-24
          positions[i] = 'Y' - encrypted[i];
      }
-
      return positions;
  }
 
 
+// 指定ascii码转换为[0, BASE)范围内的数字
+size_t GenerateLayoutCode::char_to_number(char c)
+{
+	if (c >= '0' && c <= '9') return c - '0';
+	if (c <= 'Z') return c + 10 - 'A';
+	return c + 8 - 'A';
+}
+
+// [0, BASE)范围内的数字转换为指定ascii码
+ char GenerateLayoutCode::number_to_char(size_t i)
+{
+    if (i >= 0 && i <= 9) return i + '0';
+    if (i <= 35) return i - 10 + 'A';
+    return i - 8 + 'A';
+}
+
+// size_t范围内的整数指数幂
+size_t GenerateLayoutCode::calc_power(size_t base, size_t power)
+{
+    size_t ret = 1;
+    for (size_t i = 0; i < power; i++) ret *= base;
+    return ret;
+}
+
+// 用66进制压缩种子（加密）
+std::string GenerateLayoutCode::encode_seed(const size_t& seed)
+{
+    auto ret = std::string();
+    size_t t = seed;
+    while (t)
+    {
+        ret += number_to_char(t % BASE);
+        t /= BASE;
+    }
+    return ret;
+}
+
+
+// 根据种类解压布阵码得到4个信息：(1)主题(2)花数(3)阳光(4)种植位置
+bool GenerateLayoutCode::decode_layout_string(const std::string& ls, int& theme_index, int& flower_num, int& sun, std::array<int, 25>& orders) {
+    // 布阵码有三类: (1)六届常规(2)捏码(3)残局
+    theme_index = static_cast<int>(ls[0] - '0');
+    flower_num = static_cast<int>(ls[1] - '0');
+    sun = std::stoi(ls.substr(2, 2)) * 25;
+    std::string order_str = ls.substr(4);
+
+    if (order_str.size() == 25) { // 代表捏码, 转为将数字0-24映射到字符Y-A
+        orders = decrypt_from_base25(order_str);
+    }
+    else {
+        size_t seed = 0; // 第二位代表每一关的种子，不同码是变动的
+        for (size_t j = 0; j < order_str.size(); j++)
+        {
+            seed += char_to_number(order_str[j]) * calc_power(BASE, j); // 布阵码,每一个字符按照66的j-1次幂进行计算，后数字对66取模获取对应的数字
+        }
+        orders = get_shuffled_array(seed);
+    }
+    return true;
+}
