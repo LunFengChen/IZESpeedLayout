@@ -191,6 +191,7 @@
     <ClCompile Include="Classes\ZenGarden.cpp" />
     <ClCompile Include="Creators.cpp" />
     <ClCompile Include="disable_maid_cheat.cpp" />
+    <ClCompile Include="display_magnetshroom_time.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="EncryptUtils.cpp" />
     <ClCompile Include="Enums\CaptionStyle.cpp" />
@@ -239,6 +240,7 @@
     <ClCompile Include="Events\PuzzlePhaseCompleteEvent.cpp" />
     <ClCompile Include="Events\ImitaterPlantEvent.cpp" />
     <ClCompile Include="GenerateLayoutCode.cpp" />
+    <ClCompile Include="LogDecryptor.cpp" />
     <ClCompile Include="pvzclass.cpp" />
     <ClCompile Include="LevelData.cpp" />
     <ClCompile Include="Logger.cpp" />

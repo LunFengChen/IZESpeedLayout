@@ -1292,6 +1292,7 @@ private:
 		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // 强制退出
 		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // 跳关
 		RegisterHotKey(NULL, 5, MOD_SHIFT, 'M'); // 切换女仆
+		RegisterHotKey(NULL, 6, MOD_SHIFT, 's'); // 切换女仆
 	}
 	// 销毁冲关快捷键
 	void unregister_RushMode_hotkey() {
@@ -1300,15 +1301,19 @@ private:
 		UnregisterHotKey(NULL, 3);
 		UnregisterHotKey(NULL, 4);
 		UnregisterHotKey(NULL, 5);
+		UnregisterHotKey(NULL, 6);
 	}
 	// 比赛模式：强制退出，重开
 	void register_RaceMode_hotkey() {
 		RegisterHotKey(NULL, 1, MOD_SHIFT, 'Q'); // 强制退出
 		RegisterHotKey(NULL, 2, MOD_SHIFT, 'R'); // 重开
+		RegisterHotKey(NULL, 3, MOD_SHIFT, 'S'); // 切换女仆
+
 	}
 	void unregister_RaceMode_hotkey() {
 		UnregisterHotKey(NULL, 1);
 		UnregisterHotKey(NULL, 2);
+		UnregisterHotKey(NULL, 3);
 	}
 
 	void register_reviewMode_hotkey() {
@@ -1317,6 +1322,7 @@ private:
 		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // 强制退出
 		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // 跳关
 		RegisterHotKey(NULL, 5, MOD_SHIFT, 'R'); // 重开本局
+		RegisterHotKey(NULL, 6, MOD_SHIFT, 's'); // 重开本局
 
 	}
 
@@ -1326,6 +1332,8 @@ private:
 		UnregisterHotKey(NULL, 3);
 		UnregisterHotKey(NULL, 4);
 		UnregisterHotKey(NULL, 5);
+		UnregisterHotKey(NULL, 6);
+
 	}
 
 	// 禁掉快速编辑模式，但是坏消息是没法复制文本内容
@@ -1700,7 +1708,7 @@ private:
 		// 4. 准备开始日志记录
 		std::string current_time = TimeStruct::getCurrentDateTime();
 		Logger logger_data(current_time + ".log", Logger::DEBUG); // 默认打印INFO, 但是记录的话全部记录
-		Logger logger_cheat(current_time + "_cheatCheck.log", Logger::DEBUG); // 默认打印INFO，检测出异常的时候打印到控制台
+		Logger logger_cheat(current_time + "_cheatCheck.log", Logger::DEBUG, is_cheat_check); // 默认打印INFO，检测出异常的时候打印到控制台
 
 		// 先检测环境是否异常
 		GameCheatCheck game_cheat_checker(2, logger_cheat);
@@ -1854,16 +1862,10 @@ private:
 						}
 
 					}
+					
 				}
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
-			}
-
-			// 1. 监测崩溃
-			if (!ProcessOpener::Open()) {
-				logger_data.log("游戏关闭!", Logger::INFO);
-
-				break;
 			}
 
 			// 检测重开
@@ -1873,7 +1875,8 @@ private:
 					|| game_controler.pvz->GameState != PVZGameState::Playing) continue;
 
 				else { // 重开了
-					game_controler.board = PVZ::GetBoard(); // 重新拿一下board 
+					game_controler.board = PVZ::GetBoard();
+					game_controler.pvz = game_controler.board->GetPVZApp();
 
 					current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 					Sleep(5);
@@ -1895,6 +1898,7 @@ private:
 					leveldata.score = 0.00;
 					leveldata.butter_count = 0;
 					leveldata.kernel_count = 0;
+					leveldata.collected_sun = 0;
 
 					ls = code_generator.generate_LevelRush_code(current_flag); 
 					all_layout_code.clear(); all_layout_code.push_back(ls);
@@ -2209,7 +2213,7 @@ private:
 		// 4. 准备开始开始记录日志
 		std::string current_time = TimeStruct::getCurrentDateTime();
 		Logger logger_data(current_time + ".log", Logger::DEBUG); // 默认打印INFO, 但是记录的话全部记录
-		Logger logger_cheat(current_time + "_cheatCheck.log", Logger::DEBUG); // 默认打印INFO，检测出异常的时候打印到控制台
+		Logger logger_cheat(current_time + "_cheatCheck.log", Logger::DEBUG, is_cheat_check); // 默认打印INFO，检测出异常的时候打印到控制台
 
 		logger_data.log(std::string(get_terminal_width(), '-'), Logger::DEBUG);
 		logger_data.log("已经进入ize, 现在开始布阵", Logger::INFO);
@@ -2240,7 +2244,8 @@ private:
 
 		// 5. 初始化游戏信息
 		int current_flag = -1;
-		bool has_started = false;
+		bool has_started = false; 
+		bool is_crashed = false;
 		TimeStruct start_time = TimeStruct::getNow();
 		auto current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 		// 记录已经监测并处理的僵尸
@@ -2364,12 +2369,73 @@ private:
 						}
 						game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
 					}
+					if (msg.wParam == 3) { // shift+s崩溃
+						if (!is_crashed) continue; // 没崩溃按了没反应
+						// 找游戏
+						DWORD pid = ProcessOpener::Open();
+						if (!pid) continue;
+						//std::cout << "进入pvz.." << std::endl;
+						
+
+
+						GameControl game_controler2(pid);
+						game_controler = game_controler2;
+						if (!game_controler.is_in_ize()) continue;
+						//std::cout << "进入ize.." << std::endl;
+						// 1. 重新布阵
+
+						// 禁女仆, 禁掉游戏生成植物，禁掉植物种植音效
+						game_controler.clear_all_plants();
+						game_controler.disable_maidCheat();
+						game_controler.setInjectors();
+
+						game_controler.board->GetMiscellaneous()->Round = current_flag;
+						std::string layout_code = vec[current_flag];
+						int theme_index = 0; int flower_num = 0; int sun = 0;
+						std::array<int, 25> orders = {};
+						// 检测布阵码是否合法
+						if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
+							std::cout << "布阵码不合法" << std::endl;
+							return;
+						}
+						game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
+						logger_cheat.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + layout_code, Logger::DEBUG);
+
+						// 计算还拥有的时间: 使用的时间, 第一个僵尸释放的时间也就是start_time，上一次存档的时间
+						start_time = TimeStruct::getNow() - leveldata.current_time;
+						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_time;
+
+						logger_cheat.log("游戏崩溃了, 现在对第" + std::to_string(current_flag) + "关重新进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
+						
+
+						// 2. 重新拿一下board
+						current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
+
+
+						// 2. 恢复阳光，关数, 黄油数，吃脑数
+						game_controler.board->Sun = leveldata.initial_sun;
+						leveldata.score = game_controler.board->GetMiscellaneous()->Round;
+						leveldata.butter_count = 0;
+						leveldata.collected_sun = 0;
+						leveldata.eaten_brain_count = 0;
+						leveldata.kernel_count = 0;
+						leveldata.released_zombies_count = 0;
+						leveldata.zombie_cost = 0;
+
+						// 3. 修改计时：
+						//清空吃脑时间, 最后吃脑时间，布阵时间
+						leveldata.brain_eaten_times.clear();
+						leveldata.setlayout_time = TimeStruct::getNow();
+
+						is_crashed = false;
+					}
 				}
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-
-			// 1. 监测崩溃
+		
+			if (is_crashed) continue;
+		
 
 			// 监测重开
 			do {
@@ -2377,7 +2443,9 @@ private:
 					|| current_adress == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)
 					|| game_controler.pvz->GameState != PVZGameState::Playing) continue;
 
-				game_controler.board = PVZ::GetBoard(); // 重新拿一下board 
+				game_controler.board = PVZ::GetBoard();
+				game_controler.pvz = game_controler.board->GetPVZApp();
+
 
 				current_adress = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 				logger_cheat.log("使用了游戏内的restart", Logger::DEBUG);
@@ -2413,7 +2481,8 @@ private:
 			} while (0);
 
 			// 2. 跨关更新
-			if (game_controler.board->GetBaseAddress() &&
+			if (game_controler.board && !is_crashed &&
+				game_controler.board->GetBaseAddress() &&
 				game_controler.board->GetMiscellaneous()->Round != current_flag &&
 				game_controler.pvz->GameState == PVZGameState::Playing) {
 
@@ -2441,6 +2510,7 @@ private:
 				}
 				game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
 				logger_cheat.log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + layout_code, Logger::DEBUG);
+				leveldata.setlayout_time = TimeStruct::getNow();
 
 
 
@@ -2476,14 +2546,10 @@ private:
 				leveldata.butter_count = 0;
 				leveldata.kernelpult_butter_rate = 0.00;
 				leveldata.score = current_flag;
-				leveldata.setlayout_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times = {};
-
+				leveldata.current_time = TimeStruct::getNow() - start_time;
 
 				leveldata.eaten_brain_count = 0;
-
-
-
 			}
 
 			// 3. 检测是否开始游戏
@@ -2608,8 +2674,8 @@ private:
 				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
 			}
 
-			// 6. 超时
-			if ((TimeStruct::getNow() - start_time).minute >= 30)
+			// 6. 超时: 正常是30，如果崩溃的话
+			if ((TimeStruct::getNow() - start_time).minute > 30)
 			{
 				auto over_time = TimeStruct::getNow() - start_time; // 用时
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
@@ -2631,15 +2697,35 @@ private:
 
 				return;
 			}
+			
+			// 1. 监测崩溃
+			if (!ProcessOpener::Open()) {//找不到游戏
+				if (!is_crashed) { // 崩溃时打印一次
+					logger_data.log("游戏崩溃! 进入ize后按shift+s恢复, 等待中...", Logger::DEBUG);
+					logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
+					logger_data.log("检测到游戏异常关闭", Logger::INFO);
+					logger_data.log(
+						"存档数据为: 通过" + std::to_string(int(leveldata.score)) + "关, 用时 " + leveldata.current_time.enPrint() + ", 阳光 " + std::to_string(leveldata.initial_sun)
+						, Logger::INFO
+					);
+					logger_data.log("请进入pvz并进入ize后，按shift+s继续游戏", Logger::INFO);
+					logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
+					is_crashed = true;
+					game_controler.board = nullptr;
+					game_controler.pvz = nullptr;
+					PVZ::QuitPVZ();
+				}
+				continue;
+			}
 
-			// 6. 还有时间，阳光用完了
-			if (game_controler.board->ZombiesCount == 0 && game_controler.board->Sun < lowestSun) {
+			// 6. 还有时间，阳光用完了 
+			if (game_controler.board && game_controler.board->GetBaseAddress() && game_controler.board->ZombiesCount == 0 && game_controler.board->Sun < lowestSun) {
 				bool is_dead = true;
-
 				for (auto& coin : game_controler.board->GetAllCoins()) {
 					if (coin->Type == CoinType::NormalSun) is_dead = false;
 				}
-				if (is_dead) {
+				Sleep(500);
+				if (is_dead && ProcessOpener::Open()) {
 
 					logger_cheat.log("玩家由于阳光用完结束游戏!", Logger::DEBUG);
 
@@ -2655,15 +2741,16 @@ private:
 					Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // 去掉浮点数的两位小数
 
 					log_game_end(logger_data, save_data);
-
+					
 					return;
 				}
 			}
+
+
+
 		}
 
-
-
-	}
+	};
 
 
 public:
@@ -2767,118 +2854,103 @@ public:
 					std::cout << "本台机器的机器码已复制到剪贴板,请私发给裁判" << std::endl;
 					continue;
 				}
-				// 裁判输入双机器码及有效期
+				// 裁判输入双机器码及有效期生成加密机器码
 				else if (!s.compare("6")) {
 					std::vector<std::string> machine_codes;
 					std::string input;
-
 					std::cout << "请输入机器码（输入 -1 结束）：" << std::endl;
 					while (true) {
 						std::cin >> input;
 						if (input == "-1") break;
+						if (input.size() != 32) {
+							std::cout << "输入不合法! 请重新输入" << std::endl;
+							continue;
+						}
 						machine_codes.push_back(input);
 					}
 
-					std::cout << "是否设置布阵码有效期(0则不设置): " << std::endl;
-					std::string expire_minute;
-					std::cin >> expire_minute;
+					int expire_minute;
+					do{
+						std::cout << "是否设置布阵码有效期(0则不设置): " << std::endl;
+						std::cin >> expire_minute;
+						if (expire_minute < 0) std::cout << "输入不合法!" << std::endl;
+					} while (expire_minute < 0);
+					
 
 					// 获取当前时间戳
 					std::string timeSecond_expire = std::to_string(static_cast<std::size_t>(std::time(nullptr)));
 
-					// 拼接所有机器码
-					std::string combie_machine_code;
-					for (const auto& code : machine_codes) {
-						combie_machine_code += code + "/";
-					}
-					combie_machine_code += timeSecond_expire + "/" + expire_minute;
-
-					std::string key = EncryptUtils::sha256("xiaofeng");
-					// TODO: 写成加密文件，比赛模式的时候导入文件解密验证
-					//std::cout << combie_machine_code << std::endl;
-
-					std::string layout_code_key = EncryptUtils::aes128ECBEncrypt(combie_machine_code, key);
-					//std::cout << layout_code_key << std::endl;
 
 					GenerateLayoutCode code_geneator;
 					auto ls = code_geneator.generate_ssb6_code();
-					//std::cout << ls << std::endl;
-					auto enc_ls = EncryptUtils::aes128ECBEncrypt(ls, layout_code_key);
 
-					copyToClipBoard(enc_ls);
-					std::cout << enc_ls << std::endl;
+					// 拼接规则和加密
+					std::string encode_data = EncryptUtils::encode_ls(machine_codes, timeSecond_expire, std::to_string(expire_minute), ls);
+					copyToClipBoard(encode_data);
+					std::cout << encode_data << std::endl;
 					std::cout << "加密布阵码已复制到剪贴板,请私发给选手" << std::endl;
-
-					std::cout << "输入1拿解密密钥: " << std::endl;
-					std::string cmd;
-					std::cin >> cmd;
-
-					copyToClipBoard(layout_code_key);
-					std::cout << layout_code_key << std::endl;
-					std::cout << "用于解密的密钥已复制到剪贴板,请私发给选手" << std::endl;
 				}
-				// 裁判生成加密布阵码和解密密钥
+				// 选手解密后进行布阵
 				else if (!s.compare("7")) {
-					std::cout << "请输入被加密的布阵码: " << std::endl;
+					// 1. 输入加密数据（比如从剪贴板或用户输入获取）
 					std::string enc_ls;
+					std::cout << "请输入加密布阵码：" << std::endl;
 					std::cin >> enc_ls;
 
-					std::cout << "请输入解密密钥:" << std::endl;
-					std::string layout_code_key;
-					std::cin >> layout_code_key;
+					std::vector<std::string> machine_codes;
+					std::string timeSecond_expire;
+					std::string expire_minute;
+					std::string ls;
 
-					std::string key = EncryptUtils::sha256("xiaofeng");
-					auto machine_code = EncryptUtils::generate_machine_code();
-					std::string combie_machine_code;
-					try { // 尝试解密密钥
-						combie_machine_code = EncryptUtils::aes128ECBDecrypt(layout_code_key, key);
-					}
-					catch (...) {  // 捕获异常，异常类型可以根据实际情况设定
-						std::cout << "解密密钥出错!" << std::endl;
+					if (!EncryptUtils::decode_ls(enc_ls, machine_codes, timeSecond_expire, expire_minute, ls)) {
+						std::cout << "解密失败!" << std::endl;
 						continue;
 					}
 
-
-					// 查找第一个 `/`
-					size_t first_pos = combie_machine_code.find('/');
-					if (first_pos == std::string::npos) {
-						std::cout << "解密密钥出错!" << std::endl;
+					std::string machine_code = EncryptUtils::generate_machine_code();
+					// 1. 如果机器码不在列表中，不合法continue
+					bool found = false;
+					for (const auto& code : machine_codes) {
+						if (code == machine_code) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						std::cout << "输入不合法!" << std::endl;
+						continue;
+					}
+					
+					// 2. 时间戳转换成数字，必须比当前时间的时间戳小, 当前时间戳是: static_cast<std::size_t>(std::time(nullptr))
+					size_t ts = 0;
+					try {
+						ts = std::stoull(timeSecond_expire);
+					}
+					catch (...) {
+						std::cout << "输入不合法!" << std::endl;
+						continue;
+					}
+					size_t current_ts = static_cast<size_t>(std::time(nullptr));
+					if (ts > current_ts) {
+						std::cout << "输入不合法!" << std::endl;
+						continue;
+					}
+					// 3. 有效期分钟数转换成数字，必须>=0, 如果是0则继续后续操作；如果不是0，则要求当前时间-拿到的时间戳的分钟数<有效期
+					int expireMin = 0;
+					try {
+						expireMin = std::stoi(expire_minute);
+					}
+					catch (...) {
+						std::cout << "有效期格式错误!" << std::endl;
 						continue;
 					}
 
-					// 查找第二个 `/`（从第一个 `/` 后开始）
-					size_t second_pos = combie_machine_code.find('/', first_pos + 1);
-					if (second_pos == std::string::npos) {
-						std::cout << "解密密钥出错!" << std::endl;
+					if (expireMin < 0) {
+						std::cout << "有效期不能为负数!" << std::endl;
 						continue;
 					}
-
-					// 查找第三个 `/`（从第一个 `/` 后开始）
-					size_t third_pos = combie_machine_code.find('/', second_pos + 1);
-					if (third_pos == std::string::npos) {
-						std::cout << "解密密钥出错!" << std::endl;
-						continue;
-					}
-
-					// 分割字符串
-					std::string machine_code_1 = combie_machine_code.substr(0, first_pos);
-					std::string machine_code_2 = combie_machine_code.substr(first_pos + 1, second_pos - first_pos - 1);
-					std::string timeSecond_expire = combie_machine_code.substr(second_pos + 1, third_pos - second_pos - 1);
-					std::string expire_minute_str = combie_machine_code.substr(third_pos + 1);
-
-					char* end_ptr = nullptr;
-					unsigned long long timeStamp = strtoull(timeSecond_expire.c_str(), &end_ptr, 10);
-
-					char* end_ptr2 = nullptr;
-					int expire_minute = strtoull(expire_minute_str.c_str(), &end_ptr2, 10);
-
-					if (machine_code_1.find(machine_code) == std::string::npos && (machine_code_2.find(machine_code) == std::string::npos)) {
-						std::cout << "机器码异常!" << std::endl;
-						continue;
-					}
-
-					if (expire_minute != 0) { // 如果设置了0代表是不加有效期，如果没设置就是设置了有效期的
-						if ((TimeStruct::getNow() - TimeStruct(static_cast<size_t>(timeStamp))).minute > expire_minute) {
+					if (expireMin != 0) { // 如果设置了0代表是不加有效期，如果没设置就是设置了有效期的
+						if ((TimeStruct::getNow() - TimeStruct(ts)).minute > expireMin) {
 							std::cout << "布阵码已经超过有效期:" << expire_minute << "min! 请裁判重新刷一个" << std::endl;
 							continue;
 						}
@@ -2886,29 +2958,22 @@ public:
 							std::cout << "此布阵码有效期为" << expire_minute << "min" << std::endl;
 						}
 					}
-					// 有效期设置为0则直接放行
 
+					bool is_cheat_check = true;
+					// 创建并启动新线程（立即执行）
+					disable_quick_edit_mode();
+					std::thread worker([this, ls, is_cheat_check] {
+						register_RaceMode_hotkey();
+						SpeedRun30min(ls, is_cheat_check);
+						register_RaceMode_hotkey();
+						});
 
-					// 玩家解密
-					std::string ls;
-					try { // 尝试解密布阵码
-						ls = EncryptUtils::aes128ECBDecrypt(enc_ls, layout_code_key);
-					}
-					catch (...) {  // 捕获异常，异常类型可以根据实际情况设定
-						std::cout << "解密密钥出错!" << std::endl;
-						continue;
-					}
-
-					// 添加快捷键
-					register_RaceMode_hotkey();
-					// 30min限时玩法
-					SpeedRun30min(ls, true);
-					// 注销全局热键
-					unregister_RaceMode_hotkey();
-
+					// 主线程在此等待子线程完成
+					worker.join();  // 阻塞直到线程结束
+					enable_quick_edit_mode();
 
 				}
-				// 缩主题练习
+				// 缩主题锁花数练习
 				else if (!s.compare("8")) { // 指定主题指定花数练习
 					std::cout << "请输入主题号(1-8): " << std::endl;
 					int theme;
@@ -2960,21 +3025,8 @@ public:
 					enable_quick_edit_mode();
 
 				}
-				else if (!s.compare("9")) { // 3. 【每关计时】不限时冲关
-					std::cout << "还没写" << std::endl;
-
-				}
+				// 导出本关ize阵型代码
 				else if (!s.compare("a")) {
-					std::cout << "还没写" << std::endl;
-
-				}
-
-				else if (!s.compare("b")) {
-					std::cout << "还没写" << std::endl;
-
-				}
-
-				else if (!s.compare("c")) {
 					DWORD pid = ProcessOpener::Open();
 					if (!pid) continue;
 					PVZ::InitPVZ(pid);
@@ -2987,6 +3039,11 @@ public:
 					std::cout << ls << std::endl;
 					std::cout << "当前阵型已导出为阵型代码,已复制到剪贴板,可直接粘贴使用" << std::endl;
 					PVZ::QuitPVZ();
+				}
+				// 弹出磁铁倒计时
+				else if (!s.compare("b")) {
+					std::cout << "还没写" << std::endl;
+
 				}
 			}
 		}
@@ -3020,9 +3077,9 @@ public:
 
 
 
-int main() {
-	// 实例化布阵器控制
-	ConsoleControler console_controler;
-	console_controler.main();
-	return 0;
-};
+//int main() {
+//	// 实例化布阵器控制
+//	ConsoleControler console_controler;
+//	console_controler.main();
+//	return 0;
+//};

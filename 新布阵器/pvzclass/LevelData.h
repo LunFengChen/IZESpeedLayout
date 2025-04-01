@@ -18,6 +18,7 @@ public:
 
     // 时间相关数据
     TimeStruct setlayout_time = TimeStruct::getNow();             // (1) 每关的开始时间：布阵时间
+    TimeStruct current_time = TimeStruct::getNow();             // (1) 每关的开始时间：布阵时间
     TimeStruct first_zombie_release_time = TimeStruct::getNow();    // (2) 每关的放置时间：第一个僵尸释放的时间
     TimeStruct reaction_time = TimeStruct::getNow();                // (3) 计算反应时间：第一个僵尸释放时间 - 进入关卡的时间
     TimeStruct last_brain_eaten_time = TimeStruct::getNow();        // (4) 最后吃脑时间

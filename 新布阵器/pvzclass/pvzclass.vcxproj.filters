@@ -309,6 +309,12 @@
     <ClCompile Include="disable_maid_cheat.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="LogDecryptor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="display_magnetshroom_time.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcessOpener.h">

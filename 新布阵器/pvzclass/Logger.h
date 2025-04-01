@@ -15,9 +15,11 @@ public:
         WARNING,
         ERR,
     };
+    bool encryptLogs;
+
 
     // 构造函数，指定日志文件名和日志级别（默认 INFO）
-    Logger(const std::string& filename, LogLevel level = INFO);
+    Logger(const std::string& filename, LogLevel level = INFO, bool encrypt = false);
     ~Logger();
 
     void setLogLevel(LogLevel level);

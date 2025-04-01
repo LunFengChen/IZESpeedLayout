@@ -2,9 +2,11 @@
 #include <sstream>
 #include <chrono>
 #include <iomanip>
+#include "EncryptUtils.h"
 
-Logger::Logger(const std::string& filename, LogLevel level)
-    : logLevel(level)
+
+Logger::Logger(const std::string& filename, LogLevel level, bool encrypt)
+    : logLevel(level), encryptLogs(encrypt)
 {
     // 1. 获取 exe 所在目录
     char exePath[MAX_PATH];
@@ -76,6 +78,12 @@ void Logger::log(const std::string& message, LogLevel level) {
 
     // 生成完整的日志消息（包括时间戳和日志级别）
     std::string logMessage = getCurrentTime() + " [" + levelStr + "] " + message;
+
+    // 如果加密，进行加密处理
+    if (encryptLogs) {
+        logMessage = EncryptUtils::aes128ECBEncrypt(logMessage, EncryptUtils::sha256(EncryptUtils::LOG_KEY));
+    }
+
 
     // 控制台输出：只有 INFO 及以上级别才打印原始消息
     if (level >= INFO) {
