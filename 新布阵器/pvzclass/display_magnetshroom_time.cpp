@@ -3,10 +3,11 @@
 #include <iomanip>
 #include <sstream>
 #include "pvzclass.h"
-const wchar_t CLASS_NAME[] = L"FloatDisplayWindow";
+const wchar_t CLASS_NAME[] = L"MagnetShroomTime";
 
 float getFloatValue() {
     auto board = PVZ::GetBoard();
+    if (!board) return 0.00;
     for (auto plant : board->GetAllPlants()) {
         if (plant->Type == PlantType::Magnetshroom && plant->AttributeCountdown > 0) {
             return plant->AttributeCountdown / 100.0;
@@ -40,9 +41,9 @@ int main() {
     HWND hwnd = CreateWindowExW(
         0,
         CLASS_NAME,
-        L"Float Value Display",
+        L"´ÅÌúµ¹¼ÆÊ±",
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 100, 100,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 100,
         NULL, NULL, hInstance, NULL);
 
     if (!hwnd) {
