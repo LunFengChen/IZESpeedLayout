@@ -120,6 +120,7 @@ public:
 	static int get_ssb6_flowerNum_distribution(int flag);
 
 	std::pair<std::array<int, 25>, size_t> generate_arr_seed(Theme theme);
+	std::pair<std::array<int, 25>, size_t> generate_IncompleteLevel_arr_seed(Theme theme);
     static int get_random_in_range(int min, int max);
     static int get_LevelRush_flower_num_distribution(int flag);
     static std::array<PlantType::PlantType, 25> get_theme_plants(int flower_num, Theme theme);
@@ -127,7 +128,9 @@ public:
     static std::pair<int, int> get_plant_row_col(int order);
 
     std::string generate_ssb6_code();
-    std::string generate_LevelRush_code(int flag);
+	std::string generate_LevelRush_code(int flag);
+	std::string generate_incompleteLevel_code();
+	std::string generate_incompleteLevel_one_code();
 
 	static std::string encrypt_to_base25(const std::array<int, 25>& positions);
 	static std::array<int, 25> decrypt_from_base25(const std::string& encrypted);
