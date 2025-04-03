@@ -254,6 +254,7 @@
     <ClCompile Include="Events\VaseOpenEvent.cpp" />
     <ClCompile Include="Sexy.cpp" />
     <ClCompile Include="SHA256.cpp" />
+    <ClCompile Include="TimeCoundown.cpp" />
     <ClCompile Include="TimeStruct.cpp" />
   </ItemGroup>
   <ItemGroup>

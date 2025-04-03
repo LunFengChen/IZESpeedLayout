@@ -36,6 +36,7 @@
 #include <fstream>
 #include <ctime>
 #include <conio.h>
+#include <memory> // 需要包含此头文件
 
 #include <thread>
 #include <atomic>
@@ -72,7 +73,8 @@ github地址:https://github.com/LunFengChen/IZESpeedLayout/\n\
 7：布阵【比赛模式】\n\
 8：锁主题锁花数练习，带单关计时\n\
 a：导出本关ize阵型代码\n\
-b：(不可用)弹出工具-磁铁倒计时\n\
+b. 连续布阵\n\
+c：(不可用)弹出工具-磁铁倒计时\n\
 0：使用说明";
 	
 
@@ -99,5 +101,6 @@ constexpr char USE_GUIDES[] = "1.布阵: 根据拿到的25关布阵码进行布�
 	后正常游戏\n\
 8.锁主题锁花数，带单关计时，其实8应该是娱乐模式：什么消消乐模式（，考验眼力和反应力\n\
 a.导出本关ize阵型代码：方便捏码\n\
+b.连续布阵\n\
 b.【还没写好】弹出磁铁倒计时: 类似雪线那种";
 
