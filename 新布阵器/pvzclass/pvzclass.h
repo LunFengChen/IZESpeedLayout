@@ -65,9 +65,9 @@ constexpr char INIT_WORDS[] = "\
 github地址:https://github.com/LunFengChen/IZESpeedLayout/\n\
 请在输入功能对应序号后按回车键：\n\
 1：布阵\n\
-2：生成25关随机阵型代码\n\
-3: (不可用)残局布阵\n\
-4：生成15关随机残局阵型代码\n\
+2：生成随机阵型代码\n\
+3: 残局布阵\n\
+4：生成残局阵型代码\n\
 5: 生成当前电脑机器码【比赛模式】\n\
 6：生成随机阵型代码【比赛模式】\n\
 7：布阵【比赛模式】\n\
@@ -75,7 +75,6 @@ github地址:https://github.com/LunFengChen/IZESpeedLayout/\n\
 9. 冲关\n\
 a：导出本关ize阵型代码\n\
 b. 连续布阵\n\
-c：(不可用)弹出工具-磁铁倒计时\n\
 0：使用说明";
 	
 

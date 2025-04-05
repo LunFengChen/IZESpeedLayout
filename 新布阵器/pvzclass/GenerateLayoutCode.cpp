@@ -57,7 +57,7 @@ std::pair<int, int> GenerateLayoutCode::get_plant_row_col(int order) {
     return { order / 5, order % 5 };
 }
 
-// 获取六届手速杯主题分布: 每5关必出一个B类，2-12必出胆小
+// 获取六届手速杯主题分布【修改后】: 每5关必出一个B类，2-12必出胆小
 std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
     std::array<Theme, 5> BOrder = {
         Theme::PEAS,
@@ -153,12 +153,7 @@ std::string GenerateLayoutCode::generate_LevelRush_code(int flag) {
 std::string GenerateLayoutCode::generate_incompleteLevel_code() {
     std::string layout_code;
     for (size_t flag = 0; flag < 15; flag++) {
-        int theme_index = 0;
-        do {
-            theme_index = generate_LevelRush_theme_index(flag);
-
-        } while (theme_index == 8); // 懒得改概率代码，直接去掉胆小算了
-
+        int theme_index = generate_LevelRush_theme_index(flag); // 原版冲关概率生成
         Theme theme = static_cast<Theme>(theme_index);
         int flower_num = get_random_in_range(1, 3);
         int sun = 0;
@@ -169,7 +164,7 @@ std::string GenerateLayoutCode::generate_incompleteLevel_code() {
             (sun * 25 + flower_num * 200) < 500 || // 总和太小
             (sun * 25 + flower_num * 200) > 675    // 或太大时继续循环
             );
-        // 格式化sun为两位
+        // 格式化sun为两位: 9->09
         std::ostringstream oss;
         oss << std::setw(2) << std::setfill('0') << sun;
         std::string sun_str = oss.str();

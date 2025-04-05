@@ -1842,7 +1842,9 @@ private:
 							game_controler.enable_maidCheat();
 							logger_data.log("切换女仆: 不禁用!", Logger::INFO);
 						}
-
+					}
+					else if (msg.wParam == 6) {
+						std::cout << "崩溃检测，还没写" << std::endl;
 					}
 					
 				}
@@ -2848,11 +2850,69 @@ private:
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_HOTKEY) {
 					if (msg.wParam == 1) { // shift+q 强制结束
-						
+						logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
+
+						std::ostringstream oss;
+						oss << std::fixed << std::setprecision(1) << ((eaten_brain_count * 0.2 * 10.0) / 10.0);
+						std::string score_str = oss.str();
+						logger_data.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+						logger_data.log("游戏提前结束! 当前得分为——  " + score_str, Logger::INFO);
+
+						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
+						Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
 						return;
 					}
 					if (msg.wParam == 2) { // shift+s崩溃
 						if (!is_crashed) continue; // 没崩溃按了没反应
+						// 找游戏
+						DWORD pid = ProcessOpener::Open();
+						if (!pid) continue;
+						logger_data.log("现已恢复存档,请继续游戏...", Logger::INFO);
+
+						// 2. 重新拿一下board
+						GameControl game_controler2(pid);
+						game_controler = std::move(game_controler2);
+						if (!game_controler.is_in_ize()) continue;
+
+						current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
+
+						// 禁女仆, 禁掉游戏生成植物，禁掉植物种植音效
+						game_controler.clear_reverse_all_plants();
+						game_controler.disable_maidCheat();
+						game_controler.setInjectors();
+
+						game_controler.board->GetMiscellaneous()->Round = current_flag;
+						std::string layout_code = vec[current_flag];
+						int theme_index = 0; int flower_num = 0; int sun = 0;
+						std::array<int, 25> orders = {};
+						// 检测布阵码是否合法
+						if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
+							std::cout << "布阵码不合法" << std::endl;
+							return;
+						}
+						game_controler.set_layout_test(layout_code, theme_index, flower_num, sun, orders);
+						leveldata.setlayout_time = TimeStruct::getNow();
+
+
+						// 计算还拥有的时间: 使用的时间, 第一个僵尸释放的时间也就是start_time，上一次存档的时间
+						start_time = TimeStruct::getNow() - leveldata.current_time;
+						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_time;
+
+						if (is_cheat_check) logger_cheat->log("游戏崩溃了, 现在对第" + std::to_string(current_flag) + "关重新进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
+
+						// 2. 恢复阳光，关数, 黄油数，吃脑数
+						game_controler.board->Sun = sun;
+						leveldata.eaten_brain_count = 0;
+						leveldata.released_zombies_count = 0;
+						leveldata.zombie_cost = 0;
+
+						processed_projectile_ids.clear();
+						processed_coin_ids.clear();
+						processed_zombie_ids.clear();
+
+						// 3. 修改计时：
+						//清空吃脑时间, 最后吃脑时间，布阵时间
+						leveldata.brain_eaten_times.clear();
 
 						is_crashed = false;
 					}
@@ -2970,7 +3030,6 @@ private:
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 			}
 		
-
 			// 4. 定时反作弊检测
 			if (is_cheat_check) {
 				if ((TimeStruct::getNow() - check_time).second >= game_cheat_checker.check_interval) {
@@ -2980,7 +3039,6 @@ private:
 					check_time = TimeStruct::getNow(); // 这一次的检测时间
 				}
 			}
-
 
 			// 5. 监测放置的僵尸、释放时间以及计算花费、反应时间
 			std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
@@ -3070,7 +3128,6 @@ private:
 
 				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
 			}
-
 
 			// 9. 超时: 正常是30，如果崩溃的话
 			if ((TimeStruct::getNow() - start_time).minute >= 30)
