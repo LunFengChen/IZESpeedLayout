@@ -130,7 +130,6 @@ public:
     std::string generate_ssb6_code();
 	std::string generate_LevelRush_code(int flag);
 	std::string generate_incompleteLevel_code();
-	std::string generate_incompleteLevel_one_code();
 
 	static std::string encrypt_to_base25(const std::array<int, 25>& positions);
 	static std::array<int, 25> decrypt_from_base25(const std::string& encrypted);

@@ -318,6 +318,9 @@
     <ClCompile Include="TimeCoundown.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="检测重开.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcessOpener.h">

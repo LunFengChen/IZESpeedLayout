@@ -174,7 +174,7 @@ std::string GenerateLayoutCode::generate_incompleteLevel_code() {
         oss << std::setw(2) << std::setfill('0') << sun;
         std::string sun_str = oss.str();
 
-        auto result = generate_arr_seed(theme);
+        auto result = generate_IncompleteLevel_arr_seed(theme);
         layout_code += std::to_string(theme_index)
             + std::to_string(flower_num)
             + sun_str
@@ -184,24 +184,6 @@ std::string GenerateLayoutCode::generate_incompleteLevel_code() {
     return layout_code.substr(0, layout_code.size() - 1);
 }
 
-std::string GenerateLayoutCode::generate_incompleteLevel_one_code() {
-    std::discrete_distribution<> dist({ 40, 27, 13, 4, 4, 4, 4, 4 });
-    int theme_index =  dist(gen) + 1; // 原版ize概率
-    Theme theme = static_cast<Theme>(theme_index);
-    int flower_num = get_random_in_range(1, 3);
-    int sun = get_random_in_range(5, 12); // sun范围:75->300
-    // 格式化sun为两位
-    std::ostringstream oss;
-    oss << std::setw(2) << std::setfill('0') << sun;
-    std::string sun_str = oss.str();
-
-    auto result = generate_arr_seed(theme);
-
-    return std::to_string(theme_index)
-        + std::to_string(flower_num)
-        + sun_str
-        + encode_seed(result.second);
-}
 
 // 获取火炬坚果合规种子
 std::pair<std::array<int, 25>, size_t> GenerateLayoutCode::generate_arr_seed(Theme theme) {

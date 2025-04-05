@@ -256,6 +256,7 @@
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="TimeCoundown.cpp" />
     <ClCompile Include="TimeStruct.cpp" />
+    <ClCompile Include="检测重开.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES.h" />
