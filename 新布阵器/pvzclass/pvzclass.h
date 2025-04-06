@@ -60,9 +60,9 @@
 constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器";
 
 constexpr char INIT_WORDS[] = "\
-欢迎使用IZE竞速玩法布阵器 = v = \n\
-作者: 解不出积分的小风; \n\
-github地址:https://github.com/LunFengChen/IZESpeedLayout/\n\
+欢迎使用IZE竞速布阵器 = v = \n\
+作者: 解不出积分的小风; github地址:LunFengChen/IZESpeedLayout\n\
+(IZE六届手速杯布阵器，作者：碳酸 天盟琉璃 qq交流群:1157197563)\n\
 请在输入功能对应序号后按回车键：\n\
 1：布阵\n\
 2：生成随机阵型代码\n\
@@ -74,7 +74,7 @@ github地址:https://github.com/LunFengChen/IZESpeedLayout/\n\
 8：锁主题锁花数练习，带单关计时\n\
 9. 冲关\n\
 a：导出本关ize阵型代码\n\
-b. 连续布阵\n\
+b. 单关布阵\n\
 0：使用说明";
 	
 

@@ -162,7 +162,7 @@ std::string GenerateLayoutCode::generate_incompleteLevel_code() {
             sun = get_random_in_range(3, 12); // 直接赋值给外层变量
         } while (
             (sun * 25 + flower_num * 200) < 500 || // 总和太小
-            (sun * 25 + flower_num * 200) > 675    // 或太大时继续循环
+            (sun * 25 + flower_num * 200) > 800    // 或太大时继续循环
             );
         // 格式化sun为两位: 9->09
         std::ostringstream oss;

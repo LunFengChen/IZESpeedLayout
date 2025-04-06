@@ -682,7 +682,8 @@ public:
 	// 植物种植位置列表布阵
 	void set_layout_test(const std::string& ls, const int theme_index, const int flower_num, const int sun, const std::array<int, 25>orders) {
 		if (is_in_ize()) {
-			// 获得种植顺序
+			// 按道理是停掉了游戏的种植的
+			if (board->PlantsCount > 0) clear_reverse_all_plants();
 			// 获得种植位置
 			auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index)); // 获取不同主题的植物生成顺序
 			if (sun != 0 && sun % 25==0) {
@@ -1096,188 +1097,6 @@ public:
 		}
 	}
 
-	// 检测当前阵型是否合规，合规则转为布阵码
-	bool export_layout_string(std::string& result) {
-		if (is_in_ize()) {
-			std::array<int, 25> positions = {};               // 对应位置
-
-			// 1.判断当前主题
-			std::unordered_map<PlantType::PlantType, int> plantCount;
-			for (auto plant : board->GetAllPlants()) {
-				if (plant->NotExist) continue;
-				plantCount[plant->Type]++;
-			}
-
-			int theme_index = 0;
-			// 1.1 获取主题
-			{
-				if (
-					plantCount[PlantType::SnowPea] == 9 && plantCount[PlantType::Peashooter] == 4 && plantCount[PlantType::SplitPea] == 4
-					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
-					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
-					) theme_index = 4;
-				else if (
-					plantCount[PlantType::Starfruit] == 8 && plantCount[PlantType::Spickweed] == 9
-					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
-					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
-					) theme_index = 5;
-				else if (
-					plantCount[PlantType::Chomper] == 8 && plantCount[PlantType::PotatoMine] == 9
-					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
-					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
-					) theme_index = 6;
-				else if (
-					plantCount[PlantType::Fumeshroom] == 9 && plantCount[PlantType::Magnetshroom] == 8
-					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
-					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
-					) theme_index = 7;
-				else if (
-					plantCount[PlantType::Scaredyshroom] == 12
-					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 13)
-					&& plantCount[PlantType::Sunflower] >= 1 + 5 && plantCount[PlantType::Puffshroom] >= 1
-					) theme_index = 8;
-
-				// 判断A : 虽然下面的条件效率不高，但是简单啊（
-				if (
-					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
-					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
-					&& plantCount[PlantType::Wallnut] == 1
-					&& plantCount[PlantType::Torchwood] == 1
-					&& plantCount[PlantType::PotatoMine] == 1
-					&& plantCount[PlantType::Chomper] == 2
-					&& plantCount[PlantType::Peashooter] == 1
-					&& plantCount[PlantType::SplitPea] == 1
-					&& plantCount[PlantType::Kernelpult] == 1
-					&& plantCount[PlantType::Threepeater] == 1
-					&& plantCount[PlantType::SnowPea] == 1
-					&& plantCount[PlantType::Squash] == 1
-					&& plantCount[PlantType::Fumeshroom] == 1
-					&& plantCount[PlantType::UmbrellaLeaf] == 1
-					&& plantCount[PlantType::Starfruit] == 1
-					&& plantCount[PlantType::Magnetshroom] == 1
-					&& plantCount[PlantType::Spickweed] == 2
-					) theme_index = 1;
-				else if (
-					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
-					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
-					&& plantCount[PlantType::Torchwood] == 1
-					&& plantCount[PlantType::SplitPea] == 3
-					&& plantCount[PlantType::Repeater] == 1
-					&& plantCount[PlantType::Kernelpult] == 3
-					&& plantCount[PlantType::Threepeater] == 1
-					&& plantCount[PlantType::SnowPea] == 3
-					&& plantCount[PlantType::UmbrellaLeaf] == 1
-					&& plantCount[PlantType::Magnetshroom] == 1
-					&& plantCount[PlantType::Spickweed] == 3
-					) theme_index = 2;
-				else if (
-					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
-					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
-					&& plantCount[PlantType::PotatoMine] == 4
-					&& plantCount[PlantType::Chomper] == 3
-					&& plantCount[PlantType::Squash] == 3
-					&& plantCount[PlantType::Fumeshroom] == 4
-					&& plantCount[PlantType::Spickweed] == 3
-					) theme_index = 3;
-			}
-
-			// 1.2 检测主题是否合法
-			if (theme_index > 9 || theme_index < 1) {
-				std::cout << "主题不合规, 请检查!" << std::endl;
-				return false; // 返回失败
-			}
-
-
-			// 胆小特殊处理
-			int flower_num = theme_index == 8 ? plantCount[PlantType::Sunflower] - 5 : plantCount[PlantType::Sunflower]; 
-			
-			// 2. 依次获取植物顺序
-			std::array<PlantType::PlantType, 25> plant_types =
-				GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index));
-
-			// 使用vector存储植物类型及其位置
-			std::vector<std::pair<PlantType::PlantType, std::vector<int>>> plants_position;
-
-			// 收集植物位置
-			for (auto plant : board->GetAllPlants()) {
-				if (plant->NotExist) continue;
-				bool found = false;
-				for (auto& plant_pair : plants_position) {
-					if (plant_pair.first == plant->Type) {
-						if ((plant->Type == PlantType::Wallnut || plant->Type == PlantType::Torchwood) && plant->Column < 2) {
-							std::cout << "坚果火炬不合规!" << plant->Column + 1 << std::endl;
-							return false; // 返回失败
-						}
-
-						plant_pair.second.push_back(plant->Row * 5 + plant->Column);
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					plants_position.push_back({ plant->Type, {plant->Row * 5 + plant->Column} });
-				}
-			}
-
-			// 3. 随机打乱每个类型的位置
-			std::random_device rd;
-			std::mt19937 rng(rd());
-			for (auto& pair : plants_position) {
-				std::shuffle(pair.second.begin(), pair.second.end(), rng);
-			}
-			// 如果是胆小，则需要从plant_position[0].second中取出5个，并且删除原有的，最后塞到positions后面5个
-			 // 3. 胆小模式特殊处理：从plant_position[0].second中取出5个植物并将其删除，最后添加到positions后面5个
-			if (theme_index == 8) {
-				std::vector<int> shy_plants = {};
-
-				// 获取前5个植物的位置
-				shy_plants = { plants_position[0].second.begin(), plants_position[0].second.begin() + 5 };
-				// 删除这5个植物的位置
-				plants_position[0].second.erase(plants_position[0].second.begin(), plants_position[0].second.begin() + 5);
-				
-				// 将这5个植物的位置添加到positions的后5个位置
-				for (int i = 0; i < 5; ++i) {
-					positions[20 + i] = shy_plants[i];
-				}
-			}
-
-			// 4. 按主题顺序填充位置
-			int order = 0;
-
-			for (int i = 0; i < 25; ++i) {
-				PlantType::PlantType required_type = plant_types[i];
-				bool found = false;
-
-				// 在plants_position中查找该类型
-				for (auto& pair : plants_position) {
-					if (pair.first == required_type && !pair.second.empty()) {
-						// 取出最后一个位置（已随机打乱）
-						positions[order++] = pair.second.back();
-						pair.second.pop_back();
-						found = true;
-						break;
-					}
-				}
-
-				// 处理未找到的情况
-				if (!found && theme_index !=8 ) {
-					std::cerr << "错误：类型 " << PlantType::ToString(required_type)
-						<< " 在位置 " << i << " 没有可用植物" << std::endl;
-					positions[order++] = -1; // 用-1标记错误
-				}
-			}
-
-			// 5. 返回布阵码
-			result = std::to_string(theme_index) 
-				+ std::to_string(flower_num)
-				+ "00"
-				+ GenerateLayoutCode::encrypt_to_base25(positions);
-
-			return true; // 返回成功
-		}
-
-		return false; // 如果不在ize模式下
-	}
 };
 
 
@@ -1467,7 +1286,7 @@ private:
 		game_controler.update_brains();
 		game_controler.clear_all_bullets();
 		game_controler.clear_all_zombies();
-		game_controler.clear_all_plants();
+		game_controler.clear_reverse_all_plants();
 		game_controler.board->GetMiscellaneous()->Round = 0;
 
 		// 禁植物禁音效
@@ -1514,7 +1333,7 @@ private:
 						game_controler.update_brains();
 						game_controler.clear_all_zombies();
 						game_controler.clear_all_bullets();
-						game_controler.clear_all_plants();
+						game_controler.clear_reverse_all_plants();
 						// 恢复阳光
 						game_controler.board->Sun = 2000;
 						leveldata.released_zombies_count = 0;
@@ -1698,6 +1517,7 @@ private:
 
 	}
 
+
 	// 冲关循环: 布阵器输入了4
 	void LevelRush(bool is_ban_maidCheat) {
 
@@ -1870,7 +1690,6 @@ private:
 					game_controler.update_brains();
 					game_controler.clear_all_zombies();
 					game_controler.clear_all_bullets();
-					game_controler.clear_all_plants();
 					processed_zombie_ids.clear();
 					
 					// 恢复阳光
@@ -1905,12 +1724,6 @@ private:
 
 				// 2.0 先布阵【包括第一关的布阵】
 				// 1. 确保没植物: 有一个植物就删一次然后退出去
-				for (auto plant: game_controler.board->GetAllPlants()) {
-					if (!plant->NotExist) {
-						game_controler.clear_all_plants();
-						break;
-					}
-				}
 				// 准备布阵
 				current_flag = game_controler.board->GetMiscellaneous()->Round; //更新关数并且进行布阵
 				ls = code_generator.generate_LevelRush_code(current_flag); all_layout_code.push_back(ls);
@@ -2048,7 +1861,6 @@ private:
 					if (coin->Type == CoinType::NormalSun) is_dead = false;
 				}
 				if (is_dead) {
-
 					std::ostringstream oss;
 					oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 					std::string score_str = oss.str();
@@ -2237,7 +2049,6 @@ private:
 		// 8. 游戏主循环
 		MSG msg = { 0 };
 		while (true) {
-
 			// 添加快捷键并处理，全局热键消息
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_HOTKEY) {
@@ -2252,7 +2063,7 @@ private:
 
 						if (is_cheat_check) logger_cheat->log("玩家主动提前结束游戏", Logger::DEBUG);
 
-						logger_data.log("游戏结束! 最终得分为——  " + score_str, Logger::INFO);
+						logger_data.log("游戏结束! 现实时间为: " + TimeStruct::getCurrentTime() + " 最终得分为——  " + score_str, Logger::INFO);
 						logger_data.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
 						Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
@@ -2264,7 +2075,6 @@ private:
 						game_controler.update_brains();
 						game_controler.clear_all_zombies();
 						game_controler.clear_all_bullets();
-						game_controler.clear_all_plants();
 
 						processed_zombie_ids.clear();
 						processed_coin_ids.clear();
@@ -2305,7 +2115,7 @@ private:
 						// 找游戏
 						DWORD pid = ProcessOpener::Open();
 						if (!pid) continue;
-						logger_data.log("现已恢复存档,请继续游戏...", Logger::INFO);
+						logger_data.log("现已恢复存档,当前时间为" +TimeStruct::getCurrentTime() + "请继续游戏...", Logger::INFO);
 
 						// 2. 重新拿一下board
 						GameControl game_controler2(pid);
@@ -2332,10 +2142,10 @@ private:
 						if (is_cheat_check) logger_cheat->log("现在对第" + std::to_string(current_flag) + "关进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + layout_code, Logger::DEBUG);
 
 						// 计算还拥有的时间: 使用的时间, 第一个僵尸释放的时间也就是start_time，上一次存档的时间
-						start_time = TimeStruct::getNow() - leveldata.current_time;
-						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_time;
+						start_time = TimeStruct::getNow() - leveldata.current_use_time;
+						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_use_time;
 
-						if (is_cheat_check) logger_cheat->log("游戏崩溃了, 现在对第" + std::to_string(current_flag) + "关重新进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
+						if (is_cheat_check) logger_cheat->log(TimeStruct::getCurrentTime() + "游戏崩溃了, 现在对第" + std::to_string(current_flag) + "关重新进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
 						
 						// 2. 恢复阳光，关数, 黄油数，吃脑数
 						game_controler.board->Sun = leveldata.initial_sun;
@@ -2362,7 +2172,8 @@ private:
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-		
+			
+			// 崩溃了就先不执行下面的部分了
 			if (is_crashed) continue;
 		
 			// 监测重开: 重新进行布阵；会不小心把崩溃也算进来【 】
@@ -2386,7 +2197,7 @@ private:
 				game_controler.update_brains();
 				game_controler.clear_all_zombies();
 				game_controler.clear_all_bullets();
-				game_controler.clear_all_plants();
+				game_controler.clear_reverse_all_plants();
 
 				processed_zombie_ids.clear();
 				processed_coin_ids.clear();
@@ -2422,7 +2233,7 @@ private:
 
 				if (game_controler.board->GetMiscellaneous()->Round >= 25) {
 					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger_data.log(std::string("恭喜打通!!!!"), Logger::INFO);
+					logger_data.log(std::string("恭喜打通!!!! 现实时间: " + TimeStruct::getCurrentTime() ), Logger::INFO);
 					logger_data.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 					auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ").append(std::string("Congrats!"));
@@ -2467,9 +2278,12 @@ private:
 
 				// 检测跳关或者改了阳光
 				if (is_cheat_check && leveldata.eaten_brain_count != 5) logger_cheat->log("检测到跳关!", Logger::INFO);
+				if (is_cheat_check && game_controler.board->Sun > (leveldata.initial_sun + flower_num * 200 - leveldata.zombie_cost)) {
+					logger_data.log("阳光异常,赛后裁定即可,请继续游戏!", Logger::INFO);
+				}
 				if (is_cheat_check && game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
 					logger_cheat->log("检测到可能修改阳光,需裁判赛后查看详细数据!", Logger::DEBUG);
-					logger_data.log("阳光异常,需要裁判赛后裁定!", Logger::DEBUG);
+					logger_data.log("阳光异常,赛后裁定即可,请继续游戏!", Logger::INFO);
 					logger_cheat->log("现在阳光:" + std::to_string(game_controler.board->Sun)
 						+ " ? "
 						+ "上一关阳光: " + std::to_string(leveldata.initial_sun)
@@ -2496,11 +2310,10 @@ private:
 				leveldata.kernelpult_butter_rate = 0.00;
 
 				leveldata.brain_eaten_times.clear();;
-				leveldata.current_time = TimeStruct::getNow() - start_time;
+				leveldata.current_use_time = TimeStruct::getNow() - start_time;
 				leveldata.eaten_brain_count = 0;
 			}
-			if (is_crashed) continue;
-
+			
 			// 3. 检测是否开始游戏
 			if (!has_started) {
 				// 并没开始游戏
@@ -2516,6 +2329,7 @@ private:
 
 				has_started = true;
 				start_time = TimeStruct::getNow();
+				leveldata.current_use_time = TimeStruct(0);
 				// 开始时间
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.reaction_time = leveldata.setlayout_time - leveldata.first_zombie_release_time;
@@ -2533,7 +2347,6 @@ private:
 					check_time = TimeStruct::getNow(); // 这一次的检测时间
 				}
 			}
-
 
 			// 4. 监测放置的僵尸、释放时间以及计算花费、反应时间
 			std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
@@ -2636,7 +2449,8 @@ private:
 				std::ostringstream oss;
 				oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 				std::string score_str = oss.str();
-				logger_data.log("游戏结束! 最终得分为——  " + score_str, Logger::INFO);
+				logger_data.log("游戏结束! 现实时间为: " + TimeStruct::getCurrentTime() + " 最终得分为——  " + score_str, Logger::INFO);
+
 				logger_data.log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 
@@ -2654,10 +2468,10 @@ private:
 				if (!is_crashed) { // 崩溃时打印一次
 					logger_data.log("游戏崩溃! 进入ize后按shift+s恢复, 等待中...", Logger::DEBUG);
 					logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
-					logger_data.log("检测到游戏异常关闭", Logger::INFO);
+					logger_data.log("检测到游戏异常关闭, 现实时间为: " + TimeStruct::getCurrentTime() , Logger::INFO);
 					//std::cout << leveldata.score << std::endl;
 					logger_data.log(
-						"存档数据为: 通过" + std::to_string(current_flag) + "关, 用时 " + leveldata.current_time.enPrint() + ", 阳光 " + std::to_string(leveldata.initial_sun)
+						"存档数据为: 通过" + std::to_string(current_flag) + "关, 用时 " + leveldata.current_use_time.enPrint() + ", 阳光 " + std::to_string(leveldata.initial_sun)
 						, Logger::INFO
 					);
 					logger_data.log("请进入pvz并进入ize后，按shift+s继续游戏", Logger::INFO);
@@ -2676,7 +2490,7 @@ private:
 				for (auto& coin : game_controler.board->GetAllCoins()) {
 					if (coin->Type == CoinType::NormalSun) is_dead = false;
 				}
-				Sleep(500);
+				Sleep(1000);
 				if (is_dead && ProcessOpener::Open()) {
 
 					if(is_cheat_check) logger_cheat->log("玩家由于阳光用完结束游戏!", Logger::DEBUG);
@@ -2689,7 +2503,7 @@ private:
 					auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
 
 					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 游戏结束--  得分: " + score_str, Logger::INFO);
+					logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 游戏结束--  现实时间为: " + TimeStruct::getCurrentTime() + " 得分: " + score_str, Logger::INFO);
 					Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // 去掉浮点数的两位小数
 
 					log_game_end(logger_data, save_data);
@@ -2700,7 +2514,6 @@ private:
 		}
 
 	};
-
 
 	// 残局竞速模式：随机15关，阳光125-300, 30min比谁脑子吃得多
 	void SpeedRun30min_incompleteLevel(std::string ls, const bool is_cheat_check) {
@@ -2895,8 +2708,8 @@ private:
 
 
 						// 计算还拥有的时间: 使用的时间, 第一个僵尸释放的时间也就是start_time，上一次存档的时间
-						start_time = TimeStruct::getNow() - leveldata.current_time;
-						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_time;
+						start_time = TimeStruct::getNow() - leveldata.current_use_time;
+						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_use_time;
 
 						if (is_cheat_check) logger_cheat->log("游戏崩溃了, 现在对第" + std::to_string(current_flag) + "关重新进行布阵,花数:" + std::to_string(flower_num) + ", 布阵码:" + ls, Logger::DEBUG);
 
@@ -2967,7 +2780,6 @@ private:
 				}
 
 				// 2.0 先布阵
-				if (game_controler.board->PlantsCount > 0) game_controler.clear_reverse_all_plants();
 				current_flag = game_controler.board->GetMiscellaneous()->Round;
 				std::string layout_code = vec[current_flag];
 				int theme_index = 0; int flower_num = 0; int sun = 0;
@@ -3022,6 +2834,7 @@ private:
 
 				has_started = true;
 				start_time = TimeStruct::getNow();
+				leveldata.current_use_time = TimeStruct(0);
 				// 开始时间
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.reaction_time = leveldata.setlayout_time - leveldata.first_zombie_release_time;
@@ -3159,7 +2972,7 @@ private:
 					logger_data.log("检测到游戏异常关闭", Logger::INFO);
 					//std::cout << leveldata.score << std::endl;
 					logger_data.log(
-						"存档数据为: 通过" + std::to_string(int(leveldata.score)) + "关, 用时 " + leveldata.current_time.enPrint() + ", 阳光 " + std::to_string(leveldata.initial_sun)
+						"存档数据为: 通过" + std::to_string(int(leveldata.score)) + "关, 用时 " + leveldata.current_use_time.enPrint() + ", 阳光 " + std::to_string(leveldata.initial_sun)
 						, Logger::INFO
 					);
 					logger_data.log("请进入pvz并进入ize后，按shift+s继续游戏", Logger::INFO);
@@ -3175,6 +2988,233 @@ private:
 		}
 
 
+	}
+
+	// 检测当前阵型是否合规，合规则转为布阵码
+	bool export_layout_string(std::string& result) {
+		DWORD pid = ProcessOpener::Open();
+		if (!pid) return false;
+		PVZ::InitPVZ(pid);
+		GameControl game_controler(pid);
+		if (!game_controler.is_in_ize()) {
+			std::cout << "请先进入ize.." << std::endl;
+			return false;
+		}
+
+		if (game_controler.is_in_ize()) {
+			std::array<int, 25> positions = {};               // 对应位置
+
+			// 1.判断当前主题
+			std::unordered_map<PlantType::PlantType, int> plantCount;
+			for (auto plant : game_controler.board->GetAllPlants()) {
+				if (plant->NotExist) continue;
+				plantCount[plant->Type]++;
+			}
+
+			int theme_index = 0;
+			// 1.1 获取主题
+			{
+				if (
+					plantCount[PlantType::SnowPea] == 9 && plantCount[PlantType::Peashooter] == 4 && plantCount[PlantType::SplitPea] == 4
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 4;
+				else if (
+					plantCount[PlantType::Starfruit] == 8 && plantCount[PlantType::Spickweed] == 9
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 5;
+				else if (
+					plantCount[PlantType::Chomper] == 8 && plantCount[PlantType::PotatoMine] == 9
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 6;
+				else if (
+					plantCount[PlantType::Fumeshroom] == 9 && plantCount[PlantType::Magnetshroom] == 8
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 7;
+				else if (
+					plantCount[PlantType::Scaredyshroom] == 12
+					&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 13)
+					&& plantCount[PlantType::Sunflower] >= 1 + 5 && plantCount[PlantType::Puffshroom] >= 1
+					) theme_index = 8;
+
+				// 判断A : 虽然下面的条件效率不高，但是简单啊（
+				if (
+					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
+					&& plantCount[PlantType::Wallnut] == 1
+					&& plantCount[PlantType::Torchwood] == 1
+					&& plantCount[PlantType::PotatoMine] == 1
+					&& plantCount[PlantType::Chomper] == 2
+					&& plantCount[PlantType::Peashooter] == 1
+					&& plantCount[PlantType::SplitPea] == 1
+					&& plantCount[PlantType::Kernelpult] == 1
+					&& plantCount[PlantType::Threepeater] == 1
+					&& plantCount[PlantType::SnowPea] == 1
+					&& plantCount[PlantType::Squash] == 1
+					&& plantCount[PlantType::Fumeshroom] == 1
+					&& plantCount[PlantType::UmbrellaLeaf] == 1
+					&& plantCount[PlantType::Starfruit] == 1
+					&& plantCount[PlantType::Magnetshroom] == 1
+					&& plantCount[PlantType::Spickweed] == 2
+					) theme_index = 1;
+				else if (
+					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
+					&& plantCount[PlantType::Torchwood] == 1
+					&& plantCount[PlantType::SplitPea] == 3
+					&& plantCount[PlantType::Repeater] == 1
+					&& plantCount[PlantType::Kernelpult] == 3
+					&& plantCount[PlantType::Threepeater] == 1
+					&& plantCount[PlantType::SnowPea] == 3
+					&& plantCount[PlantType::UmbrellaLeaf] == 1
+					&& plantCount[PlantType::Magnetshroom] == 1
+					&& plantCount[PlantType::Spickweed] == 3
+					) theme_index = 2;
+				else if (
+					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
+					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
+					&& plantCount[PlantType::PotatoMine] == 4
+					&& plantCount[PlantType::Chomper] == 3
+					&& plantCount[PlantType::Squash] == 3
+					&& plantCount[PlantType::Fumeshroom] == 4
+					&& plantCount[PlantType::Spickweed] == 3
+					) theme_index = 3;
+			}
+
+			// 1.2 检测主题是否合法
+			if (theme_index > 9 || theme_index < 1) {
+				std::cout << "主题不合规, 请检查!" << std::endl;
+				return false; // 返回失败
+			}
+
+
+			// 胆小特殊处理
+			int flower_num = theme_index == 8 ? plantCount[PlantType::Sunflower] - 5 : plantCount[PlantType::Sunflower];
+
+			// 2. 依次获取植物顺序
+			std::array<PlantType::PlantType, 25> plant_types =
+				GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index));
+
+			// 使用vector存储植物类型及其位置
+			std::vector<std::pair<PlantType::PlantType, std::vector<int>>> plants_position;
+
+			// 收集植物位置
+			for (auto plant : game_controler.board->GetAllPlants()) {
+				if (plant->NotExist) continue;
+				bool found = false;
+				for (auto& plant_pair : plants_position) {
+					if (plant_pair.first == plant->Type) {
+						if ((plant->Type == PlantType::Wallnut || plant->Type == PlantType::Torchwood) && plant->Column < 2) {
+							std::cout << "坚果火炬不合规!" << plant->Column + 1 << std::endl;
+							return false; // 返回失败
+						}
+
+						plant_pair.second.push_back(plant->Row * 5 + plant->Column);
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					plants_position.push_back({ plant->Type, {plant->Row * 5 + plant->Column} });
+				}
+			}
+
+			// 3. 随机打乱每个类型的位置
+			std::random_device rd;
+			std::mt19937 rng(rd());
+			for (auto& pair : plants_position) {
+				std::shuffle(pair.second.begin(), pair.second.end(), rng);
+			}
+			// 如果是胆小，则需要从plant_position[0].second中取出5个，并且删除原有的，最后塞到positions后面5个
+			 // 3. 胆小模式特殊处理：从plant_position[0].second中取出5个植物并将其删除，最后添加到positions后面5个
+			if (theme_index == 8) {
+				std::vector<int> shy_plants = {};
+
+				// 获取前5个植物的位置
+				shy_plants = { plants_position[0].second.begin(), plants_position[0].second.begin() + 5 };
+				// 删除这5个植物的位置
+				plants_position[0].second.erase(plants_position[0].second.begin(), plants_position[0].second.begin() + 5);
+
+				// 将这5个植物的位置添加到positions的后5个位置
+				for (int i = 0; i < 5; ++i) {
+					positions[20 + i] = shy_plants[i];
+				}
+			}
+
+			// 4. 按主题顺序填充位置
+			int order = 0;
+
+			for (int i = 0; i < 25; ++i) {
+				PlantType::PlantType required_type = plant_types[i];
+				bool found = false;
+
+				// 在plants_position中查找该类型
+				for (auto& pair : plants_position) {
+					if (pair.first == required_type && !pair.second.empty()) {
+						// 取出最后一个位置（已随机打乱）
+						positions[order++] = pair.second.back();
+						pair.second.pop_back();
+						found = true;
+						break;
+					}
+				}
+
+				// 处理未找到的情况
+				if (!found && theme_index != 8) {
+					std::cerr << "错误：类型 " << PlantType::ToString(required_type)
+						<< " 在位置 " << i << " 没有可用植物" << std::endl;
+					positions[order++] = -1; // 用-1标记错误
+				}
+			}
+			int sun = game_controler.board->Sun / 25;
+			std::ostringstream oss;
+			oss << std::setw(2) << std::setfill('0') << sun;
+			std::string sun_str = oss.str();
+
+			// 5. 返回布阵码
+			result = std::to_string(theme_index)
+				+ std::to_string(flower_num)
+				+ sun_str
+				+ GenerateLayoutCode::encrypt_to_base25(positions);
+
+			return true; // 返回成功
+		}
+
+		PVZ::QuitPVZ();
+		return false; // 如果不在ize模式下
+	}
+
+	// 单关布阵
+	void set_oneLevel_layout(const std::string ls) {
+		DWORD pid = ProcessOpener::Open();
+		if (!pid) {
+			std::cout << "未找到pvz!" << std::endl;
+			return; // 结束
+		}
+		EnableBackgroundRunning(true); // 启用pvz后台运行
+		
+		// 2. 实例化游戏控制器
+		GameControl game_controler(pid);
+
+		// 3. 一直检测，直到进入ize
+		while (!game_controler.is_in_ize()) {
+			Sleep(1);
+		}
+
+		int theme_index = 0; int flower_num = 0; int sun = 0;
+		std::array<int, 25> orders = {};
+		// 检测布阵码是否合法
+		if (!GenerateLayoutCode::decode_layout_string(ls, theme_index, flower_num, sun, orders)) {
+			std::cout << "布阵码不合法" << std::endl;
+			return;
+		}
+		// 常规布阵不能设置阳光，传入0，防止传错
+		game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
+		PVZ::QuitPVZ();
+		return;
 	}
 
 	// 弹出30min倒计时
@@ -3449,28 +3489,21 @@ public:
 					enable_quick_edit_mode();
 
 				}
-
 				// 导出本关ize阵型代码
 				else if (!s.compare("a")) {
-					DWORD pid = ProcessOpener::Open();
-					if (!pid) continue;
-					PVZ::InitPVZ(pid);
-					GameControl game_controler(pid);
-					if (!game_controler.is_in_ize()) {
-						std::cout << "请先进入ize.." << std::endl;
-						continue;
-					}
 					std::string ls;
-					game_controler.export_layout_string(ls);
+					export_layout_string(ls);
 
 					copyToClipBoard(ls);
 					std::cout << ls << std::endl;
 					std::cout << "当前阵型已导出为阵型代码,已复制到剪贴板,可直接粘贴使用" << std::endl;
 					PVZ::QuitPVZ();
 				}
-				// 连续布阵
+				// 布阵
 				else if (!s.compare("b")) {
-					std::cout << "还没写好" << std::endl;
+					std::string ls;
+					std::cin >> ls;
+					set_oneLevel_layout(ls);
 				}
 
 			}
