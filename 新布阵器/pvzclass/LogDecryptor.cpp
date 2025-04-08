@@ -28,7 +28,7 @@ void decryptLogFile(const std::string& encryptedLogFile, const std::string& outp
         std::cerr << "无法创建解密文件: " << outputFile << std::endl;
         return;
     }
-
+    
     std::string encryptedLine;
     while (std::getline(logFile, encryptedLine)) {
         try {

@@ -59,3 +59,21 @@ std::string TimeStruct::getCurrentDateTime() {
     oss << std::put_time(&tm, "%Y_%m_%d_%H_%M_%S");
     return oss.str();
 }
+
+// 解析时间字符串，成功则返回 true 并通过 outTimestamp 输出时间戳，失败则返回 false
+bool TimeStruct::parseTimestamp(const std::string& timeStr, std::time_t& outTimestamp) {
+    std::tm tm = {};
+    std::istringstream ss(timeStr);
+    // 注意这里的格式和你输入时用的分隔符要一致
+    ss >> std::get_time(&tm, "%Y-%m-%d-%H-%M-%S");
+    if (ss.fail()) {
+        return false;
+    }
+    // mktime 假定 tm 是本地时间
+    std::time_t t = std::mktime(&tm);
+    if (t == -1) {
+        return false;
+    }
+    outTimestamp = t;
+    return true;
+}

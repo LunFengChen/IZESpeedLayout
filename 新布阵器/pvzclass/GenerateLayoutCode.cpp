@@ -157,6 +157,7 @@ std::string GenerateLayoutCode::generate_incompleteLevel_code() {
         Theme theme = static_cast<Theme>(theme_index);
         int flower_num = get_random_in_range(1, 3);
         int sun = 0;
+        //TODO: 根据不同主题设置合适阳光
         // 要求 sun*25+flower_num*200在300->675之间
         do {
             sun = get_random_in_range(3, 12); // 直接赋值给外层变量
