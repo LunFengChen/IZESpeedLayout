@@ -68,3 +68,6 @@ enc_temp_folder/
 *SHA*
 *AES*
 LogDecryptor.cpp
+
+# 不显示exe
+src/
