@@ -191,7 +191,6 @@
     <ClCompile Include="Classes\ZenGarden.cpp" />
     <ClCompile Include="Creators.cpp" />
     <ClCompile Include="disable_maid_cheat.cpp" />
-    <ClCompile Include="display_magnetshroom_time.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="EncryptUtils.cpp" />
     <ClCompile Include="Enums\CaptionStyle.cpp" />
@@ -254,9 +253,7 @@
     <ClCompile Include="Events\VaseOpenEvent.cpp" />
     <ClCompile Include="Sexy.cpp" />
     <ClCompile Include="SHA256.cpp" />
-    <ClCompile Include="TimeCoundown.cpp" />
     <ClCompile Include="TimeStruct.cpp" />
-    <ClCompile Include="检测重开.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES.h" />

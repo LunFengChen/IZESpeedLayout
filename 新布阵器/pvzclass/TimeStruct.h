@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstddef>
+#include <ctime>
 
 class TimeStruct {
 public:
@@ -37,4 +38,7 @@ public:
 
     // 静态方法：返回当前时间的字符串，格式为 "YYYY_MM_DD_HH_MM_SS"
     static std::string getCurrentDateTime();
+
+    static bool parseTimestamp(const std::string& timeStr, std::time_t& outTimestamp);
+
 };

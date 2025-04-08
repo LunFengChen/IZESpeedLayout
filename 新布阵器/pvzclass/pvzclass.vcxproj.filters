@@ -312,15 +312,6 @@
     <ClCompile Include="LogDecryptor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="display_magnetshroom_time.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="TimeCoundown.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="检测重开.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcessOpener.h">

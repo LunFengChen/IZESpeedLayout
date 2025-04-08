@@ -1,26 +1,26 @@
-#include "pvzclass.h"
+ï»¿#include "pvzclass.h"
 
-// ¼ÓÃÜÀà£º²»¹«²¼
+// åŠ å¯†ç±»ï¼šä¸å…¬å¸ƒ
 #include "EncryptUtils.h"
-// »ã±àÀà¡¾²Î¿¼izcºÍpt¡¿
+// æ±‡ç¼–ç±»ã€å‚è€ƒizcå’Œptã€‘
 #include "AsmCode.h"
-// »¹ÊÇ»ã±àÀà¡¾²Î¿¼Áù½ì²¼ÕóÆ÷¡¿
+// è¿˜æ˜¯æ±‡ç¼–ç±»ã€å‚è€ƒå…­å±Šå¸ƒé˜µå™¨ã€‘
 #include "iMemory.hpp"
-// ²¼ÕóÂëÉú³ÉÆ÷Àà
+// å¸ƒé˜µç ç”Ÿæˆå™¨ç±»
 #include "GenerateLayoutCode.h"
-// ÈÕÖ¾¼ÇÂ¼Àà
+// æ—¥å¿—è®°å½•ç±»
 #include "Logger.h"
-// ¹Ø¿¨Êı¾İÀà
+// å…³å¡æ•°æ®ç±»
 #include "LevelData.h"
-// Ê±¼äÀà¡¾²Î¿¼Áù½ì²¼ÕóÆ÷¡¿
+// æ—¶é—´ç±»ã€å‚è€ƒå…­å±Šå¸ƒé˜µå™¨ã€‘
 #include "TimeStruct.h"
 
-// È«¾ÖËæ»úÊı
+// å…¨å±€éšæœºæ•°
 std::random_device rd;
-std::mt19937_64 gen(rd()); // È«¾ÖËæ»úÊıÉú³ÉÆ÷
+std::mt19937_64 gen(rd()); // å…¨å±€éšæœºæ•°ç”Ÿæˆå™¨
 
 
-// ·´×÷±×¼ì²â
+// åä½œå¼Šæ£€æµ‹
 class GameCheatCheck {
 private:
 
@@ -30,28 +30,28 @@ private:
 	};
 	std::vector<WindowInfo> windows;
 
-	// ÓÃÓÚ´°¿Ú±éÀúµÄ»Øµ÷º¯Êı
+	// ç”¨äºçª—å£éå†çš„å›è°ƒå‡½æ•°
 	static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
 		std::vector<WindowInfo>* pWindows = reinterpret_cast<std::vector<WindowInfo>*>(lParam);
 
-		// ¹ıÂË²»¿É¼û´°¿Ú
+		// è¿‡æ»¤ä¸å¯è§çª—å£
 		if (!IsWindowVisible(hwnd)) return TRUE;
 
-		// »ñÈ¡´°¿Ú±êÌâ
+		// è·å–çª—å£æ ‡é¢˜
 		wchar_t titleBuffer[256];
-		if (GetWindowTextW(hwnd, titleBuffer, 256) == 0) return TRUE; // ÎŞ±êÌâÌø¹ı
+		if (GetWindowTextW(hwnd, titleBuffer, 256) == 0) return TRUE; // æ— æ ‡é¢˜è·³è¿‡
 
-		// »ñÈ¡½ø³ÌID
+		// è·å–è¿›ç¨‹ID
 		DWORD pid;
 		GetWindowThreadProcessId(hwnd, &pid);
 
-		// Ìí¼Óµ½ÁĞ±í
+		// æ·»åŠ åˆ°åˆ—è¡¨
 		pWindows->push_back({ pid, titleBuffer });
 
-		return TRUE; // ¼ÌĞø±éÀú
+		return TRUE; // ç»§ç»­éå†
 	}
 
-	// ½«¿í×Ö·û´®×ª»»Îª UTF-8 ±àÂëµÄÕ­×Ö·û´®
+	// å°†å®½å­—ç¬¦ä¸²è½¬æ¢ä¸º UTF-8 ç¼–ç çš„çª„å­—ç¬¦ä¸²
 	std::string WideToUTF8(const std::wstring& wstr) {
 		if (wstr.empty()) return "";
 
@@ -71,7 +71,7 @@ private:
 		return str;
 	}
 
-	// ½«¿í×Ö·û´®×ª»»ÎªÏµÍ³±¾µØ±àÂëµÄÕ­×Ö·û´®
+	// å°†å®½å­—ç¬¦ä¸²è½¬æ¢ä¸ºç³»ç»Ÿæœ¬åœ°ç¼–ç çš„çª„å­—ç¬¦ä¸²
 	std::string WideToANSI(const std::wstring& wstr) {
 		if (wstr.empty()) return "";
 
@@ -91,91 +91,91 @@ private:
 		return str;
 	}
 
-	// ¼ì²éÓÎÏ·ËÙ¶ÈÊÇ·ñÒì³£
+	// æ£€æŸ¥æ¸¸æˆé€Ÿåº¦æ˜¯å¦å¼‚å¸¸
 	bool check_speed() {
-		// ¼ì²âĞŞ¸ÄÖ¡¼ä¸ô¼ÓËÙ
+		// æ£€æµ‹ä¿®æ”¹å¸§é—´éš”åŠ é€Ÿ
 		int time_ms = PVZ::Memory::ReadMemory<int>(PVZ::Memory::ReadMemory<int>(0x6a9ec0) + 0x454);
 		if (time_ms != 10) {
-			logger->log("¼ì²âµ½ËÙ¶ÈÒì³££¬Ö¡¼ä¸ôÒì³££¬" + std::to_string(time_ms), Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°é€Ÿåº¦å¼‚å¸¸ï¼Œå¸§é—´éš”å¼‚å¸¸ï¼Œ" + std::to_string(time_ms), Logger::DEBUG);
 			return true;
 		}
 
-		// pvz×Ô´ø¼ÓËÙ: 25px, 0.25px
+		// pvzè‡ªå¸¦åŠ é€Ÿ: 25px, 0.25px
 		if (PVZ::Memory::ReadMemory<bool>(0x6A9EAB) || PVZ::Memory::ReadMemory<bool>(0x6A9EAA)) {
-			logger->log("¼ì²âµ½ËÙ¶ÈÒì³££¬¿ÉÄÜÆôÓÃÁË20pxºÍ0.25px", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°é€Ÿåº¦å¼‚å¸¸ï¼Œå¯èƒ½å¯ç”¨äº†20pxå’Œ0.25px", Logger::DEBUG);
 			return true;
 		}
 
-		// ¼ì²âiz²¼ÕóÆ÷µÄÄÇÖÖ³¬¼¶¼ÓËÙ
+		// æ£€æµ‹izå¸ƒé˜µå™¨çš„é‚£ç§è¶…çº§åŠ é€Ÿ
 
 
 		return false;
 	}
 
-	// ¼ì²âÏà¶ÔËÙ¶È³£Á¿ÊÇ·ñ±»ĞŞ¸Ä
+	// æ£€æµ‹ç›¸å¯¹é€Ÿåº¦å¸¸é‡æ˜¯å¦è¢«ä¿®æ”¹
 	bool check_speed_constant() {
 
-		bool data_changed = false; // ¼ÇÂ¼ÊÇ·ñÓĞÊı¾İ±ä»¯
-		// ¶¨ÒåËÙ¶ÈºÍÔ¤ÆÚÖµµÄ¶ÔÕÕ±í
+		bool data_changed = false; // è®°å½•æ˜¯å¦æœ‰æ•°æ®å˜åŒ–
+		// å®šä¹‰é€Ÿåº¦å’Œé¢„æœŸå€¼çš„å¯¹ç…§è¡¨
 		struct SpeedCheck {
 			float current_value;
 			float expected_value;
 			const char* name;
 		};
 
-		// ³õÊ¼»¯Ã¿¸ö¼ì²éÏî
+		// åˆå§‹åŒ–æ¯ä¸ªæ£€æŸ¥é¡¹
 		SpeedCheck speed_checks[] = {
-			{PVZ::Memory::ReadMemory<float>(0x6793C0), 0.5, "ÎèÍõ»¬²½"},
-			{PVZ::Memory::ReadMemory<float>(0x67966C), 0.12, "·´¿ó"},
-			{PVZ::Memory::ReadMemory<float>(0x679668), 0.9, "Ğ¡¹í"},
-			{PVZ::Memory::ReadMemory<float>(0x67963C), 0.45, "ÎèÍõ/°éÎèÇ°½ø"},
-			{PVZ::Memory::ReadMemory<float>(0x679640), 0.66, "¿ó¹¤ÍÚ¾ò¸¡¶¯ÏÂ½ç"},
-			{PVZ::Memory::ReadMemory<float>(0x679644), 0.68, "¿ó¹¤ÍÚ¾ò¸¡¶¯ÉÏ½ç"},
-			{PVZ::Memory::ReadMemory<float>(0x679648), 0.79, "ÅÜ²½Ìİ×Ó¸¡¶¯ÏÂ½ç"},
-			{PVZ::Memory::ReadMemory<float>(0x67964C), 0.81, "ÅÜ²½Ìİ×Ó¸¡¶¯ÉÏ½ç"},
-			{PVZ::Memory::ReadMemory<float>(0x679670), 0.23, "ÆäËû½©Ê¬Ïà¶ÔËÙ¶È¸¡¶¯ÏÂ½ç"},
-			{PVZ::Memory::ReadMemory<float>(0x679660), 0.37, "ÆäËû½©Ê¬Ïà¶ÔËÙ¶È¸¡¶¯ÉÏ½ç"}
+			{PVZ::Memory::ReadMemory<float>(0x6793C0), 0.5, "èˆç‹æ»‘æ­¥"},
+			{PVZ::Memory::ReadMemory<float>(0x67966C), 0.12, "åçŸ¿"},
+			{PVZ::Memory::ReadMemory<float>(0x679668), 0.9, "å°é¬¼"},
+			{PVZ::Memory::ReadMemory<float>(0x67963C), 0.45, "èˆç‹/ä¼´èˆå‰è¿›"},
+			{PVZ::Memory::ReadMemory<float>(0x679640), 0.66, "çŸ¿å·¥æŒ–æ˜æµ®åŠ¨ä¸‹ç•Œ"},
+			{PVZ::Memory::ReadMemory<float>(0x679644), 0.68, "çŸ¿å·¥æŒ–æ˜æµ®åŠ¨ä¸Šç•Œ"},
+			{PVZ::Memory::ReadMemory<float>(0x679648), 0.79, "è·‘æ­¥æ¢¯å­æµ®åŠ¨ä¸‹ç•Œ"},
+			{PVZ::Memory::ReadMemory<float>(0x67964C), 0.81, "è·‘æ­¥æ¢¯å­æµ®åŠ¨ä¸Šç•Œ"},
+			{PVZ::Memory::ReadMemory<float>(0x679670), 0.23, "å…¶ä»–åƒµå°¸ç›¸å¯¹é€Ÿåº¦æµ®åŠ¨ä¸‹ç•Œ"},
+			{PVZ::Memory::ReadMemory<float>(0x679660), 0.37, "å…¶ä»–åƒµå°¸ç›¸å¯¹é€Ÿåº¦æµ®åŠ¨ä¸Šç•Œ"}
 		};
 
-		// ¼ì²éÃ¿¸öËÙ¶ÈÖµÊÇ·ñ·ûºÏÔ¤ÆÚ
+		// æ£€æŸ¥æ¯ä¸ªé€Ÿåº¦å€¼æ˜¯å¦ç¬¦åˆé¢„æœŸ
 		for (const auto& check : speed_checks) {
 			if (check.current_value != check.expected_value) {
 				logger->log(
 					std::string(check.name)
-					+ "±»Ëø¶¨£¡Ô­Êı¾İ: " + std::to_string(check.expected_value)
-					+ "ĞŞ¸Äºó: " + std::to_string(check.current_value)
+					+ "è¢«é”å®šï¼åŸæ•°æ®: " + std::to_string(check.expected_value)
+					+ "ä¿®æ”¹å: " + std::to_string(check.current_value)
 					, Logger::DEBUG
 				);
-				data_changed = true;  // Ö»ÒªÓĞÒ»¸ö²»Æ¥Åä¾Í·µ»Øtrue
+				data_changed = true;  // åªè¦æœ‰ä¸€ä¸ªä¸åŒ¹é…å°±è¿”å›true
 			}
 		}
 
-		return data_changed;  // Èç¹ûËùÓĞµÄÖµ¶¼·ûºÏÔ¤ÆÚ£¬·µ»Øfalse
+		return data_changed;  // å¦‚æœæ‰€æœ‰çš„å€¼éƒ½ç¬¦åˆé¢„æœŸï¼Œè¿”å›false
 
 	}
 
-	// ¼ì²âÊÇ·ñ¿ªÆôÃâ·ÑÖÖÖ²
+	// æ£€æµ‹æ˜¯å¦å¼€å¯å…è´¹ç§æ¤
 	bool check_free_plant() {
 		if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x814)) {
-			logger->log("¼ì²âµ½¿ªÆôÁËÃâ·ÑÖÖÖ²!", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°å¼€å¯äº†å…è´¹ç§æ¤!", Logger::DEBUG);
 			return true;
 		}
 
 		return false;
 	}
 	
-	// ¼ì²âÊÇ·ñËøÓñÃ×»òÕß»ÆÓÍ
+	// æ£€æµ‹æ˜¯å¦é”ç‰ç±³æˆ–è€…é»„æ²¹
 	bool check_Kernelpult() {
 		if (PVZ::Memory::ReadMemory<byte>(0x45F1EC) == byte(235)) {
-			logger->log("¼ì²âµ½ËøÓñÃ×Á£!", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°é”ç‰ç±³ç²’!", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x45F1EC) == byte(112)) {
-			logger->log("¼ì²âµ½Ëø»ÆÓÍ!", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°é”é»„æ²¹!", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x45F1EC) != byte(117)) {
-			logger->log("¼ì²âµ½ÓñÃ××Óµ¯Òì³£!", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°ç‰ç±³å­å¼¹å¼‚å¸¸!", Logger::DEBUG);
 			return true;
 		}
 		
@@ -183,61 +183,61 @@ private:
 		return false;
 	}
 
-	// ¼ì²âÊÇ·ñ¿ªÆôdance
+	// æ£€æµ‹æ˜¯å¦å¼€å¯dance
 	bool check_dance() {
 		auto board = PVZ::GetBoard();
 		if (board->Dance) { 
-			logger->log("¼ì²âµ½¿ªÆôdance!, "+std::to_string(PVZ::Memory::ReadMemory<bool>(PVZ::Memory::ReadPointer(0x6A9EC0, 0x768) + 0x5765)), Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°å¼€å¯dance!, "+std::to_string(PVZ::Memory::ReadMemory<bool>(PVZ::Memory::ReadPointer(0x6A9EC0, 0x768) + 0x5765)), Logger::DEBUG);
 			return true;
 		}
 		return false;
 	}
 
-	// rnd¼ì²â
+	// rndæ£€æµ‹
 	bool check_rnd() {
-		bool data_changed = false; // ¼ÇÂ¼ÊÇ·ñÓĞÊı¾İ±ä»¯
-		// ¶¨ÒåËÙ¶ÈºÍÔ¤ÆÚÖµµÄ¶ÔÕÕ±í
+		bool data_changed = false; // è®°å½•æ˜¯å¦æœ‰æ•°æ®å˜åŒ–
+		// å®šä¹‰é€Ÿåº¦å’Œé¢„æœŸå€¼çš„å¯¹ç…§è¡¨
 		struct RndFloatCheck {
 			float current_value;
 			float expected_value;
 			const char* name;
 		};
 
-		// Rnd_3_4Ëø¸¡µãÊıÊÇĞ´ÕûÊıËøÄ³Ğ©Öµ£¬¼ì²â²»ÊÇÔ­Êı¾İ£»ËøÆäËûµÄ¶¼ÊÇĞ´×Ö½Ú184¸øÄ³Ğ©Öµ£¬¼ì²â²»ÊÇ184¾ÍĞĞ£»
+		// Rnd_3_4é”æµ®ç‚¹æ•°æ˜¯å†™æ•´æ•°é”æŸäº›å€¼ï¼Œæ£€æµ‹ä¸æ˜¯åŸæ•°æ®ï¼›é”å…¶ä»–çš„éƒ½æ˜¯å†™å­—èŠ‚184ç»™æŸäº›å€¼ï¼Œæ£€æµ‹ä¸æ˜¯184å°±è¡Œï¼›
 		RndFloatCheck rnd_float_checks[] = {
 			//Float
-			// ¼¤»î±ÈÀı£ºËøÉÏÏÂÏŞ£¬Êı¾İÌîÈë0x004144D8
-			{PVZ::Memory::ReadMemory<int>(0x00414073), 6706212, "¼¤»î±ÈÀı ÄÚ´æÊı¾İ1"}, // ËøÏÂÏŞ
-			{PVZ::Memory::ReadMemory<int>(0x00414080), 6788032, "¼¤»î±ÈÀı ÄÚ´æÊı¾İ2"}, // ËøÏÂÏŞ
-			// Ğ¡³óËÙ¶È£ºËøÉÏÏÂÏŞ£¬Êı¾İÌîÈë
-			{PVZ::Memory::ReadMemory<int>(0x00524C29), 6788676, "Ğ¡³óËÙ¶È ÄÚ´æÊı¾İ1"}, // ËøÏÂÏŞ
-			{PVZ::Memory::ReadMemory<int>(0x00524C36), 6788672, "Ğ¡³óËÙ¶È ÄÚ´æÊı¾İ2"}, // ËøÏÂÏŞ
-			// Ìİ×ÓËÙ¶È£ºËøÉÏÏÂÏŞ£¬Êı¾İÌîÈë0x005149E4
-			{PVZ::Memory::ReadMemory<int>(0x00524C00), 6788684, "Ìİ×ÓËÙ¶È ÄÚ´æÊı¾İ1"}, // ËøÏÂÏŞ
-			{PVZ::Memory::ReadMemory<int>(0x00524C0D), 6788680, "Ìİ×ÓËÙ¶È ÄÚ´æÊı¾İ2"}, // ËøÏÂÏŞ
-			// º£ëàËÙ¶È£ºËøÉÏÏÂÏŞ£¬Êı¾İÌîÈë0x005149E8
-			{PVZ::Memory::ReadMemory<int>(0x00524BD7), 6788692, "º£ëàËÙ¶È ÄÚ´æÊı¾İ1"}, // ËøÏÂÏŞ
-			{PVZ::Memory::ReadMemory<int>(0x00524BE4), 6788688, "º£ëàËÙ¶È ÄÚ´æÊı¾İ2"}, // ËøÏÂÏŞ
-			// ÆÕ½©ËÙ¶È£ºËøÉÏÏÂÏŞ£¬Êı¾İÌîÈë0x005149EC
-			{PVZ::Memory::ReadMemory<int>(0x00524B83), 6788704, "ÆÕ½©ËÙ¶È ÄÚ´æÊı¾İ1"}, // ËøÏÂÏŞ
-			{PVZ::Memory::ReadMemory<int>(0x00524B90), 6788720, "ÆÕ½©ËÙ¶È ÄÚ´æÊı¾İ2"}, // ËøÉÏÏŞ
-			// Ğ¡¹í²ÎÊı£ºËøÁËÄ³¸öÖµ0x0052707D£¬0x0052708A£¬0x00527085£¬0x00527081¡¾ºóÃæ3¸ö¶¼ÊÇ×Ö½ÚÊı×é£¬ÀÁµÃĞ´£¬·´ÕıÓĞÒ»¸ö¾ÍĞĞ¡¿, Êı¾İÌîÈë0x004144DC
-			{PVZ::Memory::ReadMemory<int>(0x0052707D), 6788248, "Ğ¡¹í²ÎÊı ÄÚ´æÊı¾İ1"}, // ËøÏÂÏŞ
+			// æ¿€æ´»æ¯”ä¾‹ï¼šé”ä¸Šä¸‹é™ï¼Œæ•°æ®å¡«å…¥0x004144D8
+			{PVZ::Memory::ReadMemory<int>(0x00414073), 6706212, "æ¿€æ´»æ¯”ä¾‹ å†…å­˜æ•°æ®1"}, // é”ä¸‹é™
+			{PVZ::Memory::ReadMemory<int>(0x00414080), 6788032, "æ¿€æ´»æ¯”ä¾‹ å†…å­˜æ•°æ®2"}, // é”ä¸‹é™
+			// å°ä¸‘é€Ÿåº¦ï¼šé”ä¸Šä¸‹é™ï¼Œæ•°æ®å¡«å…¥
+			{PVZ::Memory::ReadMemory<int>(0x00524C29), 6788676, "å°ä¸‘é€Ÿåº¦ å†…å­˜æ•°æ®1"}, // é”ä¸‹é™
+			{PVZ::Memory::ReadMemory<int>(0x00524C36), 6788672, "å°ä¸‘é€Ÿåº¦ å†…å­˜æ•°æ®2"}, // é”ä¸‹é™
+			// æ¢¯å­é€Ÿåº¦ï¼šé”ä¸Šä¸‹é™ï¼Œæ•°æ®å¡«å…¥0x005149E4
+			{PVZ::Memory::ReadMemory<int>(0x00524C00), 6788684, "æ¢¯å­é€Ÿåº¦ å†…å­˜æ•°æ®1"}, // é”ä¸‹é™
+			{PVZ::Memory::ReadMemory<int>(0x00524C0D), 6788680, "æ¢¯å­é€Ÿåº¦ å†…å­˜æ•°æ®2"}, // é”ä¸‹é™
+			// æµ·è±šé€Ÿåº¦ï¼šé”ä¸Šä¸‹é™ï¼Œæ•°æ®å¡«å…¥0x005149E8
+			{PVZ::Memory::ReadMemory<int>(0x00524BD7), 6788692, "æµ·è±šé€Ÿåº¦ å†…å­˜æ•°æ®1"}, // é”ä¸‹é™
+			{PVZ::Memory::ReadMemory<int>(0x00524BE4), 6788688, "æµ·è±šé€Ÿåº¦ å†…å­˜æ•°æ®2"}, // é”ä¸‹é™
+			// æ™®åƒµé€Ÿåº¦ï¼šé”ä¸Šä¸‹é™ï¼Œæ•°æ®å¡«å…¥0x005149EC
+			{PVZ::Memory::ReadMemory<int>(0x00524B83), 6788704, "æ™®åƒµé€Ÿåº¦ å†…å­˜æ•°æ®1"}, // é”ä¸‹é™
+			{PVZ::Memory::ReadMemory<int>(0x00524B90), 6788720, "æ™®åƒµé€Ÿåº¦ å†…å­˜æ•°æ®2"}, // é”ä¸Šé™
+			// å°é¬¼å‚æ•°ï¼šé”äº†æŸä¸ªå€¼0x0052707Dï¼Œ0x0052708Aï¼Œ0x00527085ï¼Œ0x00527081ã€åé¢3ä¸ªéƒ½æ˜¯å­—èŠ‚æ•°ç»„ï¼Œæ‡’å¾—å†™ï¼Œåæ­£æœ‰ä¸€ä¸ªå°±è¡Œã€‘, æ•°æ®å¡«å…¥0x004144DC
+			{PVZ::Memory::ReadMemory<int>(0x0052707D), 6788248, "å°é¬¼å‚æ•° å†…å­˜æ•°æ®1"}, // é”ä¸‹é™
 
 		};
 
-		// ¼ì²é¸¡µãÊıÊÇ·ñÒì³£
+		// æ£€æŸ¥æµ®ç‚¹æ•°æ˜¯å¦å¼‚å¸¸
 		for (const auto& check : rnd_float_checks) {
 			if (check.current_value != check.expected_value) {
 				logger->log(
 					std::string(check.name)
-					+ "±»Ëø¶¨£¡Ô­Êı¾İ: "
+					+ "è¢«é”å®šï¼åŸæ•°æ®: "
 					+ std::to_string(check.expected_value)
-					+ "ĞŞ¸Äºó: "
+					+ "ä¿®æ”¹å: "
 					+ std::to_string(check.current_value)
 					, Logger::DEBUG
 				);
-				data_changed = true;  // Ö»ÒªÓĞÒ»¸ö²»Æ¥Åä¾Í·µ»Øtrue
+				data_changed = true;  // åªè¦æœ‰ä¸€ä¸ªä¸åŒ¹é…å°±è¿”å›true
 			}
 		}
 
@@ -247,90 +247,90 @@ private:
 		};
 		RndByteCheck rnd_byte_checks[] = {
 			//Zombies
-			{PVZ::Memory::ReadMemory<byte>(0x00522FD2), "Ğ¡³óµ¹Êı"},
-			{PVZ::Memory::ReadMemory<byte>(0x00522FE8), "Ğ¡³óÔç±¬"},
-			{PVZ::Memory::ReadMemory<byte>(0x0052259F), "ÆäËû³öÉú"},
-			{PVZ::Memory::ReadMemory<byte>(0x00522CDB), "³Å¸Ë³öÉú"},
-			{PVZ::Memory::ReadMemory<byte>(0x00522DEF), "±ù³µ³öÉú"},
-			{PVZ::Memory::ReadMemory<byte>(0x00522E91), "Í¶Àº³öÉú"},
-			{PVZ::Memory::ReadMemory<byte>(0x00523D38), "¾ŞÈË³öÉú"},
-			{PVZ::Memory::ReadMemory<byte>(0x0052B907), "´óËâ·½Ïò"},
-			{PVZ::Memory::ReadMemory<byte>(0x00523A8B), "À±½·µ¹Êı"},
-			{PVZ::Memory::ReadMemory<byte>(0x00522A26), "Ğ¡Íµ¸ß¶È"},
-			{PVZ::Memory::ReadMemory<byte>(0x005234FE), "ÎèÍõ»¬²½"},
-			{PVZ::Memory::ReadMemory<byte>(0x005232B5), "Ñ©ÈËÌÓÅÜ"},
-			{PVZ::Memory::ReadMemory<byte>(0x0041CEA8), "ÌøÌø³õÊ¼"},
+			{PVZ::Memory::ReadMemory<byte>(0x00522FD2), "å°ä¸‘å€’æ•°"},
+			{PVZ::Memory::ReadMemory<byte>(0x00522FE8), "å°ä¸‘æ—©çˆ†"},
+			{PVZ::Memory::ReadMemory<byte>(0x0052259F), "å…¶ä»–å‡ºç”Ÿ"},
+			{PVZ::Memory::ReadMemory<byte>(0x00522CDB), "æ’‘æ†å‡ºç”Ÿ"},
+			{PVZ::Memory::ReadMemory<byte>(0x00522DEF), "å†°è½¦å‡ºç”Ÿ"},
+			{PVZ::Memory::ReadMemory<byte>(0x00522E91), "æŠ•ç¯®å‡ºç”Ÿ"},
+			{PVZ::Memory::ReadMemory<byte>(0x00523D38), "å·¨äººå‡ºç”Ÿ"},
+			{PVZ::Memory::ReadMemory<byte>(0x0052B907), "å¤§è’œæ–¹å‘"},
+			{PVZ::Memory::ReadMemory<byte>(0x00523A8B), "è¾£æ¤’å€’æ•°"},
+			{PVZ::Memory::ReadMemory<byte>(0x00522A26), "å°å·é«˜åº¦"},
+			{PVZ::Memory::ReadMemory<byte>(0x005234FE), "èˆç‹æ»‘æ­¥"},
+			{PVZ::Memory::ReadMemory<byte>(0x005232B5), "é›ªäººé€ƒè·‘"},
+			{PVZ::Memory::ReadMemory<byte>(0x0041CEA8), "è·³è·³åˆå§‹"},
 			//Plants
-			{PVZ::Memory::ReadMemory<byte>(0x00532420), "Ò»´Î¶³½á"},
-			{PVZ::Memory::ReadMemory<byte>(0x0053240F), "¶ş´Î¶³½á"},
-			{PVZ::Memory::ReadMemory<byte>(0x004140C4), "Ë¢ĞÂµ¹Êı"},
-			{PVZ::Memory::ReadMemory<byte>(0x00413BBE), "Ìì½µ¼ä¸ô"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045E3CC), "Ğ¡Åç™MÒÆ"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045E3DC), "Ğ¡Åç×İÒÆ"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045E66F), "Ñô¹â™MÒÆ"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045E67F), "Ñô¹â×İÒÆ"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045F1E5), "Ëø¶¨»ÆÓÍ"},
-			{PVZ::Memory::ReadMemory<byte>(0x004630F4), "±£Áä·½Ïò"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045DED0), "Éú²ú³õÊ¼"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045FA91), "Éú²ú¼ä¸ô"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045DEE2), "¹¥»÷³õÊ¼"},
-			{PVZ::Memory::ReadMemory<byte>(0x0045F8BA), "¹¥»÷¼ä¸ô"},
-			{PVZ::Memory::ReadMemory<byte>(0x0042AFA6), "IZE¼õ»¨"},
+			{PVZ::Memory::ReadMemory<byte>(0x00532420), "ä¸€æ¬¡å†»ç»“"},
+			{PVZ::Memory::ReadMemory<byte>(0x0053240F), "äºŒæ¬¡å†»ç»“"},
+			{PVZ::Memory::ReadMemory<byte>(0x004140C4), "åˆ·æ–°å€’æ•°"},
+			{PVZ::Memory::ReadMemory<byte>(0x00413BBE), "å¤©é™é—´éš”"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045E3CC), "å°å–·æ©«ç§»"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045E3DC), "å°å–·çºµç§»"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045E66F), "é˜³å…‰æ©«ç§»"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045E67F), "é˜³å…‰çºµç§»"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045F1E5), "é”å®šé»„æ²¹"},
+			{PVZ::Memory::ReadMemory<byte>(0x004630F4), "ä¿é¾„æ–¹å‘"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045DED0), "ç”Ÿäº§åˆå§‹"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045FA91), "ç”Ÿäº§é—´éš”"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045DEE2), "æ”»å‡»åˆå§‹"},
+			{PVZ::Memory::ReadMemory<byte>(0x0045F8BA), "æ”»å‡»é—´éš”"},
+			{PVZ::Memory::ReadMemory<byte>(0x0042AFA6), "IZEå‡èŠ±"},
 		};
-		// ¼ì²éÆäËûÊÇ·ñÒì³£
+		// æ£€æŸ¥å…¶ä»–æ˜¯å¦å¼‚å¸¸
 		for (const auto& check : rnd_byte_checks) {
 			if (check.current_value == byte(184)) {
 				logger->log(
 					std::string(check.name)
-					+ "±»Ëø¶¨! "
+					+ "è¢«é”å®š! "
 					, Logger::DEBUG
 				);
-				data_changed = true;  // Ö»ÒªÓĞÒ»¸ö²»Æ¥Åä¾Í·µ»Øtrue
+				data_changed = true;  // åªè¦æœ‰ä¸€ä¸ªä¸åŒ¹é…å°±è¿”å›true
 			}
 		}
 
-		return data_changed;  // Èç¹ûËùÓĞµÄÖµ¶¼·ûºÏÔ¤ÆÚ£¬·µ»Øfalse
+		return data_changed;  // å¦‚æœæ‰€æœ‰çš„å€¼éƒ½ç¬¦åˆé¢„æœŸï¼Œè¿”å›false
 
 	}
 
-	// ¼ì²âÊÇ·ñÊ¹ÓÃ¹ı²ù×Ó
+	// æ£€æµ‹æ˜¯å¦ä½¿ç”¨è¿‡é“²å­
 	bool check_shovel() {
 		if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x579c) != 0) {
-			logger->log("²ù¹ıÖ²ÎïÊıÁ¿: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x579c)), Logger::DEBUG);
+			logger->log("é“²è¿‡æ¤ç‰©æ•°é‡: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x579c)), Logger::DEBUG);
 			return true;
 		}
 		return false;
 	}
 
-	// ¼ì²â½©Ê¬ËÙ¶È·Ö²¼
+	// æ£€æµ‹åƒµå°¸é€Ÿåº¦åˆ†å¸ƒ
 	bool check_zombie_speed() {
 		if (PVZ::Memory::ReadMemory<byte>(0x52b215) != byte(117)) {
-			logger->log("¿ªÆô½©Ê¬ËÙ¶È¼Ó¿ì", Logger::DEBUG);
+			logger->log("å¼€å¯åƒµå°¸é€Ÿåº¦åŠ å¿«", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<short int>(0x0052F103) != 21620) {
-			logger->log("¿ªÆô½©Ê¬ËÙ¶È¸ü¿ì", Logger::DEBUG);
+			logger->log("å¼€å¯åƒµå°¸é€Ÿåº¦æ›´å¿«", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x52aaad) != byte(116)) {
-			logger->log("¿ªÆô½©Ê¬ÔÈËÙÇ°½ø", Logger::DEBUG);
+			logger->log("å¼€å¯åƒµå°¸åŒ€é€Ÿå‰è¿›", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x00531045) != byte(200)) {
-			logger->log("½©Ê¬×´Ì¬Òì³£: ÒÉËÆ¿ªÁË½©Ê¬ÎŞµĞ", Logger::DEBUG);
+			logger->log("åƒµå°¸çŠ¶æ€å¼‚å¸¸: ç–‘ä¼¼å¼€äº†åƒµå°¸æ— æ•Œ", Logger::DEBUG);
 			return true;
 		}
 		return false;
 	}
 
-	// ½«²â½©Ê¬×´Ì¬
+	// å°†æµ‹åƒµå°¸çŠ¶æ€
 	bool check_zombie_status() {
 		if (PVZ::Memory::ReadMemory<byte>(0x0053095C) != byte(132)) {
-			logger->log("¿ªÆô½©Ê¬ÃâÒß¼õËÙ", Logger::DEBUG);
+			logger->log("å¼€å¯åƒµå°¸å…ç–«å‡é€Ÿ", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x00531A1A) != byte(116)) {
-			logger->log("¿ªÆô½©Ê¬ÃâÒß»ÆÓÍ", Logger::DEBUG);
+			logger->log("å¼€å¯åƒµå°¸å…ç–«é»„æ²¹", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x004620C5) != byte(2)
@@ -340,11 +340,11 @@ private:
 			|| PVZ::Memory::ReadMemory<byte>(0x004620DF) != byte(15)
 			|| PVZ::Memory::ReadMemory<byte>(0x004620ED) != byte(0)
 			) {
-			logger->log("¿ªÆô½©Ê¬ÃâÒß´ÅÁ¦¹½", Logger::DEBUG);
+			logger->log("å¼€å¯åƒµå°¸å…ç–«ç£åŠ›è‡", Logger::DEBUG);
 			return true;
 		}
 		if (PVZ::Memory::ReadMemory<byte>(0x004248AA) != byte(117)) {
-			logger->log("¿ªÆô½©Ê¬¿ìÅÜ", Logger::DEBUG);
+			logger->log("å¼€å¯åƒµå°¸å¿«è·‘", Logger::DEBUG);
 			return true;
 		}
 
@@ -353,112 +353,112 @@ private:
 		return false;
 	}
 
-	// ¼ì²âÖ²Îï×´Ì¬
+	// æ£€æµ‹æ¤ç‰©çŠ¶æ€
 	bool check_plant_status() {
 		if (PVZ::Memory::ReadMemory<byte>(0x0045EE0A) != byte(117)
 			|| PVZ::Memory::ReadMemory<byte>(0x0052FCF3) != byte(252)
 			|| PVZ::Memory::ReadMemory<byte>(0x0052FCF1) != byte(70)
 			) {
-			logger->log("¿ªÆôÖ²ÎïĞéÈõ", Logger::DEBUG);
+			logger->log("å¼€å¯æ¤ç‰©è™šå¼±", Logger::DEBUG);
 			return true;
 		}
 		return false;
 	}
 
-	// ¼ì²âÊÇ·ñ¿ªÆô×Ô¶¯ÊÕ¼¯
+	// æ£€æµ‹æ˜¯å¦å¼€å¯è‡ªåŠ¨æ”¶é›†
 	bool check_auto_collected() {
 		if (PVZ::Memory::ReadMemory<byte>(0x0043158f) != 0x75) {
-			logger->log("¼ì²âµ½¿ªÆô×Ô¶¯ÊÕ¼¯", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°å¼€å¯è‡ªåŠ¨æ”¶é›†", Logger::DEBUG);
 			PVZ::Memory::WriteMemory<byte>(0x0043158f, 0x75);
 			return true;
 		}
 		return false;
 	}
 
-	// É¨ÃèÄÚ´æÖĞ³£ĞŞ¸ÄµÄÊı¾İ
+	// æ‰«æå†…å­˜ä¸­å¸¸ä¿®æ”¹çš„æ•°æ®
 	bool check_memory() {
-		// ÓÎÏ·ËÙ¶È
+		// æ¸¸æˆé€Ÿåº¦
 		if (check_speed()) {
-			logger->log("¼ì²âµ½ËÙ¶ÈÒì³£", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°é€Ÿåº¦å¼‚å¸¸", Logger::DEBUG);
 			return true;
 		}
-		// ×Ô¶¯ÊÕ¼¯
+		// è‡ªåŠ¨æ”¶é›†
 		else if (check_auto_collected()) {
-			logger->log("¼ì²âµ½¿ªÆô×Ô¶¯ÊÕ¼¯", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°å¼€å¯è‡ªåŠ¨æ”¶é›†", Logger::DEBUG);
 			return true;
 		}
-		// ËÙ¶È³£Á¿
+		// é€Ÿåº¦å¸¸é‡
 		else if (check_speed_constant()) {
-			logger->log("¼ì²âµ½ËÙ¶È³£Á¿Òì³£", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°é€Ÿåº¦å¸¸é‡å¼‚å¸¸", Logger::DEBUG);
 			return true;
 		}
-		// ËøÓñÃ×»ÆÓÍ
+		// é”ç‰ç±³é»„æ²¹
 		else if (check_Kernelpult()) {
-			logger->log("¼ì²âµ½ÓñÃ×Òì³£", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°ç‰ç±³å¼‚å¸¸", Logger::DEBUG);
 			return true;
 		}
-		// ÊÇ·ñÊ¹ÓÃrndĞŞ¸ÄËæ»úÊı
+		// æ˜¯å¦ä½¿ç”¨rndä¿®æ”¹éšæœºæ•°
 		else if (check_rnd()) {
-			logger->log("¼ì²âµ½Ëæ»úÊıÒì³£", Logger::DEBUG);
+			logger->log("æ£€æµ‹åˆ°éšæœºæ•°å¼‚å¸¸", Logger::DEBUG);
 			return true;
 		}
-		// ÊÇ·ñÊ¹ÓÃ¹ı²ù×Ó
+		// æ˜¯å¦ä½¿ç”¨è¿‡é“²å­
 		else if (check_shovel()) {
-			logger->log("¼ì²âÊ¹ÓÃ¹ı²ù×Ó", Logger::DEBUG);
-			PVZ::Memory::WriteMemory(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) + 0x579c, 0);//±¨¹ıÒ»´Î×÷±×ºó¾Í¸Ä»Ø0
+			logger->log("æ£€æµ‹ä½¿ç”¨è¿‡é“²å­", Logger::DEBUG);
+			PVZ::Memory::WriteMemory(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) + 0x579c, 0);//æŠ¥è¿‡ä¸€æ¬¡ä½œå¼Šåå°±æ”¹å›0
 			return true;
 		}
-		// ÊÇ·ñ¿ªÆôdance
+		// æ˜¯å¦å¼€å¯dance
 		else if (check_dance()) {
-			logger->log("¼ì²â³ödance", Logger::DEBUG);
+			logger->log("æ£€æµ‹å‡ºdance", Logger::DEBUG);
 			return true;
 		}
-		// ÊÇ·ñ¿ªÆôÃâ·ÑÖÖÖ²
+		// æ˜¯å¦å¼€å¯å…è´¹ç§æ¤
 		else if (check_free_plant()) {
-			logger->log("¼ì²â³öÃâ·ÑÖÖÖ²", Logger::DEBUG);
+			logger->log("æ£€æµ‹å‡ºå…è´¹ç§æ¤", Logger::DEBUG);
 			return true;
 		}
-		// ½©Ê¬ËÙ¶È×´Ì¬ÊÇ·ñÒì³££ºÔÈËÙ£¬±äËÙÊ²Ã´µÄ
+		// åƒµå°¸é€Ÿåº¦çŠ¶æ€æ˜¯å¦å¼‚å¸¸ï¼šåŒ€é€Ÿï¼Œå˜é€Ÿä»€ä¹ˆçš„
 		else if (check_zombie_speed()) {
-			logger->log("¼ì²â³ö½©Ê¬ËÙ¶ÈÒì³£", Logger::DEBUG);
+			logger->log("æ£€æµ‹å‡ºåƒµå°¸é€Ÿåº¦å¼‚å¸¸", Logger::DEBUG);
 			return true;
 		}
-		// ½©Ê¬×´Ì¬ÊÇ·ñÒì³££ºÎŞµĞ£¬ÃâÒß
+		// åƒµå°¸çŠ¶æ€æ˜¯å¦å¼‚å¸¸ï¼šæ— æ•Œï¼Œå…ç–«
 		else if (check_zombie_status()) {
-			logger->log("¼ì²â³ö½©Ê¬×´Ì¬Òì³£", Logger::DEBUG);
+			logger->log("æ£€æµ‹å‡ºåƒµå°¸çŠ¶æ€å¼‚å¸¸", Logger::DEBUG);
 			return true;
 		}
-		// Ö²Îï×´Ì¬ÊÇ·ñÒì³££º±»Ãë³Ô£¬ĞéÈõ
+		// æ¤ç‰©çŠ¶æ€æ˜¯å¦å¼‚å¸¸ï¼šè¢«ç§’åƒï¼Œè™šå¼±
 		else if (check_plant_status()) {
-			logger->log("¼ì²â³ö½©Ê¬×´Ì¬Òì³£", Logger::DEBUG);
+			logger->log("æ£€æµ‹å‡ºåƒµå°¸çŠ¶æ€å¼‚å¸¸", Logger::DEBUG);
 			return true;
 		}
 		return false;
 	}
 
-	// É¨ÃèºóÌ¨½ø³Ì: ´ø´°¿ÚµÄ, Ö»ÒªÊÇ¿´ĞÅÏ¢¾Í»áÓĞÏÔÊ¾ĞÅÏ¢µÄ
+	// æ‰«æåå°è¿›ç¨‹: å¸¦çª—å£çš„, åªè¦æ˜¯çœ‹ä¿¡æ¯å°±ä¼šæœ‰æ˜¾ç¤ºä¿¡æ¯çš„
 	void log_background_process() {
-		// ¼à²âºóÌ¨½ø³ÌÊÇ·ñÓĞËãÑªÆ÷£º³£¹æĞÅÏ¢ÖĞµÄÃèÊöÎª"IZECalculatorV1.5.10.exe"
-		// ¼à²âºóÌ¨½ø³ÌÊÇ·ñÓĞIZ²¼ÕóÆ÷£º³£¹æĞÅÏ¢ÖĞµÄÃèÊöÎª"IZ_Format_Designer_V2"
-		// ¼à²âºóÌ¨½ø³ÌÊÇ·ñÓĞRnd£º³£¹æĞÅÏ¢ÖĞµÄÃèÊöÎª"Rnd_3_4.exe"
-		// ¼à²âºóÌ¨½ø³ÌÊÇ·ñÓĞpt£º³£¹æĞÅÏ¢ÖĞµÄÃèÊöÎª"PvZ Tools"
-		// ¼à²âºóÌ¨½ø³ÌÊÇ·ñÓĞptk£º³£¹æĞÅÏ¢ÖĞµÄÃèÊöÎª"PvZ Toolkit"
-		// ¼à²âºóÌ¨½ø³ÌÊÇ·ñÓĞÖÕ¼«ĞŞ¸ÄÆ÷£º³£¹æĞÅÏ¢ÖĞµÄÃèÊöÎª"PVZWPFĞŞ¸ÄÆ÷"
+		// ç›‘æµ‹åå°è¿›ç¨‹æ˜¯å¦æœ‰ç®—è¡€å™¨ï¼šå¸¸è§„ä¿¡æ¯ä¸­çš„æè¿°ä¸º"IZECalculatorV1.5.10.exe"
+		// ç›‘æµ‹åå°è¿›ç¨‹æ˜¯å¦æœ‰IZå¸ƒé˜µå™¨ï¼šå¸¸è§„ä¿¡æ¯ä¸­çš„æè¿°ä¸º"IZ_Format_Designer_V2"
+		// ç›‘æµ‹åå°è¿›ç¨‹æ˜¯å¦æœ‰Rndï¼šå¸¸è§„ä¿¡æ¯ä¸­çš„æè¿°ä¸º"Rnd_3_4.exe"
+		// ç›‘æµ‹åå°è¿›ç¨‹æ˜¯å¦æœ‰ptï¼šå¸¸è§„ä¿¡æ¯ä¸­çš„æè¿°ä¸º"PvZ Tools"
+		// ç›‘æµ‹åå°è¿›ç¨‹æ˜¯å¦æœ‰ptkï¼šå¸¸è§„ä¿¡æ¯ä¸­çš„æè¿°ä¸º"PvZ Toolkit"
+		// ç›‘æµ‹åå°è¿›ç¨‹æ˜¯å¦æœ‰ç»ˆæä¿®æ”¹å™¨ï¼šå¸¸è§„ä¿¡æ¯ä¸­çš„æè¿°ä¸º"PVZWPFä¿®æ”¹å™¨"
 
 		EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&windows));
 
-		// È¥ÖØ£¨°´½ø³ÌIDºÍ±êÌâ£©
+		// å»é‡ï¼ˆæŒ‰è¿›ç¨‹IDå’Œæ ‡é¢˜ï¼‰
 		std::unordered_set<std::wstring> uniqueTitles;
 		for (const auto& win : windows) {
 			if (!win.title.empty() && uniqueTitles.insert(win.title).second) {
-				logger->log("Ó¦ÓÃ±êÌâ: " + WideToANSI(win.title) + " (PID: " + std::to_string(win.pid) + ")", Logger::DEBUG);
+				logger->log("åº”ç”¨æ ‡é¢˜: " + WideToANSI(win.title) + " (PID: " + std::to_string(win.pid) + ")", Logger::DEBUG);
 			}
 		}
 	}
 
-	// ¼ÇÂ¼Ö²ÎïºÍ½©Ê¬Êı¾İ
+	// è®°å½•æ¤ç‰©å’Œåƒµå°¸æ•°æ®
 	void log_zombie_plant() {
-		// ¼ÇÂ¼ËùÓĞ½©Ê¬ÒÆËÙºÍÑªÁ¿
+		// è®°å½•æ‰€æœ‰åƒµå°¸ç§»é€Ÿå’Œè¡€é‡
 		for (auto zombie : PVZ::GetBoard()->GetAllZombies()) {
 			if (!zombie->NotExist) {
 				int bodyhp, max_bodyhp;
@@ -467,99 +467,150 @@ private:
 				PVZ::Zombie::AccessoriesType2 acctype2 = zombie->GetAccessoriesType2();
 
 				logger->log(
-					"µÚ" + std::to_string(zombie->Row + 1) + "ĞĞ, ×ø±êÎª:" + std::to_string(zombie->ImageX) + ", Õ»Î»Îª:" + std::to_string(zombie->Index) + "µÄ" + ZombieType::ToString(zombie->Type)
-					+ "ËÙ¶ÈÎª: " + std::to_string(zombie->Speed) + "½©Ê¬±¾ÌåÑªÁ¿: " + std::to_string(bodyhp)
-					+ ", Ò»Àà·À¾ß: " + std::to_string(acctype1.Hp) + "/" + std::to_string(acctype1.MaxHp)
-					+ ", ¶şÀà·À¾ß: " + std::to_string(acctype2.Hp) + "/" + std::to_string(acctype2.MaxHp)
-					+ ", ´æÔÚÊ±¼ä: " + std::to_string(zombie->ExistedTime)
+					"ç¬¬" + std::to_string(zombie->Row + 1) + "è¡Œ, åæ ‡ä¸º:" + std::to_string(zombie->ImageX) + ", æ ˆä½ä¸º:" + std::to_string(zombie->Index) + "çš„" + ZombieType::ToString(zombie->Type)
+					+ "é€Ÿåº¦ä¸º: " + std::to_string(zombie->Speed) + "åƒµå°¸æœ¬ä½“è¡€é‡: " + std::to_string(bodyhp)
+					+ ", ä¸€ç±»é˜²å…·: " + std::to_string(acctype1.Hp) + "/" + std::to_string(acctype1.MaxHp)
+					+ ", äºŒç±»é˜²å…·: " + std::to_string(acctype2.Hp) + "/" + std::to_string(acctype2.MaxHp)
+					+ ", å­˜åœ¨æ—¶é—´: " + std::to_string(zombie->ExistedTime)
 					, Logger::DEBUG
 				);
 			}
 		}
 
-		// ¼ÇÂ¼Ö²ÎïÑªÁ¿: ÓÃÓÚ¼ì²âÑªÁ¿ÊÇ·ñÒì³£
+		// è®°å½•æ¤ç‰©è¡€é‡: ç”¨äºæ£€æµ‹è¡€é‡æ˜¯å¦å¼‚å¸¸
 		for (auto plant : PVZ::GetBoard()->GetAllPlants()) {
 			if (!plant->NotExist) {
 				logger->log(
-					"µÚ" + std::to_string(plant->Row + 1) + "ĞĞ, ×ø±êÎª:" + std::to_string(plant->ImageX) + ", Õ»Î»Îª:" + std::to_string(plant->Index) + "µÄ" + PlantType::ToString(plant->Type)
-					+ "hpÎª: " + std::to_string(plant->Hp) + ", ×î´óÑªÁ¿Îª: " + std::to_string(plant->MaxHp) + ", ÊôĞÔµ¹¼ÆÊ±(Ò»°ãÊÇ´ÅÁ¦¹½): " + std::to_string(plant->AttributeCountdown)
+					"ç¬¬" + std::to_string(plant->Row + 1) + "è¡Œ, åæ ‡ä¸º:" + std::to_string(plant->ImageX) + ", æ ˆä½ä¸º:" + std::to_string(plant->Index) + "çš„" + PlantType::ToString(plant->Type)
+					+ "hpä¸º: " + std::to_string(plant->Hp) + ", æœ€å¤§è¡€é‡ä¸º: " + std::to_string(plant->MaxHp) + ", å±æ€§å€’è®¡æ—¶(ä¸€èˆ¬æ˜¯ç£åŠ›è‡): " + std::to_string(plant->AttributeCountdown)
 					, Logger::DEBUG
 				);
 			}
 		}
 	}
 
-	// ¼ÇÂ¼Êó±êÊı¾İ
+	// è®°å½•é¼ æ ‡æ•°æ®
 	void log_mouse() {
-		logger->log(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0xdc) ? "Êó±êÒÆ³öÆÁÄ»" : "Êó±ê»¹ÔÚÆÁÄ»ÄÚ", Logger::DEBUG);
-		logger->log("Êó±ê×ø±ê: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x5558)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x555c)), Logger::DEBUG);
-	}
-public:
-	int check_interval;
-	Logger* logger;
-
-	// ÀàÊµÀı»¯£º¼ì²â¼ä¸ô(s)£¬ÈÕÖ¾¼ÇÂ¼ÀàÒıÓÃ
-	GameCheatCheck(int interval, Logger* logger_ref)
-		: check_interval(interval), logger(logger_ref) // ³õÊ¼»¯ÁĞ±í
-	{
+		logger->log(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0xdc) ? "é¼ æ ‡ç§»å‡ºå±å¹•" : "é¼ æ ‡è¿˜åœ¨å±å¹•å†…", Logger::DEBUG);
+		logger->log("é¼ æ ‡åæ ‡: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x5558)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x555c)), Logger::DEBUG);
 	}
 
-	// ¼ì²âºÍÉ¨ÃèËùÓĞ¿ÉÒÉÏîÄ¿£ºÓÎÏ·ËÙ¶È£¬ÄÚ´æÊı¾İ£¬Ö²ÎïºÍ½©Ê¬Êı¾İ£¬ºóÌ¨½ø³Ì
-	bool check_all() {
-		// É¨ÃèÊó±ê
-		logger->log(std::string(30, '*'), Logger::DEBUG);
-		log_mouse();
-		logger->log(std::string(30, '*'), Logger::DEBUG);
-		// É¨ÃèÖ²Îï
-		logger->log(std::string(30, '*'), Logger::DEBUG);
-		log_zombie_plant();
-		logger->log(std::string(30, '*'), Logger::DEBUG);
 
-		// É¨ÃèºóÌ¨½ø³Ì
-		logger->log(std::string(30, '*'), Logger::DEBUG);
-		log_background_process();
-		logger->log(std::string(30, '*'), Logger::DEBUG);
+	// æ‰«ææ˜¯å¦åªæœ‰1ä¸ªpvzè¿›ç¨‹
+	bool check_n_PvzWindow() {
+		int valid_count = 0;
+		EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
+			// åªç»Ÿè®¡å¯è§ä¸»çª—å£
+			if (!IsWindowVisible(hwnd) || GetParent(hwnd) != nullptr) {
+				return TRUE;
+			}
 
-		logger->log(std::string(30, '*'), Logger::DEBUG);
-		if (check_memory()) {
-			logger->log("¼ì²â³öÄÚ´æÒì³£!", Logger::DEBUG);
-			logger->log(std::string(30, '*'), Logger::DEBUG);
+			char title[256] = { 0 };
+			GetWindowTextA(hwnd, title, sizeof(title));
+
+			std::string window_title = title;
+			if (window_title != "Plants vs. Zombies" && window_title != "Plants vs. Zombies(cheatCheck: open, maidCheat: disable)") {
+				return TRUE; // continue enumeration
+			}
+
+			DWORD pid = 0;
+			GetWindowThreadProcessId(hwnd, &pid);
+			if (pid == 0) return TRUE;
+
+			HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+			if (!hProcess) return TRUE;
+
+			char exeName[MAX_PATH] = { 0 };
+			if (GetModuleBaseNameA(hProcess, nullptr, exeName, MAX_PATH)) {
+				std::string process_name = exeName;
+				if (process_name == "PlantsVsZombies.exe") {
+					int* count_ptr = reinterpret_cast<int*>(lParam);
+					(*count_ptr)++;
+				}
+			}
+
+			CloseHandle(hProcess);
+			return TRUE;
+			}, reinterpret_cast<LPARAM>(&valid_count));
+		 
+		if (valid_count != 1) {
+			logger->log("æ£€æµ‹åˆ° " +std::to_string( valid_count) + " ä¸ª PvZ çª—å£!", Logger::DEBUG);
 			return true;
 		}
 
 		return false;
 	}
 
+public:
+	int check_interval;
+	Logger* logger;
 
+	// ç±»å®ä¾‹åŒ–ï¼šæ£€æµ‹é—´éš”(s)ï¼Œæ—¥å¿—è®°å½•ç±»å¼•ç”¨
+	GameCheatCheck(int interval, Logger* logger_ref)
+		: check_interval(interval), logger(logger_ref) // åˆå§‹åŒ–åˆ—è¡¨
+	{
+	}
+
+	// æ£€æµ‹å’Œæ‰«ææ‰€æœ‰å¯ç–‘é¡¹ç›®ï¼šæ¸¸æˆé€Ÿåº¦ï¼Œå†…å­˜æ•°æ®ï¼Œæ¤ç‰©å’Œåƒµå°¸æ•°æ®ï¼Œåå°è¿›ç¨‹ï¼Œæ˜¯å¦å¤šå¼€pvz
+	bool check_all() {
+		// æ‰«æé¼ æ ‡
+		logger->log(std::string(30, '*'), Logger::DEBUG);
+		log_mouse();
+		logger->log(std::string(30, '*'), Logger::DEBUG);
+		// æ‰«ææ¤ç‰©
+		logger->log(std::string(30, '*'), Logger::DEBUG);
+		log_zombie_plant();
+		logger->log(std::string(30, '*'), Logger::DEBUG);
+
+		// æ‰«æåå°è¿›ç¨‹
+		logger->log(std::string(30, '*'), Logger::DEBUG);
+		log_background_process();
+		logger->log(std::string(30, '*'), Logger::DEBUG);
+
+		logger->log(std::string(30, '*'), Logger::DEBUG);
+		if (check_memory()) {
+			logger->log("æ£€æµ‹å‡ºå†…å­˜å¼‚å¸¸!", Logger::DEBUG);
+			logger->log(std::string(30, '*'), Logger::DEBUG);
+			return true;
+		}
+
+		// æ‰«ææ˜¯å¦æœ‰å¤šä¸ªpvz
+		if (check_n_PvzWindow()) {
+			logger->log("æ£€æµ‹å‡ºpvzå¤šå¼€!", Logger::DEBUG);
+			logger->log(std::string(30, '*'), Logger::DEBUG);
+			return true;
+		}
+		return false;
+	}
 
 
 	void check_envirnoment() {
 		if (check_all()) {
-			logger->log("µ±Ç°pvz»·¾³¼ì²â½á¹û: Òì³£!", Logger::INFO);
+			logger->log("å½“å‰pvzç¯å¢ƒæ£€æµ‹ç»“æœ: å¼‚å¸¸!", Logger::INFO);
 			return;
 		}
 		else {
-			logger->log("µ±Ç°pvz»·¾³¼ì²â½á¹û: Õı³££¬Çë¼ÌĞøÓÎÏ·!", Logger::INFO);
+			logger->log("å½“å‰pvzç¯å¢ƒæ£€æµ‹ç»“æœ: æ­£å¸¸ï¼Œè¯·ç»§ç»­æ¸¸æˆ!", Logger::INFO);
 		}
 	}
 };
 
 
-// ¿ØÖÆÓÎÏ·
+// æ§åˆ¶æ¸¸æˆ
 class GameControl {
 
 
 private:;
-		// ¼ì²âÓÎÏ·¿ªÆô
+		// æ£€æµ‹æ¸¸æˆå¼€å¯
 		bool is_game_on()
 		{
 			return PVZ::Memory::ReadMemory<int>(0x6a9ec0) != 0;
 		}
-		// »ñÈ¡ÓÎÏ·mode
+		// è·å–æ¸¸æˆmode
 		int get_game_mode() {
 			return PVZ::Memory::ReadPointer(0x6a9ec0, 0x7f8);
 		}
-		// »ñÈ¡ÓÎÏ·ui
+		// è·å–æ¸¸æˆui
 		int get_game_ui()
 		{
 			return PVZ::Memory::ReadPointer(0x6a9ec0, 0x7fc);
@@ -570,18 +621,18 @@ public:
 	SPT<PVZ::Board> board;
 	SPT<PVZ::PVZApp> pvz;
 	
-	// Ñô¹â»¨·Ñ×Öµä
+	// é˜³å…‰èŠ±è´¹å­—å…¸
 	std::unordered_map < ZombieType::ZombieType, std::pair<int, std::string >> ZombieSunCost = {
-		{ZombieType::Imp,                 {50,  "Ğ¡¹í½©Ê¬"}},
-		{ZombieType::ConeheadZombie,      {75,  "Â·ÕÏ½©Ê¬"}},
-		{ZombieType::PoleVaultingZombie,  {75,  "³Å¸Ë½©Ê¬"}},
-		{ZombieType::BucketheadZombie,    {125, "ÌúÍ°½©Ê¬"}}, // ĞŞÕıÃû³Æ
-		{ZombieType::BungeeZombie,        {125, "±Ä¼«½©Ê¬"}},
-		{ZombieType::DiggerZombie,        {125, "¿ó¹¤½©Ê¬"}},
-		{ZombieType::LadderZombie,        {150, "Ìİ×Ó½©Ê¬"}},
-		{ZombieType::FootballZombie,      {175, "éÏé­Çò½©Ê¬"}},
-		{ZombieType::DancingZombie,       {350, "ÎèÍõ½©Ê¬"}},
-		{ZombieType::BackupDancer,       {0, "°éÎè½©Ê¬"}},
+		{ZombieType::Imp,                 {50,  "å°é¬¼åƒµå°¸"}},
+		{ZombieType::ConeheadZombie,      {75,  "è·¯éšœåƒµå°¸"}},
+		{ZombieType::PoleVaultingZombie,  {75,  "æ’‘æ†åƒµå°¸"}},
+		{ZombieType::BucketheadZombie,    {125, "é“æ¡¶åƒµå°¸"}}, // ä¿®æ­£åç§°
+		{ZombieType::BungeeZombie,        {125, "è¹¦æåƒµå°¸"}},
+		{ZombieType::DiggerZombie,        {125, "çŸ¿å·¥åƒµå°¸"}},
+		{ZombieType::LadderZombie,        {150, "æ¢¯å­åƒµå°¸"}},
+		{ZombieType::FootballZombie,      {175, "æ©„æ¦„çƒåƒµå°¸"}},
+		{ZombieType::DancingZombie,       {350, "èˆç‹åƒµå°¸"}},
+		{ZombieType::BackupDancer,       {0, "ä¼´èˆåƒµå°¸"}},
 	};
 
 	GameControl(DWORD pid) {
@@ -592,7 +643,11 @@ public:
 		}
 	}
 
-	// Çå³ıÖØ¿ªÊ±µÄ½©Ê¬
+	~GameControl() {
+		PVZ::QuitPVZ();
+		//std::cout << "è‡ªåŠ¨å…³é—­PVZ" << std::endl;
+	}
+	// æ¸…é™¤é‡å¼€æ—¶çš„åƒµå°¸
 	void remove_cutscene_zombie() {
 		if (is_in_ize()) {
 			AsmCode code;
@@ -608,10 +663,10 @@ public:
 		}
 	}
 
-	// ÄÃµ½Íæ¼ÒÃû×Ö
+	// æ‹¿åˆ°ç©å®¶åå­—
 	std::string get_player_name() {
 		int name_length = PVZ::Memory::ReadPointer(0x6a9ec0, 0x82c, 0x14);
-		// °´ÕÕµØÖ·ÒÀ´Î¶Áname_length¸ö×Ö½Ú£¬Ã¿¸ö×Ö½Ú×ªÊ®Áù½øÖÆÔÙ-'0'
+		// æŒ‰ç…§åœ°å€ä¾æ¬¡è¯»name_lengthä¸ªå­—èŠ‚ï¼Œæ¯ä¸ªå­—èŠ‚è½¬åå…­è¿›åˆ¶å†-'0'
 		std::stringstream ss;
 		for (int i = 0; i < name_length; i++) {
 			int value = PVZ::Memory::ReadMemory<byte>(PVZ::Memory::ReadPointer(0x6a9ec0, 0x82c) + 0x4 + i );
@@ -621,46 +676,46 @@ public:
 		return ss.str();
 	}
 
-	// ´ò¿ª×Ô¶¯ÊÕ¼¯
+	// æ‰“å¼€è‡ªåŠ¨æ”¶é›†
 	void auto_collect(bool on) {
 		if (on) PVZ::Memory::WriteMemory<byte>(0x0043158f, 0xeb);
 		else PVZ::Memory::WriteMemory<byte>(0x0043158f, 0x75);
 	}
 
-	// ¼ì²âÊÇ·ñÔÚizeÖĞ
-	bool is_in_ize() { // ½øÈëÁËizeÖĞ
+	// æ£€æµ‹æ˜¯å¦åœ¨izeä¸­
+	bool is_in_ize() { // è¿›å…¥äº†izeä¸­
 		return (is_game_on() && get_game_mode() == 70 && (get_game_ui() == 2 || get_game_ui() == 3));
 	}
 
-	// ÖÖ×ÓÁ÷²¼Õó
+	// ç§å­æµå¸ƒé˜µ
 	void set_layout(const std::string& ls, int flower_num) {
 		if (is_in_ize()) {
 			// ls = "1/2130778634";
 			int theme = static_cast<int>(ls[0] - '0');
 			size_t seed = std::stoull(ls.substr(2));
 
-			auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme)); // »ñÈ¡²»Í¬Ö÷ÌâµÄÖ²ÎïÉú³ÉË³Ğò
+			auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme)); // è·å–ä¸åŒä¸»é¢˜çš„æ¤ç‰©ç”Ÿæˆé¡ºåº
 			auto orders = GenerateLayoutCode::get_shuffled_array(seed);
 			//for (auto it : orders) std::cout << it << " ";
 
 
-			////µ÷ÓÃÓÎÏ·Ë¢ĞÂº¯Êı0x41ca10:(1)ÏÈĞ´Èë×Ö½ÚÊı×é(2)ºóĞ´Èë±êÖ¾Î»£¨3£©ÓÎÏ·¸ù¾İ±êÖ¾Î»£¬¶ÁĞ´ÈëµÄ×Ö½ÚÊı×é
-			//for (size_t i = 0; i < 25; i++) // °ÑÖ²ÎïÈûµ½ÄÚ´æÖĞ
+			////è°ƒç”¨æ¸¸æˆåˆ·æ–°å‡½æ•°0x41ca10:(1)å…ˆå†™å…¥å­—èŠ‚æ•°ç»„(2)åå†™å…¥æ ‡å¿—ä½ï¼ˆ3ï¼‰æ¸¸æˆæ ¹æ®æ ‡å¿—ä½ï¼Œè¯»å†™å…¥çš„å­—èŠ‚æ•°ç»„
+			//for (size_t i = 0; i < 25; i++) // æŠŠæ¤ç‰©å¡åˆ°å†…å­˜ä¸­
 			//{//
 			//	int written[] = { (orders[i]) / 5 , (orders[i]) % 5 ,static_cast<int>(plantTypes[i]) };
 			//	PVZ::Memory::WriteArray<int>(0x6b1200 + 12 * i, written, 12);
 			//}
 			//Sleep(20);
-			//PVZ::Memory::WriteMemory<byte>(0x6b0905, 3); // µ÷ÓÃÓÎÏ·×ÔÉíµÄ²¼Õó¹¦ÄÜ
-			////std::cout << "µÈÓÎÏ·Ë¢ĞÂÖ²Îï" << std::endl;
+			//PVZ::Memory::WriteMemory<byte>(0x6b0905, 3); // è°ƒç”¨æ¸¸æˆè‡ªèº«çš„å¸ƒé˜µåŠŸèƒ½
+			////std::cout << "ç­‰æ¸¸æˆåˆ·æ–°æ¤ç‰©" << std::endl;
 			//Sleep(20);
 
 
-			// »ã±àÒ»´ÎÖÖ
+			// æ±‡ç¼–ä¸€æ¬¡ç§
 			spawn_all_plants(plantTypes, orders);
 
 
-			// ÉèÖÃĞ¡ÅçÆ«ÒÆ
+			// è®¾ç½®å°å–·åç§»
 			std::mt19937 genPuffshroom(seed + 1);
 			std::uniform_int_distribution<int> rngPuffshroomX(-5, 4);
 			std::uniform_int_distribution<int> rngPuffshroomY(-3, 2);
@@ -669,30 +724,30 @@ public:
 				if (plant->Type == PlantType::Puffshroom) {
 					plant->ImageX = 40 + 80 * plant->Column + rngPuffshroomX(genPuffshroom);
 					plant->ImageY = 80 + 100 * plant->Row + rngPuffshroomX(genPuffshroom);
-					//std::cout << "ĞŞ¸ÄÁËĞ¡ÅçÆ«ÒÆ" << plant->ImageX << "/" << plant->ImageY;
+					//std::cout << "ä¿®æ”¹äº†å°å–·åç§»" << plant->ImageX << "/" << plant->ImageY;
 				};
 			};
 
 
-			// TODO: ÖÖÍêÁË½ØÍ¼
+			// TODO: ç§å®Œäº†æˆªå›¾
 
 		};
 	}
 
-	// Ö²ÎïÖÖÖ²Î»ÖÃÁĞ±í²¼Õó
+	// æ¤ç‰©ç§æ¤ä½ç½®åˆ—è¡¨å¸ƒé˜µ
 	void set_layout_test(const std::string& ls, const int theme_index, const int flower_num, const int sun, const std::array<int, 25>orders) {
 		if (is_in_ize()) {
-			// °´µÀÀíÊÇÍ£µôÁËÓÎÏ·µÄÖÖÖ²µÄ
+			// æŒ‰é“ç†æ˜¯åœæ‰äº†æ¸¸æˆçš„ç§æ¤çš„
 			if (board->PlantsCount > 0) clear_reverse_all_plants();
-			// »ñµÃÖÖÖ²Î»ÖÃ
-			auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index)); // »ñÈ¡²»Í¬Ö÷ÌâµÄÖ²ÎïÉú³ÉË³Ğò
+			// è·å¾—ç§æ¤ä½ç½®
+			auto plantTypes = GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index)); // è·å–ä¸åŒä¸»é¢˜çš„æ¤ç‰©ç”Ÿæˆé¡ºåº
 			if (sun != 0 && sun % 25==0) {
 				PVZ::GetBoard()->Sun = sun;
 			}
-			// »ã±àÒ»´ÎÖÖ
+			// æ±‡ç¼–ä¸€æ¬¡ç§
 			spawn_all_plants(plantTypes, orders);
 
-			// ÉèÖÃĞ¡ÅçÆ«ÒÆ
+			// è®¾ç½®å°å–·åç§»
 			std::mt19937 genPuffshroom(theme_index * 66 + flower_num * 88);
 			std::uniform_int_distribution<int> rngPuffshroomX(-5, 4);
 			std::uniform_int_distribution<int> rngPuffshroomY(-3, 2);
@@ -704,7 +759,7 @@ public:
 				};
 			};
 
-			// TOdo: ½ØÍ¼
+			// TOdo: æˆªå›¾
 
 
 		}
@@ -713,39 +768,39 @@ public:
 
 	}
 
-	// É¾³ı³¡ÉÏ»¹Ã»ÊÕ¼¯µÄÑô¹â
+	// åˆ é™¤åœºä¸Šè¿˜æ²¡æ”¶é›†çš„é˜³å…‰
 	void clear_not_colleted_sun() {
 		auto board = PVZ::GetBoard();
 		auto all_coins = board->GetAllCoins();
 
 		for (auto& coin : all_coins) {
 			if (coin->Type == CoinType::NormalSun) {
-				coin->Collected = true; // ÉèÖÃÎªÊÕ¼¯ÁË
-				coin->NotExist = true; // É¾ÁË
+				coin->Collected = true; // è®¾ç½®ä¸ºæ”¶é›†äº†
+				coin->NotExist = true; // åˆ äº†
 			}
 		}
 	}
 
-	// ÊıÄÔ×Ó
+	// æ•°è„‘å­
 	int countEatenBrain()
 	{
 		if (is_in_ize()) return PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x160, 0x60);
 	}
 
-	// ÉèÖÃÄÔ×ÓÊı
+	// è®¾ç½®è„‘å­æ•°
 	void set_EatenBrains(int value) {
 		if (is_in_ize()) PVZ::Memory::WriteMemory(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x160) + 0x60, value);
 	}
 
-	// »ã±àÉ¾ÄÔ×Ó
+	// æ±‡ç¼–åˆ è„‘å­
 	void clear_all_brains() {
 		if (is_in_ize())
 		{
-			// ³õÊ¼»¯»ã±à»·¾³
+			// åˆå§‹åŒ–æ±‡ç¼–ç¯å¢ƒ
 			AsmCode code;
 			code.asm_init();
 
-			// ÕÒµ½ÄÔ×Ó
+			// æ‰¾åˆ°è„‘å­
 			unsigned int griditem_struct_size = 0xec;
 			auto grid_item_count_max = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x120);
 			auto grid_item_offset = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x11c);
@@ -753,105 +808,105 @@ public:
 			{
 				auto grid_item_disappeared = PVZ::Memory::ReadMemory<bool>(grid_item_offset + 0x20 + griditem_struct_size * i);
 				auto grid_item_type = PVZ::Memory::ReadMemory<int>(grid_item_offset + 0x8 + griditem_struct_size * i);
-				if (!grid_item_disappeared && grid_item_type == 12)// ³¡µØÎïÆ·Ã»¿ÕÇÒÊÇÄÔ×Ó£¬É¾ÁË
+				if (!grid_item_disappeared && grid_item_type == 12)// åœºåœ°ç‰©å“æ²¡ç©ºä¸”æ˜¯è„‘å­ï¼Œåˆ äº†
 				{
 					int addr = grid_item_offset + 0xec * i;
 					code.asm_mov_exx(AsmCode::Reg::ESI, addr);
 					code.asm_call(0x0044d000);
 				}
 			}
-			// ×¢Èë´úÂë
+			// æ³¨å…¥ä»£ç 
 			code.asm_ret();
 			code.asm_code_inject(PVZ::Memory::hProcess);
 		}
 	}
 
-	// pvzclass¸üĞÂÄÔ×Ó// ³õÊ¼»¯£¬ÄãµÃÏÈÕÒµ½ÓÎÏ·
+	// pvzclassæ›´æ–°è„‘å­// åˆå§‹åŒ–ï¼Œä½ å¾—å…ˆæ‰¾åˆ°æ¸¸æˆ
 	void update_brains() {
-		// ÔÚizeÖĞ¼´¿É
+		// åœ¨izeä¸­å³å¯
 		if (is_in_ize()) {
-			// 1. »ã±àÏÈÉ¾ÄÔ×Ó
+			// 1. æ±‡ç¼–å…ˆåˆ è„‘å­
 			clear_all_brains();
-			// 2. ÉèÖÃ¹Ø¿¨½ø³Ì0/5¡¾³ÔµÄÄÔ×ÓÊı¡¿£¬½ø¶ÈÌõ0
+			// 2. è®¾ç½®å…³å¡è¿›ç¨‹0/5ã€åƒçš„è„‘å­æ•°ã€‘ï¼Œè¿›åº¦æ¡0
 			PVZ::Memory::WriteMemory<int>(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x160) + 0x60, 0);
 			PVZ::Memory::WriteMemory<int>(PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) + 0x5610, 0);
-			// 3. Éú³É5¸öÄÔ×Ó
+			// 3. ç”Ÿæˆ5ä¸ªè„‘å­
 			for (size_t i = 0; i < 5; i++) {
 				SPT<PVZ::Griditem> iz_brain_new = Creator::CreateGriditem();
-				// ÉèÖÃ»ùÀàÊôĞÔ£º³¡µØÎïÆ·ÊôĞÔ
+				// è®¾ç½®åŸºç±»å±æ€§ï¼šåœºåœ°ç‰©å“å±æ€§
 				iz_brain_new->Row = i; iz_brain_new->Column = 0;
-				iz_brain_new->Layer = 302000 + i * 10000;//Í¼²ã
+				iz_brain_new->Layer = 302000 + i * 10000;//å›¾å±‚
 				iz_brain_new->NotExist = false;
 				iz_brain_new->Type = GriditemType::IZBrain;
-				// ÉèÖÃÅÉÉúÀàÊôĞÔ£ºIZÄÔ×Ó×¨ÓĞÊôĞÔ£ºhp ºÍ Y×ø±ê
+				// è®¾ç½®æ´¾ç”Ÿç±»å±æ€§ï¼šIZè„‘å­ä¸“æœ‰å±æ€§ï¼šhp å’Œ Yåæ ‡
 				PVZ::Memory::WriteMemory<int>(iz_brain_new->GetBaseAddress() + 0x18, 70);// hp
 				PVZ::Memory::WriteMemory<float>(iz_brain_new->GetBaseAddress() + 0x28, 120 + i * 100); // Y
 			}
 		}
 	}
 
-	// Ğ´ÄÚ´æÉ¾³ıÈ«²¿½©Ê¬
+	// å†™å†…å­˜åˆ é™¤å…¨éƒ¨åƒµå°¸
 	void clear_all_zombies() {
 		if (is_in_ize()) {
 			auto zombie_count_max = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x94); // 0x6a9ec0: lawnl; 0x768: board; 0x94:zombie_count_max
 			auto zombie_offset = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0x90); // 0x90: zombie
 
 			for (size_t i = 0; i < zombie_count_max; i++) { // 0xec: zombie_dead ;0x28: zombie_status
-				if (!PVZ::Memory::ReadMemory<bool>(zombie_offset + 0xec + i * 0x15c)) { // Èç¹û½©Ê¬Ã»ËÀ¾Í¸øËûÃÇÉèÖÃËÀµÄ×´Ì¬
-					PVZ::Memory::WriteMemory<int>(zombie_offset + 0x28 + i * 0x15c, 3); // 3Îªiz²¼ÕóÆ÷ÄÇÖÖÉ¾³ı£¬ 1Îª»ºÂıÏûÊ§
+				if (!PVZ::Memory::ReadMemory<bool>(zombie_offset + 0xec + i * 0x15c)) { // å¦‚æœåƒµå°¸æ²¡æ­»å°±ç»™ä»–ä»¬è®¾ç½®æ­»çš„çŠ¶æ€
+					PVZ::Memory::WriteMemory<int>(zombie_offset + 0x28 + i * 0x15c, 3); // 3ä¸ºizå¸ƒé˜µå™¨é‚£ç§åˆ é™¤ï¼Œ 1ä¸ºç¼“æ…¢æ¶ˆå¤±
 				}
 			}
 		}
 	}
 
-	// »ã±àÉ¾È«²¿×Óµ¯
+	// æ±‡ç¼–åˆ å…¨éƒ¨å­å¼¹
 	void clear_all_bullets() {
 		if (is_in_ize()) {
-			unsigned int bullet_struct_size = 0x94; // Ã¿¸öÖ²ÎïµÄ·Ö¿éÄÚ´æ´óĞ¡ 332×Ö½Ú
+			unsigned int bullet_struct_size = 0x94; // æ¯ä¸ªæ¤ç‰©çš„åˆ†å—å†…å­˜å¤§å° 332å­—èŠ‚
 			auto bullet_count_max = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0xcc);
 			auto bullet_offset = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0xc8);
-			// ³õÊ¼»¯»ã±à»·¾³
+			// åˆå§‹åŒ–æ±‡ç¼–ç¯å¢ƒ
 			AsmCode code;
 			code.asm_init();
 
 			for (size_t i = 0; i < bullet_count_max; i++) {
 				auto bullet_disappered = PVZ::Memory::ReadMemory<bool>(bullet_offset + 0x50 + bullet_struct_size * i);
-				if (!bullet_disappered) { // ×Óµ¯ÏûÊ§ÔòÎªtrue, È¡·´
+				if (!bullet_disappered) { // å­å¼¹æ¶ˆå¤±åˆ™ä¸ºtrue, å–å
 					uint32_t addr = bullet_offset + bullet_struct_size * i;
 					code.asm_mov_exx(AsmCode::Reg::EAX, addr);
-					code.asm_call(0x46eb20); // µ÷ÓÃÖ²ÎïÉ¾³ıº¯Êıcall_delete_plant
+					code.asm_call(0x46eb20); // è°ƒç”¨æ¤ç‰©åˆ é™¤å‡½æ•°call_delete_plant
 				}
 			};
 
-			// Ö´ĞĞÉÏÊö»ã±àÃüÁî
+			// æ‰§è¡Œä¸Šè¿°æ±‡ç¼–å‘½ä»¤
 			code.asm_ret();
 			code.asm_code_inject(PVZ::Memory::hProcess);
 		}
 	}
 
-	// »ã±àÉ¾Ö²Îï
+	// æ±‡ç¼–åˆ æ¤ç‰©
 	void clear_all_plants() {
 		if (is_in_ize())
 		{
-			unsigned int plant_struct_size = 0x14c; // Ã¿¸öÖ²ÎïµÄ·Ö¿éÄÚ´æ´óĞ¡ 332×Ö½Ú
-			auto plant_count_max = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0xb0); // Ö²Îï×î´óÊıÁ¿
-			auto plant_offset = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0xac); // Ö²ÎïÆ«ÒÆ
+			unsigned int plant_struct_size = 0x14c; // æ¯ä¸ªæ¤ç‰©çš„åˆ†å—å†…å­˜å¤§å° 332å­—èŠ‚
+			auto plant_count_max = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0xb0); // æ¤ç‰©æœ€å¤§æ•°é‡
+			auto plant_offset = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768, 0xac); // æ¤ç‰©åç§»
 
-			// ³õÊ¼»¯»ã±à»·¾³
+			// åˆå§‹åŒ–æ±‡ç¼–ç¯å¢ƒ
 			AsmCode code;
 			code.asm_init();
 
-			// ÒÀ´ÎÉ¾³ı³¡ÉÏÖ²Îï
-			for (size_t i = 0; i < plant_count_max; i++) { // ¹ØÓÚÖ¸Õë: ĞòÁĞµÚ 42 (Ê®½øÖÆ) ¸öÎ»ÖÃµÄ½©Ê¬µÄÊôĞÔµ¹¼ÆÊ±: [[[[0x6A9EC0] +0x768] +0x90] +0x68 +0x15C*42].
-				auto plant_dead = PVZ::Memory::ReadMemory<bool>(plant_offset + 0x141 + plant_struct_size * i); // 0±íÊ¾Õı³£
+			// ä¾æ¬¡åˆ é™¤åœºä¸Šæ¤ç‰©
+			for (size_t i = 0; i < plant_count_max; i++) { // å…³äºæŒ‡é’ˆ: åºåˆ—ç¬¬ 42 (åè¿›åˆ¶) ä¸ªä½ç½®çš„åƒµå°¸çš„å±æ€§å€’è®¡æ—¶: [[[[0x6A9EC0] +0x768] +0x90] +0x68 +0x15C*42].
+				auto plant_dead = PVZ::Memory::ReadMemory<bool>(plant_offset + 0x141 + plant_struct_size * i); // 0è¡¨ç¤ºæ­£å¸¸
 				if (!plant_dead) {
 					uint32_t addr = plant_offset + plant_struct_size * i;
 					code.asm_push(addr);
-					code.asm_call(0x004679b0); // µ÷ÓÃÖ²ÎïÉ¾³ıº¯Êıcall_delete_plant
+					code.asm_call(0x004679b0); // è°ƒç”¨æ¤ç‰©åˆ é™¤å‡½æ•°call_delete_plant
 				}
 			}
 
-			// Ö´ĞĞÉÏÊö»ã±àÃüÁî
+			// æ‰§è¡Œä¸Šè¿°æ±‡ç¼–å‘½ä»¤
 			code.asm_ret();
 			code.asm_code_inject(PVZ::Memory::hProcess);
 		}
@@ -859,16 +914,16 @@ public:
 
 	//
 	void clear_reverse_all_plants() {
-		// ÄæĞòÉ¾Ö²Îï
+		// é€†åºåˆ æ¤ç‰©
 		if (is_in_ize()) {
 			auto board = PVZ::GetBoard();
 			if (board->PlantsCount > 0) {
 				auto pPlants = board->GetAllPlants();
 				for (size_t i = 0; i < pPlants.size(); i++) {
-					auto idx = pPlants.size() - 1 - i;//ÄæĞòÉ¾
+					auto idx = pPlants.size() - 1 - i;//é€†åºåˆ 
 					if (pPlants[idx] != nullptr) {
 						if (!pPlants[idx]->NotExist) pPlants[idx]->Remove();
-						//std::cout << "ÕıÔÚÉ¾³ıÕ»Î»Îª" << pPlants[idx]->Index << "µÄÖ²Îï" << std::endl;
+						//std::cout << "æ­£åœ¨åˆ é™¤æ ˆä½ä¸º" << pPlants[idx]->Index << "çš„æ¤ç‰©" << std::endl;
 						Sleep(1);
 					}
 				}
@@ -876,7 +931,7 @@ public:
 		}
 	}
 
-	// ½ûÔ­°æÖÖÖ²
+	// ç¦åŸç‰ˆç§æ¤
 	void stop_game_plant() {
 		if (is_game_on()) {
 			int written[] = { 0xc2, 0x0c, 0x00 };
@@ -884,7 +939,7 @@ public:
 		}
 	}
 
-	// È¥µôÖÖÖ²ÎïÒôĞ§
+	// å»æ‰ç§æ¤ç‰©éŸ³æ•ˆ
 	void disable_plant_effect() {
 		if (is_game_on()) {
 			int written[] = { 0xc2, 0x04, 0x00 };
@@ -898,15 +953,15 @@ public:
 		}
 	}
 
-	// »ã±à·ÅÒ»¸öÖ²Îï
+	// æ±‡ç¼–æ”¾ä¸€ä¸ªæ¤ç‰©
 	void spawn_plant(int type, int row, int col) {
 		if (is_in_ize())
 		{
-			// ³õÊ¼»¯
+			// åˆå§‹åŒ–
 			AsmCode code;
 			code.asm_init();
 
-			// ÖÖÖ²Îï
+			// ç§æ¤ç‰©
 			code.asm_push(-1);
 			code.asm_push(type);
 			code.asm_mov_exx(AsmCode::Reg::EAX, row);
@@ -925,26 +980,26 @@ public:
 			code.asm_add_list(0x8b, 0xc6); // mov eax, esi
 
 
-			// ×¢Èë
+			// æ³¨å…¥
 			code.asm_ret();
 			code.asm_code_inject(PVZ::Memory::hProcess);
 		}
 
 	}
 
-	// »ã±àÉú³ÉÖ²Îï
+	// æ±‡ç¼–ç”Ÿæˆæ¤ç‰©
 	void spawn_all_plants(std::array<PlantType::PlantType, 25> plant_types, std::array<int, 25> orders) {
-		// ³õÊ¼»¯
+		// åˆå§‹åŒ–
 		AsmCode code;
 		code.asm_init();
 
-		// ÄæĞòÖÖÖ²Îï
+		// é€†åºç§æ¤ç‰©
 		for (int i = 0; i < 25; i++) {
 			auto type = plant_types[i];
 			auto row = orders[i] / 5;
 			auto col = orders[i] % 5;
 
-			// ÖÖÖ²Îï
+			// ç§æ¤ç‰©
 			code.asm_push(-1);
 			code.asm_push(type);
 			code.asm_mov_exx(AsmCode::Reg::EAX, row);
@@ -962,13 +1017,13 @@ public:
 			code.asm_call(0x0042a530); // call_put_plant_iz_style
 			code.asm_add_list(0x8b, 0xc6); // mov eax, esi
 		}
-		// ×¢Èë
+		// æ³¨å…¥
 		code.asm_ret();
 		code.asm_code_inject(PVZ::Memory::hProcess);
 
 	}
 
-	// izt×Ö·û²¼Õó
+	// iztå­—ç¬¦å¸ƒé˜µ
 	void set_layout_iztstr(const std::string& iztStr) {
 
 	}
@@ -993,36 +1048,36 @@ public:
 
 	void reset_speed() {
 		if (is_in_ize()) {
-			PVZ::Memory::WriteMemory(PVZ::Memory::ReadMemory<int>(0x6a9ec0) + 0x454, 10); // 1Ö¡10cs
+			PVZ::Memory::WriteMemory(PVZ::Memory::ReadMemory<int>(0x6a9ec0) + 0x454, 10); // 1å¸§10cs
 			PVZ::Memory::WriteMemory<bool>(0x6A9EAA, false);
 			PVZ::Memory::WriteMemory<bool>(0x6A9EAB, false);
 		}
 	}
 
 
-	// ½ûÓÃÅ®ÆÍ: ÓĞbug
+	// ç¦ç”¨å¥³ä»†: æœ‰bug
 	void ban_maidCheat(bool is_maidCheat, Logger& logger) {
 		if (is_in_ize()) {
 
-		//if(is_maidCheat) { // ¿ªÆô½ûÓÃÅ®ÆÍ¹¦ÄÜ
-		//		logger.log("ÒÑ½ûÓÃÅ®ÆÍ!", Logger::INFO);
+		//if(is_maidCheat) { // å¼€å¯ç¦ç”¨å¥³ä»†åŠŸèƒ½
+		//		logger.log("å·²ç¦ç”¨å¥³ä»†!", Logger::INFO);
 		//		byte disable_MaidCheat_code[] = { 0x68, 0x07, 0x00, 0x00, 0x8b, 0x80, 0x68, 0x55, 0x00, 0x00, 0x99, 0xf7, 0xf9, 0x8b, 0xc2, 0x99, 0xf7, 0xfe, 0x5e, 0xc3 };
 		//		PVZ::Memory::WriteArray<byte>(0x52dfcb, disable_MaidCheat_code, 20);
 		//		
 		//}
 		//else {
-		//	logger.log("Å®ÆÍ×´Ì¬: Õı³£!", Logger::INFO);
+		//	logger.log("å¥³ä»†çŠ¶æ€: æ­£å¸¸!", Logger::INFO);
 		//	byte enable_MaidCheat_code[] = { 0x38 ,0x08 ,0x00 ,0x00 ,0x99 ,0xF7 ,0xF9 ,0x8B ,0xC2 ,0x99 ,0xF7 ,0xFE ,0x5E ,0xC3 ,0xCC ,0xCC ,0xCC ,0xCC ,0xCC ,0xCC };
 		//	PVZ::Memory::WriteArray<byte>(0x52dfcb, enable_MaidCheat_code, 20);
 		//}
 		}
 		}
 
-	// »ã±à»Ö¸´Å®ÆÍ
+	// æ±‡ç¼–æ¢å¤å¥³ä»†
 	void enable_maidCheat() {
 		std::vector<Injector*> injectors = {};
 
-		//½ûÓÃÅ®ÆÍ£º »ã±àĞŞ¸ÄÊ±ÖÓÔö¼ÓÅĞ¶¨£¨ÓÎÏ·²»ÔİÍ£²ÅÔö¼Ó£©¡¾É×12138Ìá¹©¡¿
+		//ç¦ç”¨å¥³ä»†ï¼š æ±‡ç¼–ä¿®æ”¹æ—¶é’Ÿå¢åŠ åˆ¤å®šï¼ˆæ¸¸æˆä¸æš‚åœæ‰å¢åŠ ï¼‰ã€å‹º12138æä¾›ã€‘
 		Injector* disable_maidCheat2 = new Injector(0x4526E6, { 0x01, 0xaf, 0x38, 0x08, 0x00, 0x00 });
 		injectors.push_back(disable_maidCheat2);
 
@@ -1035,17 +1090,17 @@ public:
 			}
 			else
 			{
-				// ´¦Àí¿ÕÖ¸ÕëµÄÇé¿ö£¬ÀıÈç¼ÇÂ¼ÈÕÖ¾»òÅ×³öÒì³£
+				// å¤„ç†ç©ºæŒ‡é’ˆçš„æƒ…å†µï¼Œä¾‹å¦‚è®°å½•æ—¥å¿—æˆ–æŠ›å‡ºå¼‚å¸¸
 				//std::cerr << "Error: Null pointer in injectors vector at index " << injectors.size() - i - 1 << std::endl;
 			}
 		}
 	}
 
-	// »ã±à½ûÓÃÅ®ÆÍ
+	// æ±‡ç¼–ç¦ç”¨å¥³ä»†
 	void disable_maidCheat() {
 		std::vector<Injector*> injectors = {};
 
-		//½ûÓÃÅ®ÆÍ£º »ã±àĞŞ¸ÄÊ±ÖÓÔö¼ÓÅĞ¶¨£¨ÓÎÏ·²»ÔİÍ£²ÅÔö¼Ó£©¡¾É×12138Ìá¹©¡¿
+		//ç¦ç”¨å¥³ä»†ï¼š æ±‡ç¼–ä¿®æ”¹æ—¶é’Ÿå¢åŠ åˆ¤å®šï¼ˆæ¸¸æˆä¸æš‚åœæ‰å¢åŠ ï¼‰ã€å‹º12138æä¾›ã€‘
 		Injector* disable_maidCheat2 = new Injector(0x4526E6, { 0xE8, 0x48, 0x00, 0x00, 0x00, 0x90 });
 		injectors.push_back(disable_maidCheat2);
 		Injector* disable_maidCheat1 = new Injector(0x452733, { 0x80, 0xBE, 0x64, 0x01, 0x00, 0x00, 0x00, 0x75, 0x06, 0x01, 0xAF, 0x38, 0x08, 0x00, 0x00, 0x90, 0xC3 });
@@ -1060,25 +1115,25 @@ public:
 			}
 			else
 			{
-				// ´¦Àí¿ÕÖ¸ÕëµÄÇé¿ö£¬ÀıÈç¼ÇÂ¼ÈÕÖ¾»òÅ×³öÒì³£
+				// å¤„ç†ç©ºæŒ‡é’ˆçš„æƒ…å†µï¼Œä¾‹å¦‚è®°å½•æ—¥å¿—æˆ–æŠ›å‡ºå¼‚å¸¸
 				//std::cerr << "Error: Null pointer in injectors vector at index " << injectors.size() - i - 1 << std::endl;
 			}
 		}
 	}
 
-	// Ê¹ÓÃÓÎÏ·ÄÚµÄÖ²ÎïË¢ĞÂº¯Êı
+	// ä½¿ç”¨æ¸¸æˆå†…çš„æ¤ç‰©åˆ·æ–°å‡½æ•°
 	void setInjectors() {
 		std::vector<Injector*> injectors = {};
 
-		// ½ûÓÃÅ®ÆÍ£ºÁù½ì²¼ÕóÆ÷Âß¼­£º »áµ¼ÖÂ¹ıÂÊ½µµÍ
+		// ç¦ç”¨å¥³ä»†ï¼šå…­å±Šå¸ƒé˜µå™¨é€»è¾‘ï¼š ä¼šå¯¼è‡´è¿‡ç‡é™ä½
 		//Injector* disable_maidCheat = new Injector(0x4526E6, { 0x80, 0xBF, 0x64, 0x01, 0x00, 0x00, 0x00, 0x75, 0x06, 0x01, 0xAF, 0x38, 0x08, 0x00, 0x00, 0x85, 0xF6, 0x85, 0xF6, 0x74, 0x05, 0xE8, 0xDB, 0x93, 0xFC, 0xFF, 0x8B, 0xCF, 0xE8, 0xA4, 0x32, 0x18, 0x00, 0x8B, 0x87, 0x3C, 0x08, 0x00, 0x00, 0xE8, 0x69, 0x8F, 0x00, 0x00, 0x80, 0xBF, 0xFA, 0x04, 0x00, 0x00, 0x00, 0x74, 0x10, 0x8B, 0x87, 0x20, 0x08, 0x00, 0x00, 0x85, 0xC0, 0x74, 0x06, 0x50, 0xE8, 0x60, 0x2F, 0xFF, 0xFF, 0x8B, 0xC7, 0xE8, 0xC9, 0xFD, 0xFF, 0xFF, 0x2B, 0xDD, 0x75, 0xB5, 0x5F, 0x5E, 0x5D, 0x5B, 0x8B, 0xE5, 0x5D, 0xC3 });		injectors.push_back(disable_maidCheat);
 
-		// ½ûµôÖÖÖ²ÒôĞ§
+		// ç¦æ‰ç§æ¤éŸ³æ•ˆ
 		Injector* disablePlantingEffect = new Injector{ 0x40ce60 };
 		disablePlantingEffect->ret(0x0004);
 		injectors.push_back(disablePlantingEffect);
 
-		// Í£µôÓÎÏ·×Ô´øµÄÖÖÖ²Îï
+		// åœæ‰æ¸¸æˆè‡ªå¸¦çš„ç§æ¤ç‰©
 		Injector* lStopGamePlanting = new Injector(0x42A6C0, { 0xc2, 0x0c, 0x00 }); // ret 000c
 		injectors.push_back(lStopGamePlanting);
 
@@ -1091,7 +1146,7 @@ public:
 			}
 			else
 			{
-				// ´¦Àí¿ÕÖ¸ÕëµÄÇé¿ö£¬ÀıÈç¼ÇÂ¼ÈÕÖ¾»òÅ×³öÒì³£
+				// å¤„ç†ç©ºæŒ‡é’ˆçš„æƒ…å†µï¼Œä¾‹å¦‚è®°å½•æ—¥å¿—æˆ–æŠ›å‡ºå¼‚å¸¸
 				//std::cerr << "Error: Null pointer in injectors vector at index " << injectors.size() - i - 1 << std::endl;
 			}
 		}
@@ -1100,25 +1155,25 @@ public:
 };
 
 
-// ²¼ÕóÆ÷¿ØÖÆ
+// å¸ƒé˜µå™¨æ§åˆ¶
 class ConsoleControler {
 private:
-	std::atomic<bool> stop_flag;       // È«¾ÖÍ£Ö¹±êÖ¾
-	std::thread worker_thread;         // Ïß³Ì¶ÔÏó
-	std::mutex mtx;                    // »¥³âËø
-	std::condition_variable cv;        // Ìõ¼ş±äÁ¿
-	std::queue<int> result_queue; // ½á¹û¶ÓÁĞ
+	std::atomic<bool> stop_flag;       // å…¨å±€åœæ­¢æ ‡å¿—
+	std::thread worker_thread;         // çº¿ç¨‹å¯¹è±¡
+	std::mutex mtx;                    // äº’æ–¥é”
+	std::condition_variable cv;        // æ¡ä»¶å˜é‡
+	std::queue<int> result_queue; // ç»“æœé˜Ÿåˆ—
 
-	// ÆôÓÃ³å¹Ø¿ì½İ¼ü£º¼ÓËÙ ×ÔÊÕ Ç¿ÖÆÍË³ö Ìø¹Ø ÇĞ»»Å®ÆÍ
+	// å¯ç”¨å†²å…³å¿«æ·é”®ï¼šåŠ é€Ÿ è‡ªæ”¶ å¼ºåˆ¶é€€å‡º è·³å…³ åˆ‡æ¢å¥³ä»†
 	void register_RushMode_hotkey() {
-		RegisterHotKey(NULL, 1, MOD_SHIFT, 'D'); // ÇĞ»»¼ÓËÙ
-		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // ÇĞ»»×Ô¶¯ÊÕ¼¯
-		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // Ç¿ÖÆÍË³ö
-		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // Ìø¹Ø
-		RegisterHotKey(NULL, 5, MOD_SHIFT, 'M'); // ÇĞ»»Å®ÆÍ
-		RegisterHotKey(NULL, 6, MOD_SHIFT, 's'); // ÇĞ»»Å®ÆÍ
+		RegisterHotKey(NULL, 1, MOD_SHIFT, 'D'); // åˆ‡æ¢åŠ é€Ÿ
+		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // åˆ‡æ¢è‡ªåŠ¨æ”¶é›†
+		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // å¼ºåˆ¶é€€å‡º
+		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // è·³å…³
+		RegisterHotKey(NULL, 5, MOD_SHIFT, 'M'); // åˆ‡æ¢å¥³ä»†
+		RegisterHotKey(NULL, 6, MOD_SHIFT, 's'); // åˆ‡æ¢å¥³ä»†
 	}
-	// Ïú»Ù³å¹Ø¿ì½İ¼ü
+	// é”€æ¯å†²å…³å¿«æ·é”®
 	void unregister_RushMode_hotkey() {
 		UnregisterHotKey(NULL, 1);
 		UnregisterHotKey(NULL, 2);
@@ -1127,23 +1182,23 @@ private:
 		UnregisterHotKey(NULL, 5);
 		UnregisterHotKey(NULL, 6);
 	}
-	// ±ÈÈüÄ£Ê½£ºÇ¿ÖÆÍË³ö£¬ÖØ¿ª
+	// æ¯”èµ›æ¨¡å¼ï¼šå¼ºåˆ¶é€€å‡ºï¼Œé‡å¼€
 	void register_RaceMode_hotkey() {
-		RegisterHotKey(NULL, 1, MOD_SHIFT, 'Q'); // Ç¿ÖÆÍË³ö
-		RegisterHotKey(NULL, 2, MOD_SHIFT, 'R'); // »Ö¸´´æµµ
-		RegisterHotKey(NULL, 3, MOD_SHIFT, 'S'); // »Ö¸´´æµµ
+		RegisterHotKey(NULL, 1, MOD_SHIFT, 'Q'); // å¼ºåˆ¶é€€å‡º
+		RegisterHotKey(NULL, 2, MOD_SHIFT, 'R'); // æ¢å¤å­˜æ¡£
+		//RegisterHotKey(NULL, 3, MOD_SHIFT, 'S'); // æ¢å¤å­˜æ¡£
 	}
 
 	void unregister_RaceMode_hotkey() {
 		UnregisterHotKey(NULL, 1);
 		UnregisterHotKey(NULL, 2);
-		UnregisterHotKey(NULL, 3);
+		//UnregisterHotKey(NULL, 3);
 	}
 
-	// ²Ğ¾Ö±ÈÈüÄ£Ê½
+	// æ®‹å±€æ¯”èµ›æ¨¡å¼
 	void register_IncompleteRaceMode_hotkey() {
-		RegisterHotKey(NULL, 1, MOD_SHIFT, 'Q'); // Ç¿ÖÆÍË³ö
-		RegisterHotKey(NULL, 2, MOD_SHIFT, 'S'); // »Ö¸´´æµµ
+		RegisterHotKey(NULL, 1, MOD_SHIFT, 'Q'); // å¼ºåˆ¶é€€å‡º
+		RegisterHotKey(NULL, 2, MOD_SHIFT, 'S'); // æ¢å¤å­˜æ¡£
 	}
 
 	void unregister_IncompleteRaceMode_hotkey() {
@@ -1151,14 +1206,14 @@ private:
 		UnregisterHotKey(NULL, 2);
 	}
 
-	// ¸´ÅÌÄ£Ê½¿ì½İ¼ü
+	// å¤ç›˜æ¨¡å¼å¿«æ·é”®
 	void register_reviewMode_hotkey() {
-		RegisterHotKey(NULL, 1, MOD_SHIFT, 'D'); // ctrl+d´ò¿ª¼ÓËÙ
-		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // ´ò¿ª×Ô¶¯ÊÕ¼¯
-		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // Ç¿ÖÆÍË³ö
-		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // Ìø¹Ø
-		RegisterHotKey(NULL, 5, MOD_SHIFT, 'R'); // ÖØ¿ª±¾¾Ö
-		RegisterHotKey(NULL, 6, MOD_SHIFT, 's'); // ÖØ¿ª±¾¾Ö
+		RegisterHotKey(NULL, 1, MOD_SHIFT, 'D'); // ctrl+dæ‰“å¼€åŠ é€Ÿ
+		RegisterHotKey(NULL, 2, MOD_SHIFT, 'A'); // æ‰“å¼€è‡ªåŠ¨æ”¶é›†
+		RegisterHotKey(NULL, 3, MOD_SHIFT, 'Q'); // å¼ºåˆ¶é€€å‡º
+		RegisterHotKey(NULL, 4, MOD_SHIFT, 'J'); // è·³å…³
+		RegisterHotKey(NULL, 5, MOD_SHIFT, 'R'); // é‡å¼€æœ¬å±€
+		RegisterHotKey(NULL, 6, MOD_SHIFT, 's'); // é‡å¼€æœ¬å±€
 
 	}
 
@@ -1172,29 +1227,29 @@ private:
 
 	}
 
-	// ½ûµô¿ìËÙ±à¼­Ä£Ê½£¬µ«ÊÇ»µÏûÏ¢ÊÇÃ»·¨¸´ÖÆÎÄ±¾ÄÚÈİ
+	// ç¦æ‰å¿«é€Ÿç¼–è¾‘æ¨¡å¼ï¼Œä½†æ˜¯åæ¶ˆæ¯æ˜¯æš‚æ—¶æ²¡æ³•å¤åˆ¶æ–‡æœ¬å†…å®¹
 	void disable_quick_edit_mode() {
 		HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
 		DWORD mode;
 		GetConsoleMode(hStdin, &mode);
-		mode &= ~ENABLE_QUICK_EDIT_MODE; // ½ûÓÃ¿ìËÙ±à¼­
-		mode &= ~ENABLE_INSERT_MODE;     // ½ûÓÃ²åÈëÄ£Ê½
+		mode &= ~ENABLE_QUICK_EDIT_MODE; // ç¦ç”¨å¿«é€Ÿç¼–è¾‘
+		mode &= ~ENABLE_INSERT_MODE;     // ç¦ç”¨æ’å…¥æ¨¡å¼
 		SetConsoleMode(hStdin, mode);
 	}
 
-	// ÆôÓÃ¿ìËÙ±à¼­Ä£Ê½£¨ÔÊĞíÊó±êÑ¡ÔñÎÄ±¾£©
+	// å¯ç”¨å¿«é€Ÿç¼–è¾‘æ¨¡å¼ï¼ˆå…è®¸é¼ æ ‡é€‰æ‹©æ–‡æœ¬ï¼‰
 	void enable_quick_edit_mode() {
 		HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
 		DWORD mode;
 		GetConsoleMode(hStdin, &mode);
-		mode |= ENABLE_QUICK_EDIT_MODE;  // ÆôÓÃ¿ìËÙ±à¼­
-		mode |= ENABLE_INSERT_MODE;      // ÆôÓÃ²åÈëÄ£Ê½
+		mode |= ENABLE_QUICK_EDIT_MODE;  // å¯ç”¨å¿«é€Ÿç¼–è¾‘
+		mode |= ENABLE_INSERT_MODE;      // å¯ç”¨æ’å…¥æ¨¡å¼
 		SetConsoleMode(hStdin, mode);
 	}
 
-	// »ñÈ¡¿ØÖÆÌ¨µ±Ç°¿í¶È
+	// è·å–æ§åˆ¶å°å½“å‰å®½åº¦
 	int get_terminal_width() {
-		int width = 80; // Ä¬ÈÏ¿í¶È
+		int width = 80; // é»˜è®¤å®½åº¦
 		CONSOLE_SCREEN_BUFFER_INFO csbi;
 		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 		width = csbi.srWindow.Right - csbi.srWindow.Left;
@@ -1202,7 +1257,7 @@ private:
 		return width;
 	}
 
-	// °Ñ×Ö·û´®¶ª½ø¼ôÇĞ°å
+	// æŠŠå­—ç¬¦ä¸²ä¸¢è¿›å‰ªåˆ‡æ¿
 	void copyToClipBoard(const std::string& str)
 	{
 		auto hGlobalMemorry = GlobalAlloc(GPTR, static_cast<DWORD>(str.length()) + 1);
@@ -1218,63 +1273,88 @@ private:
 		else return;
 	}
 
-	// ÓÎÏ·½áÊøÍ³Ò»Êä³öÈÕÖ¾
+	// æŠ¥é”™äº†æ‹¿åˆ°è°ƒç”¨æ ˆ
+	std::string get_stack_trace() {
+	    void* stack[62];
+	    USHORT frames = CaptureStackBackTrace(0, 62, stack, NULL);
+
+	    std::ostringstream oss;
+	    oss << "è°ƒç”¨æ ˆ:\n";
+
+	    SYMBOL_INFO* symbol = (SYMBOL_INFO*)calloc(sizeof(SYMBOL_INFO) + 256, 1);
+	    symbol->MaxNameLen = 255;
+	    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+	    HANDLE process = GetCurrentProcess();
+	    SymInitialize(process, NULL, TRUE);
+
+	    for (USHORT i = 0; i < frames; i++) {
+	        SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol);
+	        oss << i << ": " << symbol->Name << " - 0x" << std::hex << symbol->Address << "\n";
+	    }
+
+	    free(symbol);
+	    return oss.str();
+	}
+	
+
+	// æ¸¸æˆç»“æŸç»Ÿä¸€è¾“å‡ºæ—¥å¿—
 	void log_game_end(Logger& logger, std::vector<LevelData> save_data) {
-		logger.log("ËùÓĞ¹Ø¿¨Êı¾İÈçÏÂ:", Logger::DEBUG);
+		logger.log("æ‰€æœ‰å…³å¡æ•°æ®å¦‚ä¸‹:", Logger::DEBUG);
 		int count = 0;
 		float kernel_count = 0; float butter_count = 0;
 		for (auto& leveldata : save_data) {
-			logger.log("µÚ" + std::to_string(++count) + "¹ØÊı¾İÈçÏÂ:", Logger::DEBUG);
-			logger.log("    ·ÅÖÃµÄ½©Ê¬Êı: " + std::to_string(leveldata.released_zombies_count), Logger::DEBUG);
-			logger.log("    ½©Ê¬»¨·Ñ: " + std::to_string(leveldata.zombie_cost), Logger::DEBUG);
-			logger.log("    ·´Ó¦Ê±¼ä: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
-			logger.log("    ÓñÃ×Á£ÊıÁ¿: " + std::to_string(leveldata.kernel_count) + ", »ÆÓÍÊıÁ¿: " + std::to_string(leveldata.butter_count) + " »ÆÓÍÂÊÎª: " + std::to_string(leveldata.kernelpult_butter_rate), Logger::DEBUG);
+			logger.log("ç¬¬" + std::to_string(++count) + "å…³æ•°æ®å¦‚ä¸‹:", Logger::DEBUG);
+			logger.log("    æ”¾ç½®çš„åƒµå°¸æ•°: " + std::to_string(leveldata.released_zombies_count), Logger::DEBUG);
+			logger.log("    åƒµå°¸èŠ±è´¹: " + std::to_string(leveldata.zombie_cost), Logger::DEBUG);
+			logger.log("    ååº”æ—¶é—´: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
+			logger.log("    ç‰ç±³ç²’æ•°é‡: " + std::to_string(leveldata.kernel_count) + ", é»„æ²¹æ•°é‡: " + std::to_string(leveldata.butter_count) + " é»„æ²¹ç‡ä¸º: " + std::to_string(leveldata.kernelpult_butter_rate), Logger::DEBUG);
 			kernel_count += leveldata.kernel_count;
 			butter_count += leveldata.butter_count;
 
-			logger.log("    ×îºóÒ»¸öÄÔ×Ó³ÔµÄÊ±¼ä: " + (leveldata.last_brain_eaten_time - leveldata.setlayout_time).enPrint(), Logger::DEBUG);
-			logger.log("    ËùÓĞÄÔ×Ó³ÔµÄÊ±¼äÁĞ±í: ", Logger::DEBUG);
+			logger.log("    æœ€åä¸€ä¸ªè„‘å­åƒçš„æ—¶é—´: " + (leveldata.last_brain_eaten_time - leveldata.setlayout_time).enPrint(), Logger::DEBUG);
+			logger.log("    æ‰€æœ‰è„‘å­åƒçš„æ—¶é—´åˆ—è¡¨: ", Logger::DEBUG);
 
 			for (auto& eat_brain_time : leveldata.brain_eaten_times) {
 				logger.log((eat_brain_time - leveldata.setlayout_time).enPrint(), Logger::DEBUG);
 			}
 		};
 		if (butter_count + kernel_count == 0) {
-			logger.log("Ã»ÓĞ»ÆÓÍ", Logger::DEBUG);
+			logger.log("æ²¡æœ‰é»„æ²¹", Logger::DEBUG);
 			return;
 		}
-		logger.log("»ÆÓÍÂÊÎª: " + std::to_string(butter_count / (butter_count + kernel_count)), Logger::DEBUG);
+		logger.log("é»„æ²¹ç‡ä¸º: " + std::to_string(butter_count / (butter_count + kernel_count)), Logger::DEBUG);
 	}
 
-	// ËøÖ÷ÌâËø»¨Êı
+	// é”ä¸»é¢˜é”èŠ±æ•°
 	void lock_theme_flower_num(const int theme_index, const int flower_num) {
 
-		// 1. ÕÒµ½ pvz
+		// 1. æ‰¾åˆ° pvz
 		DWORD pid = ProcessOpener::Open();
 		if (!pid) {
-			std::cout << "Î´ÕÒµ½pvz!" << std::endl;
-			return; // ½áÊø
+			std::cout << "æœªæ‰¾åˆ°pvz!" << std::endl;
+			return; // ç»“æŸ
 		}
-		std::cout << "ÒÑÕÒµ½pvz!" << std::endl;
-		EnableBackgroundRunning(true); // ÆôÓÃpvzºóÌ¨ÔËĞĞ
+		std::cout << "å·²æ‰¾åˆ°pvz!" << std::endl;
+		EnableBackgroundRunning(true); // å¯ç”¨pvzåå°è¿è¡Œ
 
-		// 2. ÊµÀı»¯ÓÎÏ·¿ØÖÆÀà, ÊµÀı»¯³å¹Ø²¼ÕóÂëÉú³ÉÆ÷
+		// 2. å®ä¾‹åŒ–æ¸¸æˆæ§åˆ¶ç±», å®ä¾‹åŒ–å†²å…³å¸ƒé˜µç ç”Ÿæˆå™¨
 		GameControl game_controler(pid);
 		GenerateLayoutCode code_generator;
-		// 3. Ò»Ö±¼ì²â£¬Ö±µ½½øÈëize
+		// 3. ä¸€ç›´æ£€æµ‹ï¼Œç›´åˆ°è¿›å…¥ize
 		while (!game_controler.is_in_ize()) {
 			Sleep(1);
 		}
-		std::cout << "ÒÑ¾­½øÈëize, ÏÖÔÚ¿ªÊ¼²¼Õó" << std::endl;
+		std::cout << "å·²ç»è¿›å…¥ize, ç°åœ¨å¼€å§‹å¸ƒé˜µ" << std::endl;
 
-		// ¼ÇÂ¼´æµµ
+		// è®°å½•å­˜æ¡£
 		std::vector<LevelData> save_data;
 		std::vector<std::string> all_layout_code;
 
-		// ¼ÇÂ¼½©Ê¬
+		// è®°å½•åƒµå°¸
 		std::unordered_set<int> processed_zombie_ids;
 
-		// ±êÖ¾Î»
+		// æ ‡å¿—ä½
 		int current_flag = -1; std::string ls;
 		bool is_speed_up = false; bool is_auto = false; bool has_started = false;
 		auto current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
@@ -1282,51 +1362,51 @@ private:
 		TimeStruct start_time = TimeStruct::getNow(); LevelData leveldata;
 
 
-		// 1. É¾µôÖ²Îï
+		// 1. åˆ æ‰æ¤ç‰©
 		game_controler.update_brains();
 		game_controler.clear_all_bullets();
 		game_controler.clear_all_zombies();
 		game_controler.clear_reverse_all_plants();
 		game_controler.board->GetMiscellaneous()->Round = 0;
 
-		// ½ûÖ²Îï½ûÒôĞ§
+		// ç¦æ¤ç‰©ç¦éŸ³æ•ˆ
 		game_controler.setInjectors();
 		game_controler.disable_maidCheat();
 
 		MSG msg = { 0 };
 		while (true) {
-			// 1. ¼à²â¿ì½İ¼ü²¢´¦Àí£¬È«¾ÖÈÈ¼üÏûÏ¢
+			// 1. ç›‘æµ‹å¿«æ·é”®å¹¶å¤„ç†ï¼Œå…¨å±€çƒ­é”®æ¶ˆæ¯
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_HOTKEY) {
-					if (msg.wParam == 1) {  // shift+D ÇĞ»»¼ÓËÙÓëÔ­ËÙ
+					if (msg.wParam == 1) {  // shift+D åˆ‡æ¢åŠ é€Ÿä¸åŸé€Ÿ
 						is_speed_up = !is_speed_up;
 						if (is_speed_up) {
 							game_controler.set_speed_10x();
-							std::cout << "½øĞĞÁË10x¼ÓËÙ" << std::endl;
+							std::cout << "è¿›è¡Œäº†10xåŠ é€Ÿ" << std::endl;
 
 						}
 						else {
 							game_controler.reset_speed();
-							std::cout << "¹Ø±Õ¼ÓËÙ" << std::endl;
+							std::cout << "å…³é—­åŠ é€Ÿ" << std::endl;
 
 						};
 					}
-					else if (msg.wParam == 2) { // shift+A ÇĞ»»×Ô¶¯ÊÕ¼¯
+					else if (msg.wParam == 2) { // shift+A åˆ‡æ¢è‡ªåŠ¨æ”¶é›†
 						is_auto = !is_auto;
 						game_controler.auto_collect(is_auto);
-						std::cout << std::string(is_auto ? "´ò¿ª" : "¹Ø±Õ") + "×Ô¶¯ÊÕ¼¯" << std::endl;
+						std::cout << std::string(is_auto ? "æ‰“å¼€" : "å…³é—­") + "è‡ªåŠ¨æ”¶é›†" << std::endl;
 					}
-					else if (msg.wParam == 3) { // shift+q Ç¿ÖÆ½áÊø
+					else if (msg.wParam == 3) { // shift+q å¼ºåˆ¶ç»“æŸ
 						game_controler.auto_collect(false);
 						game_controler.reset_speed();
 						game_controler.enable_maidCheat();
 
-						std::cout << "½áÊø¸´ÅÌÄ£Ê½!" << std::endl;
+						std::cout << "ç»“æŸå¤ç›˜æ¨¡å¼!" << std::endl;
 						return;
 					}
-					else if (msg.wParam == 4) { // shift+j Ìø¹Ø
+					else if (msg.wParam == 4) { // shift+j è·³å…³
 						game_controler.board->Win();
-						std::cout << "Ìø¹ıµÚ" << game_controler.board->GetMiscellaneous()->Round + 1 << "¹Ø!" << std::endl;
+						std::cout << "è·³è¿‡ç¬¬" << game_controler.board->GetMiscellaneous()->Round + 1 << "å…³!" << std::endl;
 					}
 					else if (msg.wParam == 5) { // shift+r
 						game_controler.clear_not_colleted_sun();
@@ -1334,18 +1414,18 @@ private:
 						game_controler.clear_all_zombies();
 						game_controler.clear_all_bullets();
 						game_controler.clear_reverse_all_plants();
-						// »Ö¸´Ñô¹â
+						// æ¢å¤é˜³å…‰
 						game_controler.board->Sun = 2000;
 						leveldata.released_zombies_count = 0;
 						leveldata.zombie_cost = 0;
 						has_started = false;
-						leveldata.brain_eaten_times.clear(); //Çå¿Õ³ÔÄÔ¼ÇÂ¼
+						leveldata.brain_eaten_times.clear(); //æ¸…ç©ºåƒè„‘è®°å½•
 
 						TimeStruct restart_time = TimeStruct::getNow() - start_time;
 						std::string restart_str = restart_time.enPrint().append("     ").append(std::string("Restart"));
-						Creator::CreateCaption(restart_str.c_str(), restart_str.size(), CaptionStyle::Lowermiddle); // ÓÎÏ·°××Ö£¬´¦ÓÚ¿¿ÏÂ¾ÓÖĞÎ»ÖÃ
+						Creator::CreateCaption(restart_str.c_str(), restart_str.size(), CaptionStyle::Lowermiddle); // æ¸¸æˆç™½å­—ï¼Œå¤„äºé ä¸‹å±…ä¸­ä½ç½®
 
-						// ÖØĞÂ²¼ÕóÒ»ÏÂ
+						// é‡æ–°å¸ƒé˜µä¸€ä¸‹
 						leveldata.setlayout_time = TimeStruct::getNow();
 						game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
 
@@ -1355,14 +1435,14 @@ private:
 				DispatchMessage(&msg);
 			}
 
-			// ¼ì²âÖØ¿ª
+			// æ£€æµ‹é‡å¼€
 			do {
 				if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) == 0
 					|| current_address == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)
 					|| game_controler.pvz->GameState != PVZGameState::Playing) continue;
 
-				else { // ÖØ¿ªÁË
-					game_controler.board = PVZ::GetBoard(); // ÖØĞÂÄÃÒ»ÏÂboard 
+				else { // é‡å¼€äº†
+					game_controler.board = PVZ::GetBoard(); // é‡æ–°æ‹¿ä¸€ä¸‹board 
 					Sleep(5);
 
 					current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
@@ -1374,12 +1454,12 @@ private:
 					game_controler.clear_all_bullets();
 					game_controler.clear_all_plants();
 					//game_controler.remove_cutscene_zombie();
-					// »Ö¸´Ñô¹â
+					// æ¢å¤é˜³å…‰
 					game_controler.board->Sun = 2000;
 					leveldata.released_zombies_count = 0;
 					leveldata.zombie_cost = 0;
 					has_started = false;
-					leveldata.brain_eaten_times.clear(); //Çå¿Õ³ÔÄÔ¼ÇÂ¼
+					leveldata.brain_eaten_times.clear(); //æ¸…ç©ºåƒè„‘è®°å½•
 
 					auto result = code_generator.generate_arr_seed(static_cast<Theme>(theme_index));
 					auto seed = result.second;
@@ -1395,45 +1475,45 @@ private:
 
 
 
-			// 2. ¿ç¹Ø
+			// 2. è·¨å…³
 			if (game_controler.board->GetBaseAddress() &&
 				game_controler.board->GetMiscellaneous()->Round != current_flag &&
 				game_controler.pvz->GameState == PVZGameState::Playing) {
 
-				if (has_started) // Èç¹ûÒÑ¾­¿ªÊ¼ÓÎÏ·ÁË£¬ËµÃ÷ÊÇÕı³£¿ç¹Ø
+				if (has_started) // å¦‚æœå·²ç»å¼€å§‹æ¸¸æˆäº†ï¼Œè¯´æ˜æ˜¯æ­£å¸¸è·¨å…³
 				{
-					// 0. ÏÈ´òÓ¡ÉÏÒ»¹ØÊı¾İ
+					// 0. å…ˆæ‰“å°ä¸Šä¸€å…³æ•°æ®
 					std::cout << (TimeStruct::getNow() - start_time).enPrint()
-						<< " ÒÑ¾­Í¨¹ı" << std::to_string(game_controler.board->GetMiscellaneous()->Round)
-						<< "¹Ø, »¨·Ñ" << std::to_string(leveldata.zombie_cost)
+						<< " å·²ç»é€šè¿‡" << std::to_string(game_controler.board->GetMiscellaneous()->Round)
+						<< "å…³, èŠ±è´¹" << std::to_string(leveldata.zombie_cost)
 						<< std::endl;
 
-					std::cout << "·´Ó¦Ê±¼ä:" << (leveldata.first_zombie_release_time - leveldata.setlayout_time).enPrint()
-						<< " ¹ı¹ØºÄÊ±: " << (leveldata.last_brain_eaten_time - start_time).enPrint()
+					std::cout << "ååº”æ—¶é—´:" << (leveldata.first_zombie_release_time - leveldata.setlayout_time).enPrint()
+						<< " è¿‡å…³è€—æ—¶: " << (leveldata.last_brain_eaten_time - start_time).enPrint()
 						<< std::endl;
 
-					std::cout << "³ÔÄÔÊ±¼äÒÀ´ÎÎª: ";
+					std::cout << "åƒè„‘æ—¶é—´ä¾æ¬¡ä¸º: ";
 					for (auto eaten_brain_time : leveldata.brain_eaten_times) {
 						std::cout << (eaten_brain_time - start_time).enPrint() << " ";
 					}
 					std::cout << std::endl;
 
-					// 1. ¸üĞÂÊı¾İ£¬³õÊ¼»¯ÏÂÒ»¹ØÒª¼ÇÂ¼µÄÊı¾İ
+					// 1. æ›´æ–°æ•°æ®ï¼Œåˆå§‹åŒ–ä¸‹ä¸€å…³è¦è®°å½•çš„æ•°æ®
 					leveldata.zombie_cost = 0;
 					leveldata.score = current_flag;
 					leveldata.setlayout_time = TimeStruct::getNow();
 					leveldata.brain_eaten_times.clear();;
 					leveldata.eaten_brain_count = 0;
 
-					// 2.5 ¹Ø±Õ¼ÓËÙ
+					// 2.5 å…³é—­åŠ é€Ÿ
 					game_controler.reset_speed();
 
 					has_started = false;
 				}
 
-				// ²¼Õó
+				// å¸ƒé˜µ
 				game_controler.board->Sun = 2000;
-				current_flag = game_controler.board->GetMiscellaneous()->Round; //¸üĞÂ¹ØÊı²¢ÇÒ½øĞĞ²¼Õó
+				current_flag = game_controler.board->GetMiscellaneous()->Round; //æ›´æ–°å…³æ•°å¹¶ä¸”è¿›è¡Œå¸ƒé˜µ
 
 				auto result = code_generator.generate_arr_seed(static_cast<Theme>(theme_index));
 				auto seed = result.second;
@@ -1449,64 +1529,64 @@ private:
 
 				leveldata.setlayout_time = TimeStruct::getNow();
 				std::cout << std::string(get_terminal_width(), '-') << std::endl;
-				std::cout << "µÚ" << current_flag + 1 << "¹Ø²¼ÕóÂëÎª: " << ls << std::endl;
+				std::cout << "ç¬¬" << current_flag + 1 << "å…³å¸ƒé˜µç ä¸º: " << ls << std::endl;
 
 			}
 
 
-			// 3. ¼ì²âÊÇ·ñ¿ªÊ¼ÓÎÏ·
+			// 3. æ£€æµ‹æ˜¯å¦å¼€å§‹æ¸¸æˆ
 			if (!has_started) {
 				if (!game_controler.pvz->GetBaseAddress() ||
 					game_controler.pvz->LevelId != PVZLevel::I_Zombie_Endless ||
 					game_controler.pvz->GameState != PVZGameState::Playing)
 					continue;
 
-				// ÅĞ¶ÏÊÍ·Å½©Ê¬Ìõ¼ş
+				// åˆ¤æ–­é‡Šæ”¾åƒµå°¸æ¡ä»¶
 				if (game_controler.board->ZombiesCount != 1) continue;
 
 				has_started = true;
 				start_time = TimeStruct::getNow();
-				// ¿ªÊ¼Ê±¼ä
+				// å¼€å§‹æ—¶é—´
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.last_brain_eaten_time = start_time;
 			}
 
-			// 4. ¼ÇÂ¼½©Ê¬»¨·Ñ
+			// 4. è®°å½•åƒµå°¸èŠ±è´¹
 			std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
 			for (auto& zombie : zombies) {
 				if (game_controler.board->GetMiscellaneous()->Round == 0)  Sleep(50);
-				// Èç¹û½©Ê¬ËÀÁË£¬Ìø¹ı
+				// å¦‚æœåƒµå°¸æ­»äº†ï¼Œè·³è¿‡
 				if (zombie->NotExist) {
 					processed_zombie_ids.erase(zombie->Id);
 					continue;
 				}
-				// Èç¹û²»ÊÇ¸Õ·ÅÖÃµÄ½©Ê¬, Ìø¹ı
-				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // Ö»¼ì²éĞÂÉú³ÉµÄ¡¾³å¹ØµÄ»°µÃ·Å¿í¡¿
-				// Èç¹ûÕâ¸ö½©Ê¬ÒÑ¾­´¦Àí¹ıÁË, Ìø¹ı
-				if (processed_zombie_ids.count(zombie->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
+				// å¦‚æœä¸æ˜¯åˆšæ”¾ç½®çš„åƒµå°¸, è·³è¿‡
+				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // åªæ£€æŸ¥æ–°ç”Ÿæˆçš„ã€å†²å…³çš„è¯å¾—æ”¾å®½ã€‘
+				// å¦‚æœè¿™ä¸ªåƒµå°¸å·²ç»å¤„ç†è¿‡äº†, è·³è¿‡
+				if (processed_zombie_ids.count(zombie->Id)) continue; // å·²å¤„ç†åˆ™è·³è¿‡
 
-				processed_zombie_ids.insert(zombie->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+				processed_zombie_ids.insert(zombie->Id); // è®°å½•å·²å¤„ç†
 
-				// Èç¹û²»ÊÇizeÖĞµÄ½©Ê¬£¬¶øÇÒÏÖÔÚÓÖ²»ÊÇ¿ª¾ÖµÄ»°, ¼ÇÂ¼ÏÂÀ´
+				// å¦‚æœä¸æ˜¯izeä¸­çš„åƒµå°¸ï¼Œè€Œä¸”ç°åœ¨åˆä¸æ˜¯å¼€å±€çš„è¯, è®°å½•ä¸‹æ¥
 				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
-					// ÖØ¿ªµÄ»°ĞèÒªÏÈÇå³ıÑ¡¿¨½çÃæµÄ½©Ê¬
-					//std::cout << "¼ì²âµ½ÔÚµÚ" + std::to_string(zombie->Row + 1) + "ĞĞ·ÅÖÃÁË·Çize¹Ø¿¨µÄ½©Ê¬,½©Ê¬ÀàĞÍÎª" + ZombieType::ToString(zombie->Type) << std::endl;
+					// é‡å¼€çš„è¯éœ€è¦å…ˆæ¸…é™¤é€‰å¡ç•Œé¢çš„åƒµå°¸
+					//std::cout << "æ£€æµ‹åˆ°åœ¨ç¬¬" + std::to_string(zombie->Row + 1) + "è¡Œæ”¾ç½®äº†éizeå…³å¡çš„åƒµå°¸,åƒµå°¸ç±»å‹ä¸º" + ZombieType::ToString(zombie->Type) << std::endl;
 					continue;
 				}
-				// Èç¹ûÊÇizeÖĞµÄ½©Ê¬£¬µ«ÓÖ²»ÊÇ°éÎè½©Ê¬£¬ÈÕÖ¾¼ÇÂ¼²¢ÇÒ¼ÆËã»¨·Ñ¡¾Ã¿Ò»¹Ø½áÊø¸³Öµ¡¿
+				// å¦‚æœæ˜¯izeä¸­çš„åƒµå°¸ï¼Œä½†åˆä¸æ˜¯ä¼´èˆåƒµå°¸ï¼Œæ—¥å¿—è®°å½•å¹¶ä¸”è®¡ç®—èŠ±è´¹ã€æ¯ä¸€å…³ç»“æŸèµ‹å€¼ã€‘
 				if (zombie->Type == ZombieType::BackupDancer) continue;
 
 				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
 				leveldata.zombie_cost += zombie_info.first;
 
-				// ¼ÇÂ¼·´Ó¦Ê±¼ä
+				// è®°å½•ååº”æ—¶é—´
 				if (leveldata.released_zombies_count == 1) {
 					leveldata.first_zombie_release_time = TimeStruct::getNow();
 				}
 			}
 
 
-			// 5. ¼à²âÄÔ×Ó±ä»¯
+			// 5. ç›‘æµ‹è„‘å­å˜åŒ–
 			if (leveldata.eaten_brain_count != game_controler.countEatenBrain() && game_controler.countEatenBrain() != 0) {
 				leveldata.last_brain_eaten_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
@@ -1518,153 +1598,153 @@ private:
 	}
 
 
-	// ³å¹ØÑ­»·: ²¼ÕóÆ÷ÊäÈëÁË4
+	// å†²å…³å¾ªç¯: å¸ƒé˜µå™¨è¾“å…¥äº†4
 	void LevelRush(bool is_ban_maidCheat) {
 
-		// 1. ÕÒµ½ pvz
+		// 1. æ‰¾åˆ° pvz
 		DWORD pid = ProcessOpener::Open();
 		if (!pid) {
-			std::cout << "Î´ÕÒµ½pvz!" << std::endl;
-			return; // ½áÊø
+			std::cout << "æœªæ‰¾åˆ°pvz!" << std::endl;
+			return; // ç»“æŸ
 		}
-		std::cout << "ÒÑÕÒµ½pvz!" << std::endl;
-		EnableBackgroundRunning(true); // ÆôÓÃpvzºóÌ¨ÔËĞĞ
+		std::cout << "å·²æ‰¾åˆ°pvz!" << std::endl;
+		EnableBackgroundRunning(true); // å¯ç”¨pvzåå°è¿è¡Œ
 
-		// 2. ÊµÀı»¯ÓÎÏ·¿ØÖÆÀà, ÊµÀı»¯³å¹Ø²¼ÕóÂëÉú³ÉÆ÷
+		// 2. å®ä¾‹åŒ–æ¸¸æˆæ§åˆ¶ç±», å®ä¾‹åŒ–å†²å…³å¸ƒé˜µç ç”Ÿæˆå™¨
 		GameControl game_controler(pid);
 		GenerateLayoutCode code_generator;
 
-		// 3. Ò»Ö±¼ì²â£¬Ö±µ½½øÈëize
+		// 3. ä¸€ç›´æ£€æµ‹ï¼Œç›´åˆ°è¿›å…¥ize
 		while (!game_controler.is_in_ize()) {
 			Sleep(1);
 		}
-		std::cout << "ÒÑ¾­½øÈëize, ÏÖÔÚ¿ªÊ¼²¼Õó" << std::endl;
+		std::cout << "å·²ç»è¿›å…¥ize, ç°åœ¨å¼€å§‹å¸ƒé˜µ" << std::endl;
 
-		// 4. ×¼±¸¿ªÊ¼ÈÕÖ¾¼ÇÂ¼
+		// 4. å‡†å¤‡å¼€å§‹æ—¥å¿—è®°å½•
 		std::string current_time = TimeStruct::getCurrentDateTime();
-		Logger logger_data(current_time + ".log", Logger::DEBUG); // Ä¬ÈÏ´òÓ¡INFO, µ«ÊÇ¼ÇÂ¼µÄ»°È«²¿¼ÇÂ¼
+		Logger logger_data(current_time + ".log", Logger::DEBUG); // é»˜è®¤æ‰“å°INFO, ä½†æ˜¯è®°å½•çš„è¯å…¨éƒ¨è®°å½•
 
-		// 5. °´ÕÕÊäÈëµÄÖ¸ÁîÑ¡ÔñÊÇ·ñ½ûÓÃÅ®ÆÍ
+		// 5. æŒ‰ç…§è¾“å…¥çš„æŒ‡ä»¤é€‰æ‹©æ˜¯å¦ç¦ç”¨å¥³ä»†
 		if (is_ban_maidCheat) {
 			game_controler.disable_maidCheat();
-			logger_data.log("µ±Ç°Å®ÆÍ×´Ì¬: ½ûÓÃ!", Logger::INFO);
+			logger_data.log("å½“å‰å¥³ä»†çŠ¶æ€: ç¦ç”¨!", Logger::INFO);
 		}
 		else {
 			game_controler.enable_maidCheat();
-			logger_data.log("µ±Ç°Å®ÆÍ×´Ì¬: ²»½ûÓÃ!", Logger::INFO);
+			logger_data.log("å½“å‰å¥³ä»†çŠ¶æ€: ä¸ç¦ç”¨!", Logger::INFO);
 		}
 
-		// 6. ³õÊ¼»¯boolÖµ
-		bool is_speed_up = false; // ÊÇ·ñ¿ªÆôÁË¼ÓËÙ
-		bool is_auto = false; // ÊÇ·ñ¿ªÆôÁË×Ô¶¯ÊÕ¼¯
-		game_controler.auto_collect(false); // ¹Øµô×Ô¶¯ÊÕ¼¯
-		game_controler.reset_speed(); // »Ö¸´Ô­ËÙ
+		// 6. åˆå§‹åŒ–boolå€¼
+		bool is_speed_up = false; // æ˜¯å¦å¼€å¯äº†åŠ é€Ÿ
+		bool is_auto = false; // æ˜¯å¦å¼€å¯äº†è‡ªåŠ¨æ”¶é›†
+		game_controler.auto_collect(false); // å…³æ‰è‡ªåŠ¨æ”¶é›†
+		game_controler.reset_speed(); // æ¢å¤åŸé€Ÿ
 
-		// ¼ÇÂ¼¹Ø¿¨ºÍÓÎÏ·¿ªÊ¼Ê±¼ä
+		// è®°å½•å…³å¡å’Œæ¸¸æˆå¼€å§‹æ—¶é—´
 		int current_flag = -1;
 		bool has_started = false;
 		TimeStruct start_time = TimeStruct::getNow();
 		auto current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
-		// ¼ÇÂ¼µ¨Ğ¡ÊıÁ¿
+		// è®°å½•èƒ†å°æ•°é‡
 		int scardy_theme_count = 0;
 
 
-		// ¼ÇÂ¼ÒÑ¾­¼à²â²¢´¦ÀíµÄ½©Ê¬£¬×Óµ¯
+		// è®°å½•å·²ç»ç›‘æµ‹å¹¶å¤„ç†çš„åƒµå°¸ï¼Œå­å¼¹
 		std::unordered_set<int> processed_zombie_ids;
 
-		// ½áÊøÌõ¼ş£º Ñô¹âÓÃÍê
+		// ç»“æŸæ¡ä»¶ï¼š é˜³å…‰ç”¨å®Œ
 		int lowestSun = 50;
 
 
-		// ¼ÇÂ¼´æµµÊı¾İÓë²¼ÕóÂëÊı¾İ
+		// è®°å½•å­˜æ¡£æ•°æ®ä¸å¸ƒé˜µç æ•°æ®
 		std::vector<LevelData> save_data;
 		std::vector<std::string> all_layout_code;
 
-		// 7. ¿ªÊ¼ÓÎÏ·£¬±£´æµÚÒ»¹ØÊı¾İ£¬²¢¶ÔµÚÒ»¹Ø½øĞĞ²¼Õó
+		// 7. å¼€å§‹æ¸¸æˆï¼Œä¿å­˜ç¬¬ä¸€å…³æ•°æ®ï¼Œå¹¶å¯¹ç¬¬ä¸€å…³è¿›è¡Œå¸ƒé˜µ
 		LevelData leveldata;
 
 		std::string ls;
 		int flower_num;
 
-		// É¾µôµÚÒ»¹ØµÄÖ²Îï
+		// åˆ æ‰ç¬¬ä¸€å…³çš„æ¤ç‰©
 		game_controler.clear_all_plants();
-		// ½ûµôÓÎÏ·ÖÖÖ²ÎïºÍÖÖÖ²ÒôĞ§
+		// ç¦æ‰æ¸¸æˆç§æ¤ç‰©å’Œç§æ¤éŸ³æ•ˆ
 		game_controler.setInjectors();
 
-		// 7.³õÊ¼»¯µÚÒ»¹ØÊı¾İ²¢²¼Õó
-		game_controler.board->GetMiscellaneous()->Round = 0; // ´ÓµÚÒ»¹Ø¿ªÊ¼
-		game_controler.board->Sun = 150; // ÉèÖÃ³õÊ¼Ñô¹â
+		// 7.åˆå§‹åŒ–ç¬¬ä¸€å…³æ•°æ®å¹¶å¸ƒé˜µ
+		game_controler.board->GetMiscellaneous()->Round = 0; // ä»ç¬¬ä¸€å…³å¼€å§‹
+		game_controler.board->Sun = 150; // è®¾ç½®åˆå§‹é˜³å…‰
 		leveldata.initial_sun = 150;
-		game_controler.update_brains(); // ÄÔ×Ó³õÊ¼»¯Îª0
+		game_controler.update_brains(); // è„‘å­åˆå§‹åŒ–ä¸º0
 		game_controler.clear_all_zombies();
 		game_controler.clear_all_bullets();
 		game_controler.clear_not_colleted_sun();
 
-		// ²¼ÕóÆ÷Ö÷Ñ­»·
+		// å¸ƒé˜µå™¨ä¸»å¾ªç¯
 		MSG msg = { 0 };
 		while (true) {
-			// Ìí¼Ó¿ì½İ¼ü²¢´¦Àí£¬È«¾ÖÈÈ¼üÏûÏ¢
+			// æ·»åŠ å¿«æ·é”®å¹¶å¤„ç†ï¼Œå…¨å±€çƒ­é”®æ¶ˆæ¯
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_HOTKEY) {
-					if (msg.wParam == 1) {  // shift+D ÇĞ»»¼ÓËÙÓëÔ­ËÙ
+					if (msg.wParam == 1) {  // shift+D åˆ‡æ¢åŠ é€Ÿä¸åŸé€Ÿ
 						is_speed_up = !is_speed_up;
 						if (is_speed_up) {
 							game_controler.set_speed_10x();
-							logger_data.log("½øĞĞÁË10x¼ÓËÙ", Logger::DEBUG);
+							logger_data.log("è¿›è¡Œäº†10xåŠ é€Ÿ", Logger::DEBUG);
 						}
 						else {
 							game_controler.reset_speed();
-							logger_data.log("¹Ø±Õ¼ÓËÙ", Logger::DEBUG);
+							logger_data.log("å…³é—­åŠ é€Ÿ", Logger::DEBUG);
 						};
 					}
-					else if (msg.wParam == 2) { // shift+A ÇĞ»»×Ô¶¯ÊÕ¼¯
+					else if (msg.wParam == 2) { // shift+A åˆ‡æ¢è‡ªåŠ¨æ”¶é›†
 						is_auto = !is_auto;
 						game_controler.auto_collect(is_auto);
-						logger_data.log(std::string(is_auto ? "´ò¿ª" : "¹Ø±Õ") + "×Ô¶¯ÊÕ¼¯", Logger::DEBUG);
+						logger_data.log(std::string(is_auto ? "æ‰“å¼€" : "å…³é—­") + "è‡ªåŠ¨æ”¶é›†", Logger::DEBUG);
 					}
-					else if (msg.wParam == 3) { // shift+q Ç¿ÖÆ½áÊø
+					else if (msg.wParam == 3) { // shift+q å¼ºåˆ¶ç»“æŸ
 						game_controler.auto_collect(false);
 						game_controler.reset_speed();
 
 						auto over_time = TimeStruct::getNow() - start_time;
-						logger_data.log(over_time.enPrint().append(" ÌáÇ°½áÊøÓÎÏ·!"), Logger::INFO);
+						logger_data.log(over_time.enPrint().append(" æå‰ç»“æŸæ¸¸æˆ!"), Logger::INFO);
 						logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-						//µÃ·ÖÈ¡Ò»Î»Ğ¡Êı
+						//å¾—åˆ†å–ä¸€ä½å°æ•°
 						std::ostringstream oss;
 						oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 						std::string score_str = oss.str();
 
-						logger_data.log("ÓÎÏ·½áÊø! ×îÖÕµÃ·ÖÎª¡ª¡ª  " + score_str, Logger::INFO);
-						logger_data.log("×îºó³ÔÄÔÊ±¼äÎª: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+						logger_data.log("æ¸¸æˆç»“æŸ! æœ€ç»ˆå¾—åˆ†ä¸ºâ€”â€”  " + score_str, Logger::INFO);
+						logger_data.log("æœ€ååƒè„‘æ—¶é—´ä¸º: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
 						Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
 
 						log_game_end(logger_data, save_data);
 
-						if (is_ban_maidCheat) { // ÇĞ»»»Ø²»½ûÅ®ÆÍ
+						if (is_ban_maidCheat) { // åˆ‡æ¢å›ä¸ç¦å¥³ä»†
 							game_controler.enable_maidCheat();
 						}
 						return;
 					}
-					else if (msg.wParam == 4) { // shift+j Ìø¹Ø
+					else if (msg.wParam == 4) { // shift+j è·³å…³
 						game_controler.board->Win();
-						logger_data.log("Ìø¹ıµÚ"+std::to_string(game_controler.board->GetMiscellaneous()->Round) +"¹Ø!", Logger::DEBUG);
+						logger_data.log("è·³è¿‡ç¬¬"+std::to_string(game_controler.board->GetMiscellaneous()->Round) +"å…³!", Logger::DEBUG);
 					}
 					else if (msg.wParam == 5) {
 						is_ban_maidCheat = !is_ban_maidCheat;
 						if (is_ban_maidCheat) {
 							game_controler.disable_maidCheat();
-							logger_data.log("ÇĞ»»Å®ÆÍ: ½ûÓÃ!", Logger::INFO);
+							logger_data.log("åˆ‡æ¢å¥³ä»†: ç¦ç”¨!", Logger::INFO);
 						}
 						else
 						{
 							game_controler.enable_maidCheat();
-							logger_data.log("ÇĞ»»Å®ÆÍ: ²»½ûÓÃ!", Logger::INFO);
+							logger_data.log("åˆ‡æ¢å¥³ä»†: ä¸ç¦ç”¨!", Logger::INFO);
 						}
 					}
 					else if (msg.wParam == 6) {
-						std::cout << "±ÀÀ£¼ì²â£¬»¹Ã»Ğ´" << std::endl;
+						std::cout << "å´©æºƒæ£€æµ‹ï¼Œè¿˜æ²¡å†™" << std::endl;
 					}
 					
 				}
@@ -1672,19 +1752,19 @@ private:
 				DispatchMessage(&msg);
 			}
 
-			// ¼ì²âÖØ¿ª
+			// æ£€æµ‹é‡å¼€
 			do {
 				if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) == 0
 					|| current_address == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)
 					|| game_controler.pvz->GameState != PVZGameState::Playing) continue;
 
-				else { // ÖØ¿ªÁË
-					game_controler.board = PVZ::GetBoard(); // ÖØĞÂÄÃÒ»ÏÂboard
+				else { // é‡å¼€äº†
+					game_controler.board = PVZ::GetBoard(); // é‡æ–°æ‹¿ä¸€ä¸‹board
 					game_controler.pvz = game_controler.board->GetPVZApp();
 
 					current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 					Sleep(5);
-					// ³õÊ¼»¯Êı¾İ
+					// åˆå§‹åŒ–æ•°æ®
 					current_flag = game_controler.board->GetMiscellaneous()->Round;
 					game_controler.clear_not_colleted_sun();
 					game_controler.update_brains();
@@ -1692,53 +1772,53 @@ private:
 					game_controler.clear_all_bullets();
 					processed_zombie_ids.clear();
 					
-					// »Ö¸´Ñô¹â
+					// æ¢å¤é˜³å…‰
 					game_controler.board->Sun = 150;
 					leveldata.released_zombies_count = 0;
 					leveldata.zombie_cost = 0;
 					has_started = false;
-					leveldata.brain_eaten_times.clear(); //Çå¿Õ³ÔÄÔ¼ÇÂ¼
+					leveldata.brain_eaten_times.clear(); //æ¸…ç©ºåƒè„‘è®°å½•
 					leveldata.score = 0.00;
 					leveldata.butter_count = 0;
 					leveldata.kernel_count = 0;
 					leveldata.collected_sun = 0;
 
-					// ÖØĞÂË¢¸öÂëÈ»ºó²¼Õó
+					// é‡æ–°åˆ·ä¸ªç ç„¶åå¸ƒé˜µ
 					ls = code_generator.generate_LevelRush_code(current_flag); 
 					all_layout_code.clear(); all_layout_code.push_back(ls);
 					int theme_index = 0; int flower_num = 0; int sun = 0;
 					std::array<int, 25> orders = {};
-					// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
+					// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
 					if (!GenerateLayoutCode::decode_layout_string(ls, theme_index, flower_num, sun, orders)) {
-						std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
+						std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
 						return;
 					}
 					game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
 				}
 			} while (0);
 
-			// 2. ¿ç¹Ø¸üĞÂ
+			// 2. è·¨å…³æ›´æ–°
 			if (game_controler.board->GetBaseAddress() &&
 				game_controler.board->GetMiscellaneous()->Round != current_flag &&
 				game_controler.pvz->GameState == PVZGameState::Playing) {
 
-				// 2.0 ÏÈ²¼Õó¡¾°üÀ¨µÚÒ»¹ØµÄ²¼Õó¡¿
-				// 1. È·±£Ã»Ö²Îï: ÓĞÒ»¸öÖ²Îï¾ÍÉ¾Ò»´ÎÈ»ºóÍË³öÈ¥
-				// ×¼±¸²¼Õó
-				current_flag = game_controler.board->GetMiscellaneous()->Round; //¸üĞÂ¹ØÊı²¢ÇÒ½øĞĞ²¼Õó
+				// 2.0 å…ˆå¸ƒé˜µã€åŒ…æ‹¬ç¬¬ä¸€å…³çš„å¸ƒé˜µã€‘
+				// 1. ç¡®ä¿æ²¡æ¤ç‰©: æœ‰ä¸€ä¸ªæ¤ç‰©å°±åˆ ä¸€æ¬¡ç„¶åé€€å‡ºå»
+				// å‡†å¤‡å¸ƒé˜µ
+				current_flag = game_controler.board->GetMiscellaneous()->Round; //æ›´æ–°å…³æ•°å¹¶ä¸”è¿›è¡Œå¸ƒé˜µ
 				ls = code_generator.generate_LevelRush_code(current_flag); all_layout_code.push_back(ls);
 				int theme_index = 0; int flower_num = 0; int sun = 0;
 				std::array<int, 25> orders = {};
-				// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
+				// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
 				if (!GenerateLayoutCode::decode_layout_string(ls, theme_index, flower_num, sun, orders)) {
-					std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
+					std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
 					return;
 				}
 				game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
 
-				// ÓÎÏ·»¹Ã»¿ªÊ¼¾Í²»´æµµÁË
+				// æ¸¸æˆè¿˜æ²¡å¼€å§‹å°±ä¸å­˜æ¡£äº†
 				if (!has_started) continue;
-				// 2.1 ´æµµ
+				// 2.1 å­˜æ¡£
 				if (leveldata.kernel_count == 0) {
 					leveldata.kernelpult_butter_rate = 0.00;
 				}
@@ -1747,20 +1827,20 @@ private:
 				}
 				save_data.push_back(leveldata);
 
-				// 2.2 ¼ÇÂ¼¿ç¹ØÊı¾İ
+				// 2.2 è®°å½•è·¨å…³æ•°æ®
 				logger_data.log((TimeStruct::getNow() - start_time).enPrint()
-					+ " ÒÑ¾­Í¨¹ı" + std::to_string(game_controler.board->GetMiscellaneous()->Round)
-					+ "¹Ø, Ñô¹â" + std::to_string(game_controler.board->Sun)
-					+ "£¬»¨·Ñ" + std::to_string(leveldata.zombie_cost),
+					+ " å·²ç»é€šè¿‡" + std::to_string(game_controler.board->GetMiscellaneous()->Round)
+					+ "å…³, é˜³å…‰" + std::to_string(game_controler.board->Sun)
+					+ "ï¼ŒèŠ±è´¹" + std::to_string(leveldata.zombie_cost),
 					Logger::INFO);
-				// 2.3 ¼ÇÂ¼µ¨Ğ¡
+				// 2.3 è®°å½•èƒ†å°
 				if (ls[0] == '8')
 				{
-					logger_data.log("Óöµ½ÁËÒ»´Îµ¨Ğ¡, Ä¿Ç°µ¨Ğ¡´ÎÊıÎª: " + std::to_string(scardy_theme_count), Logger::DEBUG);
+					logger_data.log("é‡åˆ°äº†ä¸€æ¬¡èƒ†å°, ç›®å‰èƒ†å°æ¬¡æ•°ä¸º: " + std::to_string(scardy_theme_count), Logger::DEBUG);
 					scardy_theme_count += 1;
 				}
 
-				// 2.3 ¸üĞÂ¹ØÊı£¬³õÊ¼»¯ÏÂÒ»¹ØĞèÒª¼ÇÂ¼µÄÊı¾İ
+				// 2.3 æ›´æ–°å…³æ•°ï¼Œåˆå§‹åŒ–ä¸‹ä¸€å…³éœ€è¦è®°å½•çš„æ•°æ®
 				leveldata.initial_sun = game_controler.board->Sun;
 				leveldata.released_zombies_count = 0;
 				leveldata.zombie_cost = 0;
@@ -1774,65 +1854,65 @@ private:
 				leveldata.brain_eaten_times.clear();;
 				leveldata.eaten_brain_count = 0;
 
-				// ÇåµôÉÏÒ»¹Ø
+				// æ¸…æ‰ä¸Šä¸€å…³
 				processed_zombie_ids.clear();
 
-				// 2.5 Ã¿¹Ø¿ªÊ¼£¬¹Ø±Õ¼ÓËÙ
+				// 2.5 æ¯å…³å¼€å§‹ï¼Œå…³é—­åŠ é€Ÿ
 				game_controler.reset_speed();
 				is_speed_up = false;
 			}
 
-			// 3. ¼ì²âÊÇ·ñ¿ªÊ¼ÓÎÏ·
+			// 3. æ£€æµ‹æ˜¯å¦å¼€å§‹æ¸¸æˆ
 			if (!has_started) {
 				if (!game_controler.pvz->GetBaseAddress() ||
 					game_controler.pvz->LevelId != PVZLevel::I_Zombie_Endless ||
 					game_controler.pvz->GameState != PVZGameState::Playing)
 					continue;
 
-				// ÅĞ¶ÏÊÍ·Å½©Ê¬Ìõ¼ş
+				// åˆ¤æ–­é‡Šæ”¾åƒµå°¸æ¡ä»¶
 				if (game_controler.board->ZombiesCount != 1) continue;
 
 				has_started = true;
 				start_time = TimeStruct::getNow();
-				// ¿ªÊ¼Ê±¼ä
+				// å¼€å§‹æ—¶é—´
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.reaction_time = leveldata.setlayout_time - leveldata.first_zombie_release_time;
 				leveldata.last_brain_eaten_time = start_time;
 
-				logger_data.log("¿ªÊ¼ÓÎÏ·!  ÏÖÊµÊ±¼äÎª: " + start_time.getCurrentTime(), Logger::INFO);
+				logger_data.log("å¼€å§‹æ¸¸æˆ!  ç°å®æ—¶é—´ä¸º: " + start_time.getCurrentTime(), Logger::INFO);
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 			}
 
-			// 5. ¼ÆËãÃ¿¹Ø»¨·Ñ
+			// 5. è®¡ç®—æ¯å…³èŠ±è´¹
 			std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
 			for (auto& zombie : zombies) {
-				// Èç¹ûÊÇµÚÒ»¹ØµÄ»°£¬Ííµã¼ÆËã£¬µÈ½©Ê¬Çå¸É¾»
-				if (game_controler.board->GetMiscellaneous()->Round == 0)  Sleep(100); // µÚÒ»¹ØµÄ»°¾ÍÏÈµÈÓÎÏ·×Ô¼ºÏÈ°Ñ½©Ê¬Çå³ı
-				// Èç¹û½©Ê¬ËÀÁË£¬Ìø¹ı
+				// å¦‚æœæ˜¯ç¬¬ä¸€å…³çš„è¯ï¼Œæ™šç‚¹è®¡ç®—ï¼Œç­‰åƒµå°¸æ¸…å¹²å‡€
+				if (game_controler.board->GetMiscellaneous()->Round == 0)  Sleep(100); // ç¬¬ä¸€å…³çš„è¯å°±å…ˆç­‰æ¸¸æˆè‡ªå·±å…ˆæŠŠåƒµå°¸æ¸…é™¤
+				// å¦‚æœåƒµå°¸æ­»äº†ï¼Œè·³è¿‡
 				if (zombie->NotExist) {
 					processed_zombie_ids.erase(zombie->Id);
 					continue;
 				}
-				// Èç¹û²»ÊÇ¸Õ·ÅÖÃµÄ½©Ê¬, Ìø¹ı
-				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // Ö»¼ì²éĞÂÉú³ÉµÄ¡¾³å¹ØµÄ»°µÃ·Å¿í¡¿
-				// Èç¹ûÕâ¸ö½©Ê¬ÒÑ¾­´¦Àí¹ıÁË, Ìø¹ı
-				if (processed_zombie_ids.count(zombie->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
+				// å¦‚æœä¸æ˜¯åˆšæ”¾ç½®çš„åƒµå°¸, è·³è¿‡
+				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // åªæ£€æŸ¥æ–°ç”Ÿæˆçš„ã€å†²å…³çš„è¯å¾—æ”¾å®½ã€‘
+				// å¦‚æœè¿™ä¸ªåƒµå°¸å·²ç»å¤„ç†è¿‡äº†, è·³è¿‡
+				if (processed_zombie_ids.count(zombie->Id)) continue; // å·²å¤„ç†åˆ™è·³è¿‡
 
-				processed_zombie_ids.insert(zombie->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+				processed_zombie_ids.insert(zombie->Id); // è®°å½•å·²å¤„ç†
 
-				// Èç¹û²»ÊÇizeÖĞµÄ½©Ê¬£¬Ìø¹ı
+				// å¦‚æœä¸æ˜¯izeä¸­çš„åƒµå°¸ï¼Œè·³è¿‡
 				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
-					// ÖØ¿ªµÄ»°ĞèÒªÏÈÇå³ıÑ¡¿¨½çÃæµÄ½©Ê¬
+					// é‡å¼€çš„è¯éœ€è¦å…ˆæ¸…é™¤é€‰å¡ç•Œé¢çš„åƒµå°¸
 					continue;
 				}
-				// Èç¹ûÊÇizeÖĞµÄ½©Ê¬£¬µ«ÓÖ²»ÊÇ°éÎè½©Ê¬£¬ÈÕÖ¾¼ÇÂ¼²¢ÇÒ¼ÆËã»¨·Ñ¡¾Ã¿Ò»¹Ø½áÊø¸³Öµ¡¿
+				// å¦‚æœæ˜¯izeä¸­çš„åƒµå°¸ï¼Œä½†åˆä¸æ˜¯ä¼´èˆåƒµå°¸ï¼Œæ—¥å¿—è®°å½•å¹¶ä¸”è®¡ç®—èŠ±è´¹ã€æ¯ä¸€å…³ç»“æŸèµ‹å€¼ã€‘
 				if (zombie->Type == ZombieType::BackupDancer) continue;
 
 				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
 				leveldata.zombie_cost += zombie_info.first;
 				leveldata.released_zombies_count += 1;
 
-				// ¼ÇÂ¼·´Ó¦Ê±¼ä
+				// è®°å½•ååº”æ—¶é—´
 				if (leveldata.released_zombies_count == 1) {
 					leveldata.first_zombie_release_time = TimeStruct::getNow();
 					leveldata.reaction_time = leveldata.first_zombie_release_time - leveldata.setlayout_time;
@@ -1840,20 +1920,20 @@ private:
 			}
 
 
-			// 5. ¼à²âÄÔ×Ó±ä»¯£ºwin¹ı³ÌÖĞ»áÓĞÒ»¸öÎóÅĞ£¬ÌØÅĞÒ»ÏÂ
+			// 5. ç›‘æµ‹è„‘å­å˜åŒ–ï¼šwinè¿‡ç¨‹ä¸­ä¼šæœ‰ä¸€ä¸ªè¯¯åˆ¤ï¼Œç‰¹åˆ¤ä¸€ä¸‹
 			if (leveldata.eaten_brain_count != game_controler.countEatenBrain() 
 				&& game_controler.countEatenBrain() != 0) {
-				// ¼ÆËãµÃ·Ö
+				// è®¡ç®—å¾—åˆ†
 				leveldata.score = current_flag + game_controler.countEatenBrain() * 0.2;
 				leveldata.last_brain_eaten_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
 				leveldata.eaten_brain_count = game_controler.countEatenBrain();
 
-				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "³ÔÁËµÚ" + std::to_string(game_controler.countEatenBrain()) + "¸öÄÔ×Ó", Logger::DEBUG);
+				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "åƒäº†ç¬¬" + std::to_string(game_controler.countEatenBrain()) + "ä¸ªè„‘å­", Logger::DEBUG);
 			}
 
 
-			// 6. »¹ÓĞÊ±¼ä£¬Ñô¹âÓÃÍêÁË
+			// 6. è¿˜æœ‰æ—¶é—´ï¼Œé˜³å…‰ç”¨å®Œäº†
 			if (game_controler.board->ZombiesCount == 0 && game_controler.board->Sun < lowestSun) {
 				bool is_dead = true;
 
@@ -1866,24 +1946,24 @@ private:
 					std::string score_str = oss.str();
 					auto game_over_str = std::string("GameOver..").append("     ").append(std::to_string(scardy_theme_count) + "-") + score_str;
 					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " ÓÎÏ·½áÊø--  µÃ·Ö: " + score_str, Logger::INFO);
-					Creator::CreateCaption(game_over_str.c_str(), game_over_str.size(), CaptionStyle::Lowermiddle); // È¥µô¸¡µãÊıµÄÁ½Î»Ğ¡Êı
+					logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " æ¸¸æˆç»“æŸ--  å¾—åˆ†: " + score_str, Logger::INFO);
+					Creator::CreateCaption(game_over_str.c_str(), game_over_str.size(), CaptionStyle::Lowermiddle); // å»æ‰æµ®ç‚¹æ•°çš„ä¸¤ä½å°æ•°
 
 
-					// ¹Ø¿¨½áÊøºó´òÓ¡±¾´Î³å¹ØÊı¾İ
+					// å…³å¡ç»“æŸåæ‰“å°æœ¬æ¬¡å†²å…³æ•°æ®
 					std::string layout_codes;
 					for (const auto& ls : all_layout_code) {
 						layout_codes += ls + ".";
 					}
-					layout_codes = layout_codes.substr(0, layout_codes.size() - 1); // È¥µô×îºóµÄ'.'
-					logger_data.log("±¾´Î³å¹Ø¹Ø¿¨²¼ÕóÂëÎª(ÒÑ¸´ÖÆµ½¼ôÇĞ°å): \n" + layout_codes, Logger::INFO);
+					layout_codes = layout_codes.substr(0, layout_codes.size() - 1); // å»æ‰æœ€åçš„'.'
+					logger_data.log("æœ¬æ¬¡å†²å…³å…³å¡å¸ƒé˜µç ä¸º(å·²å¤åˆ¶åˆ°å‰ªåˆ‡æ¿): \n" + layout_codes, Logger::INFO);
 					copyToClipBoard(layout_codes);
 
 
 					log_game_end(logger_data, save_data);
 
 
-					// °Ñ¼ÓËÙºÍ×Ô¶¯ÊÕ¼¯¹ØÁË
+					// æŠŠåŠ é€Ÿå’Œè‡ªåŠ¨æ”¶é›†å…³äº†
 					game_controler.auto_collect(false);
 					game_controler.reset_speed();
 					if (is_ban_maidCheat) {
@@ -1897,115 +1977,116 @@ private:
 
 	}
 
-	// 30minÏŞÊ±Ñ­»·
+	// 30miné™æ—¶å¾ªç¯
 	void SpeedRun30min(std::string ls, const bool is_cheat_check) {
-		// 0. ÄÃµ½ËùÓĞ¹Ø¿¨µÄ²¼Õó´úÂë, ¼ì²â³¤¶ÈÊÇ·ñºÏ·¨
+		// 0. æ‹¿åˆ°æ‰€æœ‰å…³å¡çš„å¸ƒé˜µä»£ç , æ£€æµ‹é•¿åº¦æ˜¯å¦åˆæ³•
 		auto ss = std::stringstream(ls);
 		auto str = std::string();
 		auto vec = std::vector<std::string>();
 		while (getline(ss, str, '.')) vec.push_back(str);
 		if (vec.size() != 25) {
-			std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+			std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 			return;
 		};
-		// µ¥¹Ø²¼ÕóÂëÊÇ·ñºÏ·¨
+		// å•å…³å¸ƒé˜µç æ˜¯å¦åˆæ³•
 		for (auto it : vec) {
 			int theme_index = static_cast<int>(it[0] - '0');
 			int flower_num = static_cast<int>(it[1] - '0');
 			int sun = std::stoi(it.substr(2, 2)) * 25;
 			std::string order_str = it.substr(4);
 			if (theme_index > 8 || theme_index < 1) {
-				std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+				std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 				return;
 			}
 			if (flower_num < 1 || flower_num > 8) {
-				std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+				std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 				return;
 			}
-			if (sun != 0) { // ³£¹æÄ£Ê½²»¿ÉÉèÖÃÑô¹â
-				std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+			if (sun != 0) { // å¸¸è§„æ¨¡å¼ä¸å¯è®¾ç½®é˜³å…‰
+				std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 				return;
 			}
 		};
 
-		// 1. ÕÒµ½ pvz
+		// 1. æ‰¾åˆ° pvz
 		DWORD pid = ProcessOpener::Open();
 		if (!pid) {
-			std::cout << "Î´ÕÒµ½pvz!" << std::endl;
-			return; // ½áÊø
+			std::cout << "æœªæ‰¾åˆ°pvz!" << std::endl;
+			return; // ç»“æŸ
 		}
-		std::cout << "ÒÑÕÒµ½pvz!" << std::endl;
-		EnableBackgroundRunning(true); // ÆôÓÃpvzºóÌ¨ÔËĞĞ
+		std::cout << "å·²æ‰¾åˆ°pvz!" << std::endl;
+		EnableBackgroundRunning(true); // å¯ç”¨pvzåå°è¿è¡Œ
 		
-		// 2. ÊµÀı»¯ÓÎÏ·¿ØÖÆÆ÷
+		// 2. å®ä¾‹åŒ–æ¸¸æˆæ§åˆ¶å™¨
 		GameControl game_controler(pid);
 
-		// 3. Ò»Ö±¼ì²â£¬Ö±µ½½øÈëize
+		// 3. ä¸€ç›´æ£€æµ‹ï¼Œç›´åˆ°è¿›å…¥ize
 		while (!game_controler.is_in_ize()) {
 			Sleep(1);
 		}
 
-		// 4. ×¼±¸¿ªÊ¼¿ªÊ¼¼ÇÂ¼ÈÕÖ¾
+		// 4. å‡†å¤‡å¼€å§‹å¼€å§‹è®°å½•æ—¥å¿—
 		std::string current_time = TimeStruct::getCurrentDateTime();
-		Logger logger_data(current_time + ".log", Logger::DEBUG); // Ä¬ÈÏ´òÓ¡INFO, µ«ÊÇ¼ÇÂ¼µÄ»°È«²¿¼ÇÂ¼
+		Logger logger_data(current_time + ".log", Logger::DEBUG); // é»˜è®¤æ‰“å°INFO, ä½†æ˜¯è®°å½•çš„è¯å…¨éƒ¨è®°å½•
 
 		logger_data.log(std::string(get_terminal_width(), '-'), Logger::DEBUG);
-		logger_data.log("ÒÑ¾­½øÈëize, ÏÖÔÚ¿ªÊ¼²¼Õó", Logger::INFO);
+		logger_data.log("å·²ç»è¿›å…¥ize, ç°åœ¨å¼€å§‹å¸ƒé˜µ", Logger::INFO);
 
 
-		// ·´×÷±×ÈÕÖ¾£ºÔÚÍâ²¿×÷ÓÃÓòÉùÃ÷Ö¸ÕëºÍÒıÓÃ±ğÃû
-		Logger* logger_cheat = nullptr;  // Ô­Ê¼Ö¸Õë
-		// ÏÈ¼ì²â»·¾³ÊÇ·ñÒì³£
-		GameCheatCheck game_cheat_checker(2, logger_cheat); // Ã¿2s¼ì²âÒ»´Î
+		// åä½œå¼Šæ—¥å¿—ï¼šåœ¨å¤–éƒ¨ä½œç”¨åŸŸå£°æ˜æŒ‡é’ˆå’Œå¼•ç”¨åˆ«å
+		Logger* logger_cheat = nullptr;  // åŸå§‹æŒ‡é’ˆ
+		// å…ˆæ£€æµ‹ç¯å¢ƒæ˜¯å¦å¼‚å¸¸
+		GameCheatCheck game_cheat_checker(2, logger_cheat); // æ¯2sæ£€æµ‹ä¸€æ¬¡
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			// ¶¯Ì¬´´½¨¶ÔÏó£¬ÉúÃüÖÜÆÚÓÉÊÖ¶¯¹ÜÀí£¨»òÖÇÄÜÖ¸Õë£©
+			// åŠ¨æ€åˆ›å»ºå¯¹è±¡ï¼Œç”Ÿå‘½å‘¨æœŸç”±æ‰‹åŠ¨ç®¡ç†ï¼ˆæˆ–æ™ºèƒ½æŒ‡é’ˆï¼‰
 			logger_cheat = new Logger(
 				current_time + "_cheatCheck.log",
 				Logger::DEBUG,
 				true
 			);
-			game_cheat_checker.logger = logger_cheat; // ÖØĞÂ¸³ÖµÒ»ÏÂ£¬ÄÃµ½ÕıÈ·Ö¸Õë
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // ½ûµôÒ»Ğ©Ñ°ÕÒÓÎÏ·ÊÇÍ¨¹ı´°¿ÚÃûµÄ£ºÈçËãÑªÆ÷
+			game_cheat_checker.logger = logger_cheat; // é‡æ–°èµ‹å€¼ä¸€ä¸‹ï¼Œæ‹¿åˆ°æ­£ç¡®æŒ‡é’ˆ
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // ç¦æ‰ä¸€äº›å¯»æ‰¾æ¸¸æˆæ˜¯é€šè¿‡çª—å£åçš„ï¼šå¦‚ç®—è¡€å™¨
 			game_cheat_checker.check_envirnoment();
 		}
-		else { // »¹Ô­»Ø±êÌâ
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies"); // ½ûµôÒ»Ğ©Ñ°ÕÒÓÎÏ·ÊÇÍ¨¹ı´°¿ÚÃûµÄ£ºÈçËãÑªÆ÷
+		else { // è¿˜åŸå›æ ‡é¢˜
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies"); // ç¦æ‰ä¸€äº›å¯»æ‰¾æ¸¸æˆæ˜¯é€šè¿‡çª—å£åçš„ï¼šå¦‚ç®—è¡€å™¨
 		}
 
 		if (is_cheat_check) logger_cheat->log(
-			std::string("Íæ¼ÒÒÑ¾­½øÈëize, ")
-			+ "µ±Ç°ÈÕÆÚÓëÊ±¼äÎª: " + TimeStruct::getCurrentDateTime() + "\n"
-			+ "±¾´Î²¼ÕóÂëÎª: " + ls + "\n"
-			+ "Ö´ĞĞ±¾´Î¼ÆÊ±µÄÏß³ÌºÅ: " + std::to_string(GetCurrentThreadId()) + " ÓÎÏ·½ø³ÌºÅ: " + std::to_string(pid) + "\n"
-			+ "ÓÎÏ·¿í¸ß: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc0)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc4)) + "\n"
-			+ "ÓÎÏ·´°¿Ú×ø±ê: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x30)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x34)) + "\n"
-			+ "ÓÎÏ·ÄÚÍæ¼ÒÃû×ÖÎª: " + game_controler.get_player_name()
+			std::string("ç©å®¶å·²ç»è¿›å…¥ize, ")
+			+ "å½“å‰æ—¥æœŸä¸æ—¶é—´ä¸º: " + TimeStruct::getCurrentDateTime() + "\n"
+			+ "æœ¬æ¬¡å¸ƒé˜µç ä¸º: " + ls + "\n"
+			+ "æ‰§è¡Œæœ¬æ¬¡è®¡æ—¶çš„çº¿ç¨‹å·: " + std::to_string(GetCurrentThreadId()) + " æ¸¸æˆè¿›ç¨‹å·: " + std::to_string(pid) + "\n"
+			+ "æ¸¸æˆå®½é«˜: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc0)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc4)) + "\n"
+			+ "æ¸¸æˆçª—å£åæ ‡: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x30)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x34)) + "\n"
+			+ "æ¸¸æˆå†…ç©å®¶åå­—ä¸º: " + game_controler.get_player_name()
 			, Logger::DEBUG
 		);
 
 
-		// 5. ³õÊ¼»¯ÓÎÏ·ĞÅÏ¢
+		// 5. åˆå§‹åŒ–æ¸¸æˆä¿¡æ¯
 		int current_flag = -1;
 		bool has_started = false; 
 		bool is_crashed = false;
 		TimeStruct start_time = TimeStruct::getNow();
 		auto current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
-		// ¼ÇÂ¼ÒÑ¾­¼à²â²¢´¦ÀíµÄ½©Ê¬
-		std::unordered_set<int> processed_zombie_ids;
+		// æ£€æµ‹åƒµå°¸ï¼Œæ¤ç‰©ï¼Œé˜³å…‰
+		std::unordered_set<int> processed_zombie_ids;  // è®°å½•å·²ç»ç›‘æµ‹å¹¶å¤„ç†çš„åƒµå°¸
 		std::unordered_set<int> processed_projectile_ids;
-		std::unordered_set<int> processed_coin_ids;
+		std::unordered_set<uintptr_t> processed_coins;                 // å·²å¤„ç†é˜³å…‰åœ°å€
+		std::unordered_map<uintptr_t, bool> collected_sun_map;             // åœ°å€ -> æ˜¯å¦å·²æ”¶é›†
 
-		// ½áÊøÌõ¼ş
+		// ç»“æŸæ¡ä»¶
 		int lowestSun = 50;
 
-		// 6. ¼ÇÂ¼´æµµ
+		// 6. è®°å½•å­˜æ¡£
 		std::vector<LevelData> save_data;
-		// 6.1. ³õÊ¼»¯Ã¿¹ØÒª¼ÇÔØµÄÊı¾İ
+		// 6.1. åˆå§‹åŒ–æ¯å…³è¦è®°è½½çš„æ•°æ®
 		LevelData leveldata;
 
 
-		// ÌáÊ¾Ö÷Ìâ
+		// æç¤ºä¸»é¢˜
 		std::vector<std::string> parts;
 		std::istringstream iss(ls);
 		std::string token;
@@ -2013,7 +2094,7 @@ private:
 			parts.push_back(token);
 		}
 		logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-		logger_data.log("25¸öÖ÷ÌâĞòºÅÎª£º", Logger::INFO);
+		logger_data.log("25ä¸ªä¸»é¢˜åºå·ä¸ºï¼š", Logger::INFO);
 		int count = 0;
 		std::ostringstream oss;
 		for (const auto& part : parts) {
@@ -2027,63 +2108,62 @@ private:
 
 
 
-		// É¾µôµÚÒ»¹ØµÄÖ²Îï
+		// åˆ æ‰ç¬¬ä¸€å…³çš„æ¤ç‰©
 		game_controler.clear_reverse_all_plants();
 		//game_controler.clear_all_plants();
-		// ½ûÅ®ÆÍ, ½ûµôÓÎÏ·Éú³ÉÖ²Îï£¬½ûµôÖ²ÎïÖÖÖ²ÒôĞ§
+		// ç¦å¥³ä»†, ç¦æ‰æ¸¸æˆç”Ÿæˆæ¤ç‰©ï¼Œç¦æ‰æ¤ç‰©ç§æ¤éŸ³æ•ˆ
 		game_controler.disable_maidCheat();
 		game_controler.setInjectors();
 
 
-		// 7. ³õÊ¼»¯ÓÎÏ·ÄÚµÚÒ»¹ØÊı¾İ
-		game_controler.board->GetMiscellaneous()->Round = 0; // ´ÓµÚÒ»¹Ø¿ªÊ¼
-		game_controler.board->Sun = 150; // ÉèÖÃ³õÊ¼Ñô¹â
+		// 7. åˆå§‹åŒ–æ¸¸æˆå†…ç¬¬ä¸€å…³æ•°æ®
+		game_controler.board->GetMiscellaneous()->Round = 0; // ä»ç¬¬ä¸€å…³å¼€å§‹
+		game_controler.board->Sun = 150; // è®¾ç½®åˆå§‹é˜³å…‰
 		leveldata.initial_sun = 150;
-		game_controler.update_brains(); // »Ö¸´ÄÔ×Ó
-		game_controler.clear_all_zombies(); // É¾½©Ê¬
-		game_controler.clear_all_bullets(); // É¾×Óµ¯
-		game_controler.clear_not_colleted_sun(); // É¾µôÃ»ÊÕ¼¯µÄÑô¹â
-		if (is_cheat_check) logger_cheat->log("³õÊ¼»¯µÚÒ»¹ØĞÅÏ¢£¬²¢½øĞĞµÚÒ»¹ØµÄ²¼Õó", Logger::DEBUG);
+		game_controler.update_brains(); // æ¢å¤è„‘å­
+		game_controler.clear_all_zombies(); // åˆ åƒµå°¸
+		game_controler.clear_all_bullets(); // åˆ å­å¼¹
+		game_controler.clear_not_colleted_sun(); // åˆ æ‰æ²¡æ”¶é›†çš„é˜³å…‰
+		if (is_cheat_check) logger_cheat->log("åˆå§‹åŒ–ç¬¬ä¸€å…³ä¿¡æ¯ï¼Œå¹¶è¿›è¡Œç¬¬ä¸€å…³çš„å¸ƒé˜µ", Logger::DEBUG);
 
-
-		// 8. ÓÎÏ·Ö÷Ñ­»·
+		// 8. æ¸¸æˆä¸»å¾ªç¯
 		MSG msg = { 0 };
 		while (true) {
-			// Ìí¼Ó¿ì½İ¼ü²¢´¦Àí£¬È«¾ÖÈÈ¼üÏûÏ¢
+			// æ·»åŠ å¿«æ·é”®å¹¶å¤„ç†ï¼Œå…¨å±€çƒ­é”®æ¶ˆæ¯
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_HOTKEY) {
-					if (msg.wParam == 1) { // shift+q Ç¿ÖÆ½áÊø
+					if (msg.wParam == 1) { // shift+q å¼ºåˆ¶ç»“æŸ
 						auto over_time = TimeStruct::getNow() - start_time;
-						logger_data.log(over_time.enPrint().append(" ÌáÇ°½áÊøÓÎÏ·!"), Logger::INFO);
+						logger_data.log(over_time.enPrint().append(" æå‰ç»“æŸæ¸¸æˆ!"), Logger::INFO);
 						logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 
 						std::ostringstream oss;
 						oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 						std::string score_str = oss.str();
 
-						if (is_cheat_check) logger_cheat->log("Íæ¼ÒÖ÷¶¯ÌáÇ°½áÊøÓÎÏ·", Logger::DEBUG);
+						if (is_cheat_check) logger_cheat->log("ç©å®¶ä¸»åŠ¨æå‰ç»“æŸæ¸¸æˆ", Logger::DEBUG);
 
-						logger_data.log("ÓÎÏ·½áÊø! ÏÖÊµÊ±¼äÎª: " + TimeStruct::getCurrentTime() + " ×îÖÕµÃ·ÖÎª¡ª¡ª  " + score_str, Logger::INFO);
-						logger_data.log("×îºó³ÔÄÔÊ±¼äÎª: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+						logger_data.log("æ¸¸æˆç»“æŸ! ç°å®æ—¶é—´ä¸º: " + TimeStruct::getCurrentTime() + " æœ€ç»ˆå¾—åˆ†ä¸ºâ€”â€”  " + score_str, Logger::INFO);
+						logger_data.log("æœ€ååƒè„‘æ—¶é—´ä¸º: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
 						Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
 						log_game_end(logger_data, save_data);
 						return;
 					}
-					if (msg.wParam == 2) { // shift+RÖØ¿ª
+					else if (msg.wParam == 2) { // shift+Ré‡å¼€
 						game_controler.clear_not_colleted_sun();
 						game_controler.update_brains();
 						game_controler.clear_all_zombies();
 						game_controler.clear_all_bullets();
 
 						processed_zombie_ids.clear();
-						processed_coin_ids.clear();
 						processed_projectile_ids.clear();
-						// »Ö¸´Ñô¹â
+						processed_coins.clear(); collected_sun_map.clear();
+						// æ¢å¤é˜³å…‰
 						game_controler.board->Sun = current_flag == 0 ? 150 : leveldata.initial_sun;
 						leveldata.released_zombies_count = 0;
 						leveldata.zombie_cost = 0;
-						leveldata.brain_eaten_times.clear(); //Çå¿Õ³ÔÄÔ¼ÇÂ¼
+						leveldata.brain_eaten_times.clear(); //æ¸…ç©ºåƒè„‘è®°å½•
 						leveldata.butter_count = 0;
 						leveldata.kernel_count = 0;
 						leveldata.score = current_flag;
@@ -2091,107 +2171,107 @@ private:
 						if (current_flag == 0) has_started = false;
 
 						TimeStruct restart_time = TimeStruct::getNow() - start_time;
-						logger_data.log(restart_time.enPrint() + " ÖØ¿ªµÚ" + std::to_string(current_flag + 1) + "¹Ø!", Logger::INFO);
-						if (is_cheat_check) logger_cheat->log("Íæ¼ÒÔÚ" + restart_time.enPrint() + "Ê±½øĞĞÖØ¿ª£¬¹ØÊıÎª" + std::to_string(current_flag + 1), Logger::DEBUG);
+						logger_data.log(restart_time.enPrint() + " é‡å¼€ç¬¬" + std::to_string(current_flag + 1) + "å…³!", Logger::INFO);
+						if (is_cheat_check) logger_cheat->log("ç©å®¶åœ¨" + restart_time.enPrint() + "æ—¶è¿›è¡Œé‡å¼€ï¼Œå…³æ•°ä¸º" + std::to_string(current_flag + 1), Logger::DEBUG);
 
 						std::string restart_str = restart_time.enPrint().append("     ").append(std::string("Restart"));
-						Creator::CreateCaption(restart_str.c_str(), restart_str.size(), CaptionStyle::Lowermiddle); // ÓÎÏ·°××Ö£¬´¦ÓÚ¿¿ÏÂ¾ÓÖĞÎ»ÖÃ
+						Creator::CreateCaption(restart_str.c_str(), restart_str.size(), CaptionStyle::Lowermiddle); // æ¸¸æˆç™½å­—ï¼Œå¤„äºé ä¸‹å±…ä¸­ä½ç½®
 
-						// ÖØĞÂ²¼ÕóÒ»ÏÂ
+						// é‡æ–°å¸ƒé˜µä¸€ä¸‹
 						current_flag = game_controler.board->GetMiscellaneous()->Round;
 						std::string layout_code = vec[current_flag];
 						int theme_index = 0; int flower_num = 0; int sun = 0;
 						std::array<int, 25> orders = {};
-						// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
+						// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
 						if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
-							std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
+							std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
 							return;
 						}
 						game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
 						leveldata.setlayout_time = TimeStruct::getNow();
 					}
-					if (msg.wParam == 3) { // shift+s±ÀÀ£
-						if (!is_crashed) continue; // Ã»±ÀÀ£°´ÁËÃ»·´Ó¦
-						// ÕÒÓÎÏ·
-						DWORD pid = ProcessOpener::Open();
-						if (!pid) continue;
-						logger_data.log("ÏÖÒÑ»Ö¸´´æµµ,µ±Ç°Ê±¼äÎª" +TimeStruct::getCurrentTime() + "Çë¼ÌĞøÓÎÏ·...", Logger::INFO);
+					// å´©æºƒæ£€æµ‹ï¼Œå…ˆæ³¨é‡Šæ‰
+					{
+					//else if (msg.wParam == 3) { // shift+så´©æºƒ
+					//	if (!is_crashed) continue; // æ²¡å´©æºƒæŒ‰äº†æ²¡ååº”
+					//	// æ‰¾æ¸¸æˆ
+					//	DWORD pid = ProcessOpener::Open();
+					//	if (!pid) continue;
+					//	logger_data.log("ç°å·²æ¢å¤å­˜æ¡£,å½“å‰æ—¶é—´ä¸º" + TimeStruct::getCurrentTime() + "è¯·ç»§ç»­æ¸¸æˆ...", Logger::INFO);
 
-						// 2. ÖØĞÂÄÃÒ»ÏÂboard
-						GameControl game_controler2(pid);
-						game_controler = std::move(game_controler2);
-						if (!game_controler.is_in_ize()) continue;
+					//	// 2. é‡æ–°æ‹¿ä¸€ä¸‹board
+					//	GameControl game_controler2(pid);
+					//	game_controler = std::move(game_controler2);
+					//	if (!game_controler.is_in_ize()) continue;
 
-						current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
+					//	current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 
-						// ½ûÅ®ÆÍ, ½ûµôÓÎÏ·Éú³ÉÖ²Îï£¬½ûµôÖ²ÎïÖÖÖ²ÒôĞ§
-						game_controler.clear_reverse_all_plants();
-						game_controler.disable_maidCheat();
-						game_controler.setInjectors();
+					//	// ç¦å¥³ä»†, ç¦æ‰æ¸¸æˆç”Ÿæˆæ¤ç‰©ï¼Œç¦æ‰æ¤ç‰©ç§æ¤éŸ³æ•ˆ
+					//	game_controler.clear_reverse_all_plants();
+					//	game_controler.disable_maidCheat();
+					//	game_controler.setInjectors();
 
-						game_controler.board->GetMiscellaneous()->Round = current_flag;
-						std::string layout_code = vec[current_flag];
-						int theme_index = 0; int flower_num = 0; int sun = 0;
-						std::array<int, 25> orders = {};
-						// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
-						if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
-							std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
-							return;
-						}
-						game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
-						if (is_cheat_check) logger_cheat->log("ÏÖÔÚ¶ÔµÚ" + std::to_string(current_flag) + "¹Ø½øĞĞ²¼Õó,»¨Êı:" + std::to_string(flower_num) + ", ²¼ÕóÂë:" + layout_code, Logger::DEBUG);
+					//	game_controler.board->GetMiscellaneous()->Round = current_flag;
+					//	std::string layout_code = vec[current_flag];
+					//	int theme_index = 0; int flower_num = 0; int sun = 0;
+					//	std::array<int, 25> orders = {};
+					//	// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
+					//	if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
+					//		std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
+					//		return;
+					//	}
+					//	game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
+					//	if (is_cheat_check) logger_cheat->log("ç°åœ¨å¯¹ç¬¬" + std::to_string(current_flag) + "å…³è¿›è¡Œå¸ƒé˜µ,èŠ±æ•°:" + std::to_string(flower_num) + ", å¸ƒé˜µç :" + layout_code, Logger::DEBUG);
 
-						// ¼ÆËã»¹ÓµÓĞµÄÊ±¼ä: Ê¹ÓÃµÄÊ±¼ä, µÚÒ»¸ö½©Ê¬ÊÍ·ÅµÄÊ±¼äÒ²¾ÍÊÇstart_time£¬ÉÏÒ»´Î´æµµµÄÊ±¼ä
-						start_time = TimeStruct::getNow() - leveldata.current_use_time;
-						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_use_time;
+					//	// è®¡ç®—è¿˜æ‹¥æœ‰çš„æ—¶é—´: ä½¿ç”¨çš„æ—¶é—´, ç¬¬ä¸€ä¸ªåƒµå°¸é‡Šæ”¾çš„æ—¶é—´ä¹Ÿå°±æ˜¯start_timeï¼Œä¸Šä¸€æ¬¡å­˜æ¡£çš„æ—¶é—´
+					//	start_time = TimeStruct::getNow() - leveldata.current_use_time;
+					//	leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_use_time;
 
-						if (is_cheat_check) logger_cheat->log(TimeStruct::getCurrentTime() + "ÓÎÏ·±ÀÀ£ÁË, ÏÖÔÚ¶ÔµÚ" + std::to_string(current_flag) + "¹ØÖØĞÂ½øĞĞ²¼Õó,»¨Êı:" + std::to_string(flower_num) + ", ²¼ÕóÂë:" + ls, Logger::DEBUG);
-						
-						// 2. »Ö¸´Ñô¹â£¬¹ØÊı, »ÆÓÍÊı£¬³ÔÄÔÊı
-						game_controler.board->Sun = leveldata.initial_sun;
-						leveldata.score = current_flag;
-						leveldata.butter_count = 0;
-						leveldata.collected_sun = 0;
-						leveldata.eaten_brain_count = 0;
-						leveldata.kernel_count = 0;
-						leveldata.released_zombies_count = 0;
-						leveldata.zombie_cost = 0;
+					//	if (is_cheat_check) logger_cheat->log(TimeStruct::getCurrentTime() + "æ¸¸æˆå´©æºƒäº†, ç°åœ¨å¯¹ç¬¬" + std::to_string(current_flag) + "å…³é‡æ–°è¿›è¡Œå¸ƒé˜µ,èŠ±æ•°:" + std::to_string(flower_num) + ", å¸ƒé˜µç :" + ls, Logger::DEBUG);
 
-						processed_projectile_ids.clear();
-						processed_coin_ids.clear();
-						processed_zombie_ids.clear();
+					//	// 2. æ¢å¤é˜³å…‰ï¼Œå…³æ•°, é»„æ²¹æ•°ï¼Œåƒè„‘æ•°
+					//	game_controler.board->Sun = leveldata.initial_sun;
+					//	leveldata.score = current_flag;
+					//	leveldata.butter_count = 0;
+					//	leveldata.collected_sun = 0;
+					//	leveldata.eaten_brain_count = 0;
+					//	leveldata.kernel_count = 0;
+					//	leveldata.released_zombies_count = 0;
+					//	leveldata.zombie_cost = 0;
 
-						// 3. ĞŞ¸Ä¼ÆÊ±£º
-						//Çå¿Õ³ÔÄÔÊ±¼ä, ×îºó³ÔÄÔÊ±¼ä£¬²¼ÕóÊ±¼ä
-						leveldata.brain_eaten_times.clear();
-						leveldata.setlayout_time = TimeStruct::getNow();
+					//	processed_projectile_ids.clear();
+					//	processed_coin_ids.clear();
+					//	processed_zombie_ids.clear();
 
-						is_crashed = false;
+					//	// 3. ä¿®æ”¹è®¡æ—¶ï¼š
+					//	//æ¸…ç©ºåƒè„‘æ—¶é—´, æœ€ååƒè„‘æ—¶é—´ï¼Œå¸ƒé˜µæ—¶é—´
+					//	leveldata.brain_eaten_times.clear();
+					//	leveldata.setlayout_time = TimeStruct::getNow();
+
+					//	is_crashed = false;
+					//}
 					}
 				}
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-			
-			// ±ÀÀ£ÁË¾ÍÏÈ²»Ö´ĞĞÏÂÃæµÄ²¿·ÖÁË
-			if (is_crashed) continue;
-		
-			// ¼à²âÖØ¿ª: ÖØĞÂ½øĞĞ²¼Õó£»»á²»Ğ¡ĞÄ°Ñ±ÀÀ£Ò²Ëã½øÀ´¡¾ ¡¿
+
+			// 1. ç›‘æµ‹é‡å¼€: é‡æ–°è¿›è¡Œå¸ƒé˜µï¼›ä¼šä¸å°å¿ƒæŠŠå´©æºƒä¹Ÿç®—è¿›æ¥ã€æˆ‘ä½›ï¼Œä»€ä¹ˆbugã€‘
 			do {
-				// board²»ÕıÈ·²ÅÊÇ
+				// boardä¸æ­£ç¡®æ‰æ˜¯
 				if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) == 0
 					|| current_address == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)
 					|| game_controler.pvz->GameState != PVZGameState::Playing
-				) continue;
+					) continue;
 				//if (current_address == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)) continue;
-				// ÖØ¿ªÁË
+				// é‡å¼€äº†
 				GameControl game_controler2(pid);
 				game_controler = std::move(game_controler2);
 				current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 
-				if (is_cheat_check) logger_cheat->log("Ê¹ÓÃÁËÓÎÏ·ÄÚµÄrestart", Logger::DEBUG);
-
-				current_flag = game_controler.board->GetMiscellaneous()->Round;
+				if (is_cheat_check) logger_cheat->log("ä½¿ç”¨äº†æ¸¸æˆå†…çš„restart", Logger::DEBUG);
+				if (current_flag == 0) has_started = false;
+				current_flag = -1;// è·³åˆ°è·¨å…³é‚£é‡Œé‡æ–°å¸ƒé˜µ
 
 				game_controler.clear_not_colleted_sun();
 				game_controler.update_brains();
@@ -2200,41 +2280,29 @@ private:
 				game_controler.clear_reverse_all_plants();
 
 				processed_zombie_ids.clear();
-				processed_coin_ids.clear();
 				processed_projectile_ids.clear();
-				// »Ö¸´Ñô¹â
+				processed_coins.clear(); collected_sun_map.clear();
+				// æ¢å¤é˜³å…‰
 				game_controler.board->Sun = current_flag == 0 ? 150 : leveldata.initial_sun;
 				leveldata.released_zombies_count = 0;
 				leveldata.zombie_cost = 0;
-				if(current_flag == 0) has_started = false;
-				leveldata.brain_eaten_times.clear(); //Çå¿Õ³ÔÄÔ¼ÇÂ¼
+				leveldata.brain_eaten_times.clear(); //æ¸…ç©ºåƒè„‘è®°å½•
 				leveldata.score = 0.00;
 				leveldata.butter_count = 0;
 				leveldata.kernel_count = 0;
-				
-				std::string layout_code = vec[current_flag];
-				int theme_index = 0; int flower_num = 0; int sun = 0;
-				std::array<int, 25> orders = {};
-				// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
-				if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
-					std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
-					return;
-				}
-				game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
-				if (is_cheat_check) logger_cheat->log("ÏÖÔÚ¶ÔµÚ" + std::to_string(current_flag) + "¹ØÖØĞÂ½øĞĞ²¼Õó,»¨Êı:" + std::to_string(flower_num) + ", ²¼ÕóÂë:" + layout_code, Logger::DEBUG);
+
 			} while (0);
 
-			// 2. ¿ç¹Ø¸üĞÂ
-			if (game_controler.board && 
-				!is_crashed &&
+			// 2. è·¨å…³æ›´æ–°ï¼š åŒ…æ‹¬é€šå…³å’Œæ­£å¸¸è·¨å…³
+			if (game_controler.board &&
 				game_controler.board->GetBaseAddress() &&
 				game_controler.board->GetMiscellaneous()->Round != current_flag &&
 				game_controler.pvz->GameState == PVZGameState::Playing) {
 
 				if (game_controler.board->GetMiscellaneous()->Round >= 25) {
 					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger_data.log(std::string("¹§Ï²´òÍ¨!!!! ÏÖÊµÊ±¼ä: " + TimeStruct::getCurrentTime() ), Logger::INFO);
-					logger_data.log("×îºó³ÔÄÔÊ±¼äÎª: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+					logger_data.log(std::string("æ­å–œæ‰“é€š!!!! ç°å®æ—¶é—´: " + TimeStruct::getCurrentTime()), Logger::INFO);
+					logger_data.log("æœ€ååƒè„‘æ—¶é—´ä¸º: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 					auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ").append(std::string("Congrats!"));
 					Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
@@ -2243,24 +2311,26 @@ private:
 					return;
 				}
 
-				// 2.0 ÏÈ²¼Õó
+				// 2.0 å…ˆå¸ƒé˜µ
 				current_flag = game_controler.board->GetMiscellaneous()->Round;
 				std::string layout_code = vec[current_flag];
 				int theme_index = 0; int flower_num = 0; int sun = 0;
 				std::array<int, 25> orders = {};
-				// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
+				// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
 				if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
-					std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
+					std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
 					return;
 				}
-				// ³£¹æ²¼Õó²»ÄÜÉèÖÃÑô¹â£¬´«Èë0£¬·ÀÖ¹´«´í
+				// å¸¸è§„å¸ƒé˜µä¸èƒ½è®¾ç½®é˜³å…‰ï¼Œä¼ å…¥0ï¼Œé˜²æ­¢ä¼ é”™
 				game_controler.set_layout_test(layout_code, theme_index, flower_num, 0, orders);
-				if (is_cheat_check) logger_cheat->log("ÏÖÔÚ¶ÔµÚ" + std::to_string(current_flag) + "¹Ø½øĞĞ²¼Õó,»¨Êı:" + std::to_string(flower_num) + ", ²¼ÕóÂë:" + layout_code, Logger::DEBUG);
+				if (is_cheat_check) logger_cheat->log("ç°åœ¨å¯¹ç¬¬" + std::to_string(current_flag) + "å…³è¿›è¡Œå¸ƒé˜µ,èŠ±æ•°:" + std::to_string(flower_num) + ", å¸ƒé˜µç :" + layout_code, Logger::DEBUG);
 				leveldata.setlayout_time = TimeStruct::getNow();
 
-
-				if (!has_started) continue;
-				// 2.1 ´æµµ
+				if (!has_started) {
+					leveldata.flower_num = 8;
+					continue;
+				}
+				// 2.1 å­˜æ¡£
 				if (leveldata.kernel_count == 0) {
 					leveldata.kernelpult_butter_rate = 0.00;
 				}
@@ -2269,36 +2339,47 @@ private:
 				}
 				save_data.push_back(leveldata);
 
-				// 2.2 ´òÓ¡Êı¾İ
+				// 2.2 æ‰“å°æ•°æ®
 				logger_data.log((TimeStruct::getNow() - start_time).enPrint()
-					+ " ÒÑ¾­Í¨¹ı" + std::to_string(game_controler.board->GetMiscellaneous()->Round)
-					+ "¹Ø, Ñô¹â" + std::to_string(game_controler.board->Sun)
-					+ "£¬»¨·Ñ" + std::to_string(leveldata.zombie_cost),
+					+ " å·²ç»é€šè¿‡" + std::to_string(game_controler.board->GetMiscellaneous()->Round)
+					+ "å…³, é˜³å…‰" + std::to_string(game_controler.board->Sun)
+					+ "ï¼ŒèŠ±è´¹" + std::to_string(leveldata.zombie_cost),
 					Logger::INFO);
 
-				// ¼ì²âÌø¹Ø»òÕß¸ÄÁËÑô¹â
-				if (is_cheat_check && leveldata.eaten_brain_count != 5) logger_cheat->log("¼ì²âµ½Ìø¹Ø!", Logger::INFO);
-				if (is_cheat_check && game_controler.board->Sun > (leveldata.initial_sun + flower_num * 200 - leveldata.zombie_cost)) {
-					logger_data.log("Ñô¹âÒì³£,Èüºó²Ã¶¨¼´¿É,Çë¼ÌĞøÓÎÏ·!", Logger::INFO);
-				}
-				if (is_cheat_check && game_controler.board->Sun != (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
-					logger_cheat->log("¼ì²âµ½¿ÉÄÜĞŞ¸ÄÑô¹â,Ğè²ÃÅĞÈüºó²é¿´ÏêÏ¸Êı¾İ!", Logger::DEBUG);
-					logger_data.log("Ñô¹âÒì³£,Èüºó²Ã¶¨¼´¿É,Çë¼ÌĞøÓÎÏ·!", Logger::INFO);
-					logger_cheat->log("ÏÖÔÚÑô¹â:" + std::to_string(game_controler.board->Sun)
+				// æ£€æµ‹è·³å…³æˆ–è€…æ”¹äº†é˜³å…‰
+				if (is_cheat_check && leveldata.eaten_brain_count != 5) logger_cheat->log("æ£€æµ‹åˆ°è·³å…³!", Logger::INFO);
+				// æ£€æµ‹è·³å…³ï¼ˆ1ï¼‰æ¯å…³éƒ½æœ‰æœ€é«˜ä¸Šé™é˜³å…‰ï¼ˆ2ï¼‰æœ‰ç²¾å‡†ä¸Šé™é˜³å…‰ï¼šçœ‹æ”¶é›†åˆ°å¤šå°‘é˜³å…‰ï¼ˆä½†æ˜¯å­˜åœ¨bugï¼šæ”¶é›†é˜³å…‰ç›‘æµ‹ä¸å‡†
+				if (is_cheat_check && game_controler.board->Sun > (leveldata.initial_sun + leveldata.flower_num  * 200 - leveldata.zombie_cost)) {
+					logger_data.log("é˜³å…‰å¼‚å¸¸,èµ›åè£å®šå³å¯,è¯·ç»§ç»­æ¸¸æˆ!", Logger::INFO);
+					logger_cheat->log("ç°åœ¨é˜³å…‰:" + std::to_string(game_controler.board->Sun)
 						+ " ? "
-						+ "ÉÏÒ»¹ØÑô¹â: " + std::to_string(leveldata.initial_sun)
+						+ "ä¸Šä¸€å…³é˜³å…‰: " + std::to_string(leveldata.initial_sun)
 						+ " "
-						+ "ÉÏÒ»¹ØÊÖ¶¯µã»÷µÄ" + std::to_string(leveldata.collected_sun)
-						+ " " 
-						+ "ÉÏÒ»¹Ø½©Ê¬»¨·Ñ" + std::to_string(leveldata.zombie_cost)
+						+ "ä¸Šä¸€å…³æœ€å¤šé˜³å…‰: " + std::to_string(leveldata.flower_num*200)
+						+ " "
+						+ "ä¸Šä¸€å…³åƒµå°¸èŠ±è´¹" + std::to_string(leveldata.zombie_cost)
 						, Logger::DEBUG
 					);
 				}
-				
-				// 2.1 ³õÊ¼»¯Êı¾İ
+				else if (is_cheat_check && game_controler.board->Sun > (leveldata.initial_sun + leveldata.collected_sun - leveldata.zombie_cost)) {
+					logger_data.log("é˜³å…‰å¼‚å¸¸,èµ›åè£å®šå³å¯,è¯·ç»§ç»­æ¸¸æˆ!", Logger::DEBUG);
+					logger_cheat->log("æ£€æµ‹åˆ°å¯èƒ½ä¿®æ”¹é˜³å…‰,éœ€è£åˆ¤èµ›åæŸ¥çœ‹è¯¦ç»†æ•°æ®!", Logger::DEBUG);
+					logger_cheat->log("ç°åœ¨é˜³å…‰:" + std::to_string(game_controler.board->Sun)
+						+ " ? "
+						+ "ä¸Šä¸€å…³é˜³å…‰: " + std::to_string(leveldata.initial_sun)
+						+ " "
+						+ "ä¸Šä¸€å…³æ‰‹åŠ¨ç‚¹å‡»çš„" + std::to_string(leveldata.collected_sun)
+						+ " "
+						+ "ä¸Šä¸€å…³åƒµå°¸èŠ±è´¹" + std::to_string(leveldata.zombie_cost)
+						, Logger::DEBUG
+					);
+				}
+
+				// 2.1 åˆå§‹åŒ–æ•°æ®
 				processed_projectile_ids.clear();
-				processed_coin_ids.clear();
 				processed_zombie_ids.clear();
+				processed_coins.clear(); collected_sun_map.clear();
+
 
 				leveldata.initial_sun = game_controler.board->Sun;
 				leveldata.released_zombies_count = 0;
@@ -2308,125 +2389,175 @@ private:
 				leveldata.kernel_count = 0;
 				leveldata.butter_count = 0;
 				leveldata.kernelpult_butter_rate = 0.00;
+				leveldata.flower_num = theme_index == 8 ? flower_num + 5 : flower_num; // æœ¬å…³èŠ±æ•°
+
 
 				leveldata.brain_eaten_times.clear();;
 				leveldata.current_use_time = TimeStruct::getNow() - start_time;
 				leveldata.eaten_brain_count = 0;
 			}
-			
-			// 3. ¼ì²âÊÇ·ñ¿ªÊ¼ÓÎÏ·
+
+			// 3. æ£€æµ‹æ˜¯å¦å¼€å§‹æ¸¸æˆ
 			if (!has_started) {
-				// ²¢Ã»¿ªÊ¼ÓÎÏ·
-				if (!leveldata.released_zombies_count && 
+				// å¹¶æ²¡å¼€å§‹æ¸¸æˆ
+				if (!leveldata.released_zombies_count &&
 					!game_controler.pvz->GetBaseAddress() ||
 					game_controler.pvz->LevelId != PVZLevel::I_Zombie_Endless ||
 					game_controler.pvz->GameState != PVZGameState::Playing)
 					continue;
 
-				// ¿ªÊ¼ÓÎÏ·ÁË
-				// ÅĞ¶ÏÊÍ·Å½©Ê¬Ìõ¼ş
+				// å¼€å§‹æ¸¸æˆäº†
+				// åˆ¤æ–­é‡Šæ”¾åƒµå°¸æ¡ä»¶
 				if (game_controler.board->ZombiesCount != 1) continue;
 
 				has_started = true;
 				start_time = TimeStruct::getNow();
 				leveldata.current_use_time = TimeStruct(0);
-				// ¿ªÊ¼Ê±¼ä
+				// å¼€å§‹æ—¶é—´
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.reaction_time = leveldata.setlayout_time - leveldata.first_zombie_release_time;
 				leveldata.last_brain_eaten_time = start_time;
-				logger_data.log("¿ªÊ¼ÓÎÏ·!  ÏÖÊµÊ±¼äÎª: " + start_time.getCurrentTime(), Logger::INFO);
+				logger_data.log("å¼€å§‹æ¸¸æˆ!  ç°å®æ—¶é—´ä¸º: " + start_time.getCurrentTime(), Logger::INFO);
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 			}
 
-			// 4. ¶¨Ê±·´×÷±×¼ì²â
+			// 4. å®šæ—¶åä½œå¼Šæ£€æµ‹
 			if (is_cheat_check) {
 				if ((TimeStruct::getNow() - check_time).second >= game_cheat_checker.check_interval) {
-					if (game_cheat_checker.check_all()) {
-						logger_cheat->log("¼ì²âµ½×÷±×!", Logger::INFO);
+					if (ProcessOpener::Open() && game_cheat_checker.check_all()) {
+						logger_cheat->log("æ£€æµ‹åˆ°ä½œå¼Š!", Logger::INFO);
 					}
-					check_time = TimeStruct::getNow(); // ÕâÒ»´ÎµÄ¼ì²âÊ±¼ä
+					check_time = TimeStruct::getNow(); // è¿™ä¸€æ¬¡çš„æ£€æµ‹æ—¶é—´
 				}
 			}
 
-			// 4. ¼à²â·ÅÖÃµÄ½©Ê¬¡¢ÊÍ·ÅÊ±¼äÒÔ¼°¼ÆËã»¨·Ñ¡¢·´Ó¦Ê±¼ä
-			std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
-			for (auto& zombie : zombies) {
-				// µÚÒ»¹ØµÄ»°¶àµÈÒ»»á¶ùÓÎÏ·×Ô¶¯Çå³ıÑ¡¿¨½çÃæµÄ½©Ê¬
-				if (game_controler.board->GetMiscellaneous()->Round == 0)  Sleep(100);
-				// Èç¹û½©Ê¬ËÀÁË£¬Ìø¹ı
-				if (zombie->NotExist) {
-					processed_zombie_ids.erase(zombie->Id);
-					continue;
+			// 5. ç›‘æµ‹æ”¾ç½®çš„åƒµå°¸ã€é‡Šæ”¾æ—¶é—´ä»¥åŠè®¡ç®—èŠ±è´¹ã€ååº”æ—¶é—´
+			do {
+				std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
+				for (auto& zombie : zombies) {
+					// ç¬¬ä¸€å…³çš„è¯å¤šç­‰ä¸€ä¼šå„¿æ¸¸æˆè‡ªåŠ¨æ¸…é™¤é€‰å¡ç•Œé¢çš„åƒµå°¸
+					if (game_controler.board->GetMiscellaneous()->Round == 0)  Sleep(100);
+					// å¦‚æœåƒµå°¸æ­»äº†ï¼Œè·³è¿‡
+					if (zombie->NotExist) {
+						processed_zombie_ids.erase(zombie->Id);
+						continue;
+					}
+					// å¦‚æœä¸æ˜¯åˆšæ”¾ç½®çš„åƒµå°¸, è·³è¿‡
+					if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // åªæ£€æŸ¥æ–°ç”Ÿæˆçš„
+					// å¦‚æœè¿™ä¸ªåƒµå°¸å·²ç»å¤„ç†è¿‡äº†, è·³è¿‡
+					if (processed_zombie_ids.count(zombie->Id)) continue; // å·²å¤„ç†åˆ™è·³è¿‡
+
+					processed_zombie_ids.insert(zombie->Id); // è®°å½•å·²å¤„ç†
+
+					// å¦‚æœä¸æ˜¯izeä¸­çš„åƒµå°¸ï¼Œè€Œä¸”ç°åœ¨åˆä¸æ˜¯å¼€å±€çš„è¯, è®°å½•ä¸‹æ¥
+					if (!game_controler.ZombieSunCost.count(zombie->Type)) {
+						// é‡å¼€çš„è¯éœ€è¦å…ˆæ¸…é™¤é€‰å¡ç•Œé¢çš„åƒµå°¸
+						if (is_cheat_check) {
+							logger_cheat->log("æ£€æµ‹åˆ°åœ¨ç¬¬" + std::to_string(zombie->Row + 1) + "è¡Œæ”¾ç½®äº†éizeå…³å¡çš„åƒµå°¸,åƒµå°¸ç±»å‹ä¸º" + ZombieType::ToString(zombie->Type), Logger::DEBUG);
+							logger_cheat->log("æ£€æµ‹åˆ°å¼‚å¸¸, èµ›åä»²è£, è¯·ç»§ç»­æ¸¸æˆ...", Logger::INFO);
+						}
+						continue;
+					}
+					// å¦‚æœæ˜¯izeä¸­çš„åƒµå°¸ï¼Œä½†åˆä¸æ˜¯ä¼´èˆåƒµå°¸ï¼Œæ—¥å¿—è®°å½•å¹¶ä¸”è®¡ç®—èŠ±è´¹ã€æ¯ä¸€å…³ç»“æŸèµ‹å€¼ã€‘
+					if (zombie->Type == ZombieType::BackupDancer) continue;
+
+					auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
+					leveldata.zombie_cost += zombie_info.first;
+					leveldata.released_zombies_count += 1;
+					if (is_cheat_check) logger_cheat->log("åœ¨ç¬¬" + std::to_string(zombie->Row + 1) + "è¡Œæ”¾ç½®äº†" + std::string(zombie_info.second) + ",ç›®å‰ä¸€å…±æ”¾äº†" + std::to_string(leveldata.released_zombies_count) + "ä¸ªåƒµå°¸", Logger::DEBUG);
+
+					// è®°å½•ååº”æ—¶é—´
+					if (leveldata.released_zombies_count == 1) {
+						leveldata.first_zombie_release_time = TimeStruct::getNow();
+						leveldata.reaction_time = leveldata.first_zombie_release_time - leveldata.setlayout_time;
+						if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(current_flag + 1) + "å…³ï¼Œç¬¬ä¸€ä¸ªåƒµå°¸é‡Šæ”¾æ—¶é—´: " + (leveldata.first_zombie_release_time - start_time).enPrint(), Logger::DEBUG);
+						if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(current_flag + 1) + "å…³ï¼Œååº”æ—¶é—´: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
+					}
 				}
-				// Èç¹û²»ÊÇ¸Õ·ÅÖÃµÄ½©Ê¬, Ìø¹ı
-				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // Ö»¼ì²éĞÂÉú³ÉµÄ
-				// Èç¹ûÕâ¸ö½©Ê¬ÒÑ¾­´¦Àí¹ıÁË, Ìø¹ı
-				if (processed_zombie_ids.count(zombie->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
+			} while (0);
 
-				processed_zombie_ids.insert(zombie->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+			// 6. æ£€æµ‹ç‰ç±³ç²’å’Œé»„æ²¹
+			do {
+				for (auto& projectile : game_controler.board->GetAllProjectile()) {
 
-				// Èç¹û²»ÊÇizeÖĞµÄ½©Ê¬£¬¶øÇÒÏÖÔÚÓÖ²»ÊÇ¿ª¾ÖµÄ»°, ¼ÇÂ¼ÏÂÀ´
-				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
-					// ÖØ¿ªµÄ»°ĞèÒªÏÈÇå³ıÑ¡¿¨½çÃæµÄ½©Ê¬
-					if (is_cheat_check) logger_cheat->log("¼ì²âµ½ÔÚµÚ" + std::to_string(zombie->Row + 1) + "ĞĞ·ÅÖÃÁË·Çize¹Ø¿¨µÄ½©Ê¬,½©Ê¬ÀàĞÍÎª" + ZombieType::ToString(zombie->Type), Logger::INFO);
-					continue;
+					if (projectile->NotExist) {
+						processed_projectile_ids.erase(projectile->Id);
+						continue;
+					}
+
+					if (projectile->ExistedTime < 0 || projectile->ExistedTime > 2000) continue; // åªæ£€æŸ¥æ–°ç”Ÿæˆçš„
+
+					if (processed_projectile_ids.count(projectile->Id)) continue; // å·²å¤„ç†åˆ™è·³è¿‡
+					processed_projectile_ids.insert(projectile->Id); // è®°å½•å·²å¤„ç†
+
+					// 
+					if (projectile->Type == ProjectileType::Kernel) {
+						leveldata.kernel_count += 1;
+						if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(projectile->Row + 1) + "è¡Œ" + std::to_string(projectile->ImageX) + "åæ ‡å¤„å‡ºç°äº†ä¸€ä¸ªç‰ç±³ç²’", Logger::DEBUG);
+					}
+					else if (projectile->Type == ProjectileType::Butter) {
+						leveldata.butter_count += 1;
+						if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(projectile->Row + 1) + "è¡Œ" + std::to_string(projectile->ImageX) + "åæ ‡å¤„å‡ºç°äº†ä¸€ä¸ªé»„æ²¹", Logger::DEBUG);
+					}
 				}
-				// Èç¹ûÊÇizeÖĞµÄ½©Ê¬£¬µ«ÓÖ²»ÊÇ°éÎè½©Ê¬£¬ÈÕÖ¾¼ÇÂ¼²¢ÇÒ¼ÆËã»¨·Ñ¡¾Ã¿Ò»¹Ø½áÊø¸³Öµ¡¿
-				if (zombie->Type == ZombieType::BackupDancer) continue;
+			} while (0);
 
-				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
-				leveldata.zombie_cost += zombie_info.first;
-				leveldata.released_zombies_count += 1;
-				if (is_cheat_check) logger_cheat->log("ÔÚµÚ" + std::to_string(zombie->Row + 1) + "ĞĞ·ÅÖÃÁË" + std::string(zombie_info.second) + ",Ä¿Ç°Ò»¹²·ÅÁË" + std::to_string(leveldata.released_zombies_count) + "¸ö½©Ê¬", Logger::DEBUG);
+			// 7. æ£€æµ‹æ”¶é›†çš„é˜³å…‰
+			do {
+				// ---------- æ­¥éª¤1ï¼šæ’å…¥æ–°é˜³å…‰ ----------
+				for (auto& coin : game_controler.board->GetAllCoins()) {
+					if (coin->NotExist || coin->Type != CoinType::NormalSun) continue;
 
-				// ¼ÇÂ¼·´Ó¦Ê±¼ä
-				if (leveldata.released_zombies_count == 1) {
-					leveldata.first_zombie_release_time = TimeStruct::getNow();
-					leveldata.reaction_time = leveldata.first_zombie_release_time - leveldata.setlayout_time;
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(current_flag + 1) + "¹Ø£¬µÚÒ»¸ö½©Ê¬ÊÍ·ÅÊ±¼ä: " + (leveldata.first_zombie_release_time - start_time).enPrint(), Logger::DEBUG);
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(current_flag + 1) + "¹Ø£¬·´Ó¦Ê±¼ä: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
-				}
-			}
-
-			// 5. ¼ì²âÓñÃ×Á£ºÍ»ÆÓÍ
-			for (auto& projectile : game_controler.board->GetAllProjectile()) {
-
-				if (projectile->NotExist) {
-					processed_projectile_ids.erase(projectile->Id);
-					continue;
+					uintptr_t address = coin->GetBaseAddress();
+					if (!processed_coins.count(address)) {
+						processed_coins.insert(address);
+						collected_sun_map[address] = false; // åˆå§‹åŒ–ä¸ºæœªæ”¶é›†
+						//std::cout << "å‘ç°æ–°é˜³å…‰ï¼ˆåœ°å€: " << address << "ï¼‰" << std::endl;
+					}
 				}
 
-				if (projectile->ExistedTime < 0 || projectile->ExistedTime > 2000) continue; // Ö»¼ì²éĞÂÉú³ÉµÄ
+				// ---------- æ­¥éª¤2ï¼šå¤„ç†å·²è·Ÿè¸ªçš„é˜³å…‰ ----------
+				auto it = processed_coins.begin();
+				while (it != processed_coins.end()) {
+					uintptr_t address = *it;
+					PVZ::Coin* current_coin = nullptr;
 
-				if (processed_projectile_ids.count(projectile->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
-				processed_projectile_ids.insert(projectile->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+					// å½“å‰å¸§ä¸­æŸ¥æ‰¾è¯¥é˜³å…‰å¯¹è±¡
+					for (auto& coin : game_controler.board->GetAllCoins()) {
+						if (coin->GetBaseAddress() == address) {
+							current_coin = coin.get();
+							break;
+						}
+					}
 
-				// 
-				if (projectile->Type == ProjectileType::Kernel) {
-					leveldata.kernel_count += 1;
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(projectile->Row + 1) + "ĞĞ" + std::to_string(projectile->ImageX) + "×ø±ê´¦³öÏÖÁËÒ»¸öÓñÃ×Á£", Logger::DEBUG);
-				}
-				else if (projectile->Type == ProjectileType::Butter) {
-					leveldata.butter_count += 1;
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(projectile->Row + 1) + "ĞĞ" + std::to_string(projectile->ImageX) + "×ø±ê´¦³öÏÖÁËÒ»¸ö»ÆÓÍ", Logger::DEBUG);
-				}
-			}
+					if (current_coin) {
+						// é˜³å…‰å°šå­˜åœ¨
+						if (current_coin->Collected && !collected_sun_map[address]) {
+							collected_sun_map[address] = true;
+							leveldata.collected_sun += 25;
+							if(is_cheat_check) logger_cheat->log("é˜³å…‰è¢«ç‚¹å‡»æ”¶é›†ï¼ˆåœ°å€: "+std::to_string( address) +  "ï¼‰" , Logger::DEBUG);
+						}
+						++it;
+					}
+					else {
+						// é˜³å…‰å·²æ¶ˆå¤±ï¼ˆNotExist == trueï¼‰
+						if (collected_sun_map[address]) {
+							//leveldata.collected_sun += 25;
+							if (is_cheat_check) logger_cheat->log("é˜³å…‰å®Œå…¨æ¶ˆå¤±ï¼ˆåœ°å€:  " + std::to_string(address) + "ï¼‰ï¼Œé˜³å…‰ +25", Logger::DEBUG);
+						}
+						else {
+							if (is_cheat_check) logger_cheat->log("é˜³å…‰è‡ªç„¶æ¶ˆå¤±ï¼ˆåœ°å€: " + std::to_string(address) + "ï¼‰ï¼Œæ¼èŠ±", Logger::DEBUG);
+						}
 
-			// 5. ¼ì²âÊÕ¼¯µÄÑô¹â
-			for (auto& coin : game_controler.board->GetAllCoins()) {
-				if (processed_coin_ids.count(coin->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
-				if (!coin->NotExist && coin->Type == CoinType::NormalSun && coin->Collected) {
-					if (is_cheat_check) logger_cheat->log("µãÁËÑô¹â", Logger::DEBUG);
-					leveldata.collected_sun += 25; // È·ÊµÊÇ×Ô¼ºÊÖ¶¯µãµÄ£¬µ«ÊÇÒ²ÓĞ×Ô¼ºÊÕ¼¯µÄ
-					processed_coin_ids.insert(coin->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+						collected_sun_map.erase(address);
+						it = processed_coins.erase(it);
+					}
 				}
-				if (coin->NotExist) {
-					processed_coin_ids.erase(coin->Id);
-					continue;
-				}
-			}
 
-			// 5. ¼à²âÄÔ×Ó±ä»¯
+
+			} while (0);
+
+			// 8. ç›‘æµ‹è„‘å­å˜åŒ–
 			if (leveldata.eaten_brain_count != game_controler.countEatenBrain()
 				&& game_controler.countEatenBrain() != 0) {
 				leveldata.score = current_flag + game_controler.countEatenBrain() * 0.2;
@@ -2434,96 +2565,98 @@ private:
 				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
 				leveldata.eaten_brain_count = game_controler.countEatenBrain();
 
-				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "³ÔÁËµÚ" + std::to_string(game_controler.countEatenBrain()) + "¸öÄÔ×Ó", Logger::DEBUG);
+				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "åƒäº†ç¬¬" + std::to_string(game_controler.countEatenBrain()) + "ä¸ªè„‘å­", Logger::DEBUG);
 			}
 
-			// 6. ³¬Ê±: Õı³£ÊÇ30£¬Èç¹û±ÀÀ£µÄ»°
+			// 9. è¶…æ—¶: æ­£å¸¸æ˜¯30ï¼Œå¦‚æœå´©æºƒçš„è¯
 			if ((TimeStruct::getNow() - start_time).minute >= 30)
 			{
-				auto over_time = TimeStruct::getNow() - start_time; // ÓÃÊ±
+				auto over_time = TimeStruct::getNow() - start_time; // ç”¨æ—¶
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 
-				logger_data.log("³¬Ê±£¬ÓÎÏ·½áÊø!", Logger::DEBUG); 
-				if (is_cheat_check) logger_cheat->log("Íæ¼ÒÓÉÓÚ³¬Ê±½áÊøÓÎÏ·!", Logger::DEBUG);
+				logger_data.log("è¶…æ—¶ï¼Œæ¸¸æˆç»“æŸ!", Logger::DEBUG);
+				if (is_cheat_check) logger_cheat->log("ç©å®¶ç”±äºè¶…æ—¶ç»“æŸæ¸¸æˆ!", Logger::DEBUG);
 
 				std::ostringstream oss;
 				oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 				std::string score_str = oss.str();
-				logger_data.log("ÓÎÏ·½áÊø! ÏÖÊµÊ±¼äÎª: " + TimeStruct::getCurrentTime() + " ×îÖÕµÃ·ÖÎª¡ª¡ª  " + score_str, Logger::INFO);
+				logger_data.log("æ¸¸æˆç»“æŸ! ç°å®æ—¶é—´ä¸º: " + TimeStruct::getCurrentTime() + " æœ€ç»ˆå¾—åˆ†ä¸ºâ€”â€”  " + score_str, Logger::INFO);
 
-				logger_data.log("×îºó³ÔÄÔÊ±¼äÎª: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+				logger_data.log("æœ€ååƒè„‘æ—¶é—´ä¸º: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 
 				auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
-				Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // È¥µô¸¡µãÊıµÄÁ½Î»Ğ¡Êı
+				Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // å»æ‰æµ®ç‚¹æ•°çš„ä¸¤ä½å°æ•°
 
-				// ÓÎÏ·½áÊø£¬¼ÇÂ¼±¾¾ÖĞÅÏ¢
+				// æ¸¸æˆç»“æŸï¼Œè®°å½•æœ¬å±€ä¿¡æ¯
 				log_game_end(logger_data, save_data);
 
 				return;
 			}
-			
-			// 1. ¼à²â±ÀÀ£
-			if (!ProcessOpener::Open()) {//ÕÒ²»µ½ÓÎÏ·
-				if (!is_crashed) { // ±ÀÀ£Ê±´òÓ¡Ò»´Î
-					logger_data.log("ÓÎÏ·±ÀÀ£! ½øÈëizeºó°´shift+s»Ö¸´, µÈ´ıÖĞ...", Logger::DEBUG);
-					logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
-					logger_data.log("¼ì²âµ½ÓÎÏ·Òì³£¹Ø±Õ, ÏÖÊµÊ±¼äÎª: " + TimeStruct::getCurrentTime() , Logger::INFO);
-					//std::cout << leveldata.score << std::endl;
-					logger_data.log(
-						"´æµµÊı¾İÎª: Í¨¹ı" + std::to_string(current_flag) + "¹Ø, ÓÃÊ± " + leveldata.current_use_time.enPrint() + ", Ñô¹â " + std::to_string(leveldata.initial_sun)
-						, Logger::INFO
-					);
-					logger_data.log("Çë½øÈëpvz²¢½øÈëizeºó£¬°´shift+s¼ÌĞøÓÎÏ·", Logger::INFO);
-					logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
-					is_crashed = true;
-					game_controler.board = nullptr;
-					game_controler.pvz = nullptr;
-					PVZ::QuitPVZ();
+
+			// 10. ç›‘æµ‹å´©æºƒ
+			if (!ProcessOpener::Open()) {//æ‰¾ä¸åˆ°æ¸¸æˆ
+				// æ³¨é‡Šæ‰
+				{
+					//if (!is_crashed) { // å´©æºƒæ—¶æ‰“å°ä¸€æ¬¡
+					//	logger_data.log("æ¸¸æˆå´©æºƒ! è¿›å…¥izeåæŒ‰shift+sæ¢å¤, ç­‰å¾…ä¸­...", Logger::DEBUG);
+					//	logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
+					//	logger_data.log("æ£€æµ‹åˆ°æ¸¸æˆå¼‚å¸¸å…³é—­, ç°å®æ—¶é—´ä¸º: " + TimeStruct::getCurrentTime() , Logger::INFO);
+					//	//std::cout << leveldata.score << std::endl;
+					//	logger_data.log(
+					//		"å­˜æ¡£æ•°æ®ä¸º: é€šè¿‡" + std::to_string(current_flag) + "å…³, ç”¨æ—¶ " + leveldata.current_use_time.enPrint() + ", é˜³å…‰ " + std::to_string(leveldata.initial_sun)
+					//		, Logger::INFO
+					//	);
+					//	logger_data.log("è¯·è¿›å…¥pvzå¹¶è¿›å…¥izeåï¼ŒæŒ‰shift+sç»§ç»­æ¸¸æˆ", Logger::INFO);
+					//	logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
+					//	is_crashed = true;
+					//	game_controler.board = nullptr;
+					//	game_controler.pvz = nullptr;
+					//	PVZ::QuitPVZ();
+					//}
+					//continue;
 				}
-				continue;
+				logger_data.log("æ¸¸æˆå¼‚å¸¸å…³é—­, ç°å®æ—¶é—´ä¸º: " + TimeStruct::getCurrentTime(), Logger::INFO);
+				logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
+				return; // æ‰¾ä¸åˆ°æ¸¸æˆç›´æ¥é€€å‡º
 			}
 
-			// 6. »¹ÓĞÊ±¼ä£¬µ«Ñô¹âÓÃÍêÁË 
-			if (game_controler.board && game_controler.board->GetBaseAddress() && game_controler.board->ZombiesCount == 0 && game_controler.board->Sun < lowestSun) {
+			// 11. è¿˜æœ‰æ—¶é—´ï¼Œä½†é˜³å…‰ç”¨å®Œäº† 
+			if (game_controler.board->ZombiesCount == 0 && game_controler.board->Sun < lowestSun) {
 				bool is_dead = true;
 				for (auto& coin : game_controler.board->GetAllCoins()) {
 					if (coin->Type == CoinType::NormalSun) is_dead = false;
 				}
-				Sleep(1000);
+				Sleep(500);
 				if (is_dead && ProcessOpener::Open()) {
-
-					if(is_cheat_check) logger_cheat->log("Íæ¼ÒÓÉÓÚÑô¹âÓÃÍê½áÊøÓÎÏ·!", Logger::DEBUG);
-
+					if (is_cheat_check) logger_cheat->log("ç©å®¶ç”±äºé˜³å…‰ç”¨å®Œç»“æŸæ¸¸æˆ!", Logger::INFO);
 					std::ostringstream oss;
 					oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 					std::string score_str = oss.str();
 
-
 					auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
 
 					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " ÓÎÏ·½áÊø--  ÏÖÊµÊ±¼äÎª: " + TimeStruct::getCurrentTime() + " µÃ·Ö: " + score_str, Logger::INFO);
-					Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // È¥µô¸¡µãÊıµÄÁ½Î»Ğ¡Êı
+					logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + " æ¸¸æˆç»“æŸ--  ç°å®æ—¶é—´ä¸º: " + TimeStruct::getCurrentTime() + " å¾—åˆ†: " + score_str, Logger::INFO);
+					Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // å»æ‰æµ®ç‚¹æ•°çš„ä¸¤ä½å°æ•°
 
 					log_game_end(logger_data, save_data);
-					
+
 					return;
 				}
 			}
 		}
-
 	};
 
-	// ²Ğ¾Ö¾ºËÙÄ£Ê½£ºËæ»ú15¹Ø£¬Ñô¹â125-300, 30min±ÈË­ÄÔ×Ó³ÔµÃ¶à
+	// æ®‹å±€ç«é€Ÿæ¨¡å¼ï¼šéšæœº15å…³ï¼Œé˜³å…‰125-300, 30minæ¯”è°è„‘å­åƒå¾—å¤š
 	void SpeedRun30min_incompleteLevel(std::string ls, const bool is_cheat_check) {
-		// 0. ÄÃµ½ËùÓĞ¹Ø¿¨µÄ²¼Õó´úÂë, ¼ì²â³¤¶ÈÊÇ·ñºÏ·¨£¬µ¥¹Ø²¼ÕóÂëÊÇ·ñºÏ·¨
+		// 0. æ‹¿åˆ°æ‰€æœ‰å…³å¡çš„å¸ƒé˜µä»£ç , æ£€æµ‹é•¿åº¦æ˜¯å¦åˆæ³•ï¼Œå•å…³å¸ƒé˜µç æ˜¯å¦åˆæ³•
 		auto ss = std::stringstream(ls);
 		auto str = std::string();
 		auto vec = std::vector<std::string>();
 		while (getline(ss, str, '.')) vec.push_back(str);
 		if (vec.size() != 15) {
-			std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+			std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 			return;
 		};
 
@@ -2533,97 +2666,97 @@ private:
 			int sun = std::stoi(it.substr(2, 2)) * 25;
 			std::string order_str = it.substr(4);
 			if (theme_index > 8 || theme_index < 1) {
-				std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+				std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 				return;
 			}
 			if (flower_num < 1 || flower_num > 8) {
-				std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+				std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 				return;
 			}
-			if (sun == 0) { // ³£¹æÄ£Ê½²»¿ÉÉèÖÃÑô¹â
-				std::cout << "ÊäÈë²»ºÏ·¨" << std::endl;
+			if (sun == 0) { // å¸¸è§„æ¨¡å¼ä¸å¯è®¾ç½®é˜³å…‰
+				std::cout << "è¾“å…¥ä¸åˆæ³•" << std::endl;
 				return;
 			}
 		};
 
-		// shift+P:passÖ±½ÓÍê³ÉÕâ¹Ø
-		// 1. ÕÒµ½ pvz
+		// shift+P:passç›´æ¥å®Œæˆè¿™å…³
+		// 1. æ‰¾åˆ° pvz
 		DWORD pid = ProcessOpener::Open();
 		if (!pid) {
-			std::cout << "Î´ÕÒµ½pvz!" << std::endl;
-			return; // ½áÊø
+			std::cout << "æœªæ‰¾åˆ°pvz!" << std::endl;
+			return; // ç»“æŸ
 		}
-		std::cout << "ÒÑÕÒµ½pvz!" << std::endl;
-		EnableBackgroundRunning(true); // ÆôÓÃpvzºóÌ¨ÔËĞĞ
+		std::cout << "å·²æ‰¾åˆ°pvz!" << std::endl;
+		EnableBackgroundRunning(true); // å¯ç”¨pvzåå°è¿è¡Œ
 
-		// 2. ÊµÀı»¯ÓÎÏ·¿ØÖÆÆ÷
+		// 2. å®ä¾‹åŒ–æ¸¸æˆæ§åˆ¶å™¨
 		GameControl game_controler(pid);
 
-		// 3. Ò»Ö±¼ì²â£¬Ö±µ½½øÈëize
+		// 3. ä¸€ç›´æ£€æµ‹ï¼Œç›´åˆ°è¿›å…¥ize
 		while (!game_controler.is_in_ize()) {
 			Sleep(1);
 		}
 
-		// 4. ×¼±¸¿ªÊ¼¿ªÊ¼¼ÇÂ¼ÈÕÖ¾
+		// 4. å‡†å¤‡å¼€å§‹å¼€å§‹è®°å½•æ—¥å¿—
 		std::string current_time = TimeStruct::getCurrentDateTime();
-		Logger logger_data(current_time + ".log", Logger::DEBUG); // Ä¬ÈÏ´òÓ¡INFO, µ«ÊÇ¼ÇÂ¼µÄ»°È«²¿¼ÇÂ¼
+		Logger logger_data(current_time + ".log", Logger::DEBUG); // é»˜è®¤æ‰“å°INFO, ä½†æ˜¯è®°å½•çš„è¯å…¨éƒ¨è®°å½•
 
 		logger_data.log(std::string(get_terminal_width(), '-'), Logger::DEBUG);
-		logger_data.log("ÒÑ¾­½øÈëize, ÏÖÔÚ¿ªÊ¼²¼Õó", Logger::INFO);
+		logger_data.log("å·²ç»è¿›å…¥ize, ç°åœ¨å¼€å§‹å¸ƒé˜µ", Logger::INFO);
 
 
-		// ·´×÷±×ÈÕÖ¾£ºÔÚÍâ²¿×÷ÓÃÓòÉùÃ÷Ö¸ÕëºÍÒıÓÃ±ğÃû
-		Logger* logger_cheat = nullptr;  // Ô­Ê¼Ö¸Õë
-		// ÏÈ¼ì²â»·¾³ÊÇ·ñÒì³£
-		GameCheatCheck game_cheat_checker(2, logger_cheat); // Ã¿2s¼ì²âÒ»´Î
+		// åä½œå¼Šæ—¥å¿—ï¼šåœ¨å¤–éƒ¨ä½œç”¨åŸŸå£°æ˜æŒ‡é’ˆå’Œå¼•ç”¨åˆ«å
+		Logger* logger_cheat = nullptr;  // åŸå§‹æŒ‡é’ˆ
+		// å…ˆæ£€æµ‹ç¯å¢ƒæ˜¯å¦å¼‚å¸¸
+		GameCheatCheck game_cheat_checker(2, logger_cheat); // æ¯2sæ£€æµ‹ä¸€æ¬¡
 		TimeStruct check_time = TimeStruct::getNow();
 		if (is_cheat_check) {
-			// ¶¯Ì¬´´½¨¶ÔÏó£¬ÉúÃüÖÜÆÚÓÉÊÖ¶¯¹ÜÀí£¨»òÖÇÄÜÖ¸Õë£©
+			// åŠ¨æ€åˆ›å»ºå¯¹è±¡ï¼Œç”Ÿå‘½å‘¨æœŸç”±æ‰‹åŠ¨ç®¡ç†ï¼ˆæˆ–æ™ºèƒ½æŒ‡é’ˆï¼‰
 			logger_cheat = new Logger(
 				current_time + "_cheatCheck.log",
 				Logger::DEBUG,
 				true
 			);
 			game_cheat_checker.logger = logger_cheat;
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // ½ûµôÒ»Ğ©Ñ°ÕÒÓÎÏ·ÊÇÍ¨¹ı´°¿ÚÃûµÄ£ºÈçËãÑªÆ÷
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // ç¦æ‰ä¸€äº›å¯»æ‰¾æ¸¸æˆæ˜¯é€šè¿‡çª—å£åçš„ï¼šå¦‚ç®—è¡€å™¨
 			game_cheat_checker.check_envirnoment();
 		}
-		else { // »¹Ô­»Ø±êÌâ
-			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies"); // ½ûµôÒ»Ğ©Ñ°ÕÒÓÎÏ·ÊÇÍ¨¹ı´°¿ÚÃûµÄ£ºÈçËãÑªÆ÷
+		else { // è¿˜åŸå›æ ‡é¢˜
+			SetWindowTextA(PVZ::Memory::mainwindowhandle, "Plants vs. Zombies"); // ç¦æ‰ä¸€äº›å¯»æ‰¾æ¸¸æˆæ˜¯é€šè¿‡çª—å£åçš„ï¼šå¦‚ç®—è¡€å™¨
 		}
 
 		if (is_cheat_check) logger_cheat->log(
-			std::string("Íæ¼ÒÒÑ¾­½øÈëize, ")
-			+ "µ±Ç°ÈÕÆÚÓëÊ±¼äÎª: " + TimeStruct::getCurrentDateTime() + "\n"
-			+ "±¾´Î²¼ÕóÂëÎª: " + ls + "\n"
-			+ "Ö´ĞĞ±¾´Î¼ÆÊ±µÄÏß³ÌºÅ: " + std::to_string(GetCurrentThreadId()) + " ÓÎÏ·½ø³ÌºÅ: " + std::to_string(pid) + "\n"
-			+ "ÓÎÏ·¿í¸ß: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc0)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc4)) + "\n"
-			+ "ÓÎÏ·´°¿Ú×ø±ê: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x30)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x34)) + "\n"
-			+ "ÓÎÏ·ÄÚÍæ¼ÒÃû×ÖÎª: " + game_controler.get_player_name()
+			std::string("ç©å®¶å·²ç»è¿›å…¥ize, ")
+			+ "å½“å‰æ—¥æœŸä¸æ—¶é—´ä¸º: " + TimeStruct::getCurrentDateTime() + "\n"
+			+ "æœ¬æ¬¡å¸ƒé˜µç ä¸º: " + ls + "\n"
+			+ "æ‰§è¡Œæœ¬æ¬¡è®¡æ—¶çš„çº¿ç¨‹å·: " + std::to_string(GetCurrentThreadId()) + " æ¸¸æˆè¿›ç¨‹å·: " + std::to_string(pid) + "\n"
+			+ "æ¸¸æˆå®½é«˜: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc0)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc4)) + "\n"
+			+ "æ¸¸æˆçª—å£åæ ‡: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x30)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x34)) + "\n"
+			+ "æ¸¸æˆå†…ç©å®¶åå­—ä¸º: " + game_controler.get_player_name()
 			, Logger::DEBUG
 		);
 
-		// 5. ³õÊ¼»¯ÓÎÏ·ĞÅÏ¢
+		// 5. åˆå§‹åŒ–æ¸¸æˆä¿¡æ¯
 		int current_flag = -1;
 		bool has_started = false;
 		bool is_crashed = false;
 		TimeStruct start_time = TimeStruct::getNow();
 		auto current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
-		// ¼ÇÂ¼ÒÑ¾­¼à²â²¢´¦ÀíµÄ½©Ê¬
+		// è®°å½•å·²ç»ç›‘æµ‹å¹¶å¤„ç†çš„åƒµå°¸
 		std::unordered_set<int> processed_zombie_ids;
 		std::unordered_set<int> processed_projectile_ids;
 		std::unordered_set<int> processed_coin_ids;
-		// ½áÊøÌõ¼ş
+		// ç»“æŸæ¡ä»¶
 		int lowestSun = 50;
 
-		// 6. ¼ÇÂ¼´æµµ
+		// 6. è®°å½•å­˜æ¡£
 		std::vector<LevelData> save_data;
-		// ×Ü³ÔÄÔÊıºÍ×Ü»¨·ÑÊ±¼ä
+		// æ€»åƒè„‘æ•°å’Œæ€»èŠ±è´¹æ—¶é—´
 		int eaten_brain_count = 0;
-		// 6.1. ³õÊ¼»¯Ã¿¹ØÒª¼ÇÔØµÄÊı¾İ
+		// 6.1. åˆå§‹åŒ–æ¯å…³è¦è®°è½½çš„æ•°æ®
 		LevelData leveldata;
 
-		// ÌáÊ¾Ö÷Ìâ
+		// æç¤ºä¸»é¢˜
 		std::vector<std::string> parts;
 		std::istringstream iss(ls);
 		std::string token;
@@ -2632,7 +2765,7 @@ private:
 		}
 
 		logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-		logger_data.log("15¸öÖ÷ÌâĞòºÅÎª£º", Logger::INFO);
+		logger_data.log("15ä¸ªä¸»é¢˜åºå·ä¸ºï¼š", Logger::INFO);
 		int count = 0;
 		std::ostringstream oss;
 		for (const auto& part : parts) {
@@ -2641,55 +2774,55 @@ private:
 		}
 		logger_data.log(oss.str(), Logger::INFO);
 
-		// É¾µôµÚÒ»¹ØµÄÖ²Îï
+		// åˆ æ‰ç¬¬ä¸€å…³çš„æ¤ç‰©
 		game_controler.clear_reverse_all_plants();
-		// ½ûÅ®ÆÍ, ½ûµôÓÎÏ·Éú³ÉÖ²Îï£¬½ûµôÖ²ÎïÖÖÖ²ÒôĞ§
+		// ç¦å¥³ä»†, ç¦æ‰æ¸¸æˆç”Ÿæˆæ¤ç‰©ï¼Œç¦æ‰æ¤ç‰©ç§æ¤éŸ³æ•ˆ
 		game_controler.disable_maidCheat();
 		game_controler.setInjectors();
 
 
-		// 7. ³õÊ¼»¯µÚÒ»¹ØÊı¾İ
-		game_controler.board->GetMiscellaneous()->Round = 0; // ´ÓµÚÒ»¹Ø¿ªÊ¼
-		game_controler.update_brains(); // »Ö¸´ÄÔ×Ó
-		game_controler.clear_all_zombies(); // É¾½©Ê¬
-		game_controler.clear_all_bullets(); // É¾×Óµ¯
-		game_controler.clear_not_colleted_sun(); // É¾µôÃ»ÊÕ¼¯µÄÑô¹â
-		if (is_cheat_check) logger_cheat->log("³õÊ¼»¯µÚÒ»¹ØĞÅÏ¢£¬²¢½øĞĞµÚÒ»¹ØµÄ²¼Õó", Logger::DEBUG);
+		// 7. åˆå§‹åŒ–ç¬¬ä¸€å…³æ•°æ®
+		game_controler.board->GetMiscellaneous()->Round = 0; // ä»ç¬¬ä¸€å…³å¼€å§‹
+		game_controler.update_brains(); // æ¢å¤è„‘å­
+		game_controler.clear_all_zombies(); // åˆ åƒµå°¸
+		game_controler.clear_all_bullets(); // åˆ å­å¼¹
+		game_controler.clear_not_colleted_sun(); // åˆ æ‰æ²¡æ”¶é›†çš„é˜³å…‰
+		if (is_cheat_check) logger_cheat->log("åˆå§‹åŒ–ç¬¬ä¸€å…³ä¿¡æ¯ï¼Œå¹¶è¿›è¡Œç¬¬ä¸€å…³çš„å¸ƒé˜µ", Logger::DEBUG);
 
-		// 8. ÓÎÏ·Ö÷Ñ­»·
+		// 8. æ¸¸æˆä¸»å¾ªç¯
 		MSG msg = { 0 };
 		while (true) {
-			// Ìí¼Ó¿ì½İ¼ü²¢´¦Àí£¬È«¾ÖÈÈ¼üÏûÏ¢
+			// æ·»åŠ å¿«æ·é”®å¹¶å¤„ç†ï¼Œå…¨å±€çƒ­é”®æ¶ˆæ¯
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_HOTKEY) {
-					if (msg.wParam == 1) { // shift+q Ç¿ÖÆ½áÊø
+					if (msg.wParam == 1) { // shift+q å¼ºåˆ¶ç»“æŸ
 						logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 
 						std::ostringstream oss;
 						oss << std::fixed << std::setprecision(1) << ((eaten_brain_count * 0.2 * 10.0) / 10.0);
 						std::string score_str = oss.str();
-						logger_data.log("×îºó³ÔÄÔÊ±¼äÎª: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
-						logger_data.log("ÓÎÏ·ÌáÇ°½áÊø! µ±Ç°µÃ·ÖÎª¡ª¡ª  " + score_str, Logger::INFO);
+						logger_data.log("æœ€ååƒè„‘æ—¶é—´ä¸º: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+						logger_data.log("æ¸¸æˆæå‰ç»“æŸ! å½“å‰å¾—åˆ†ä¸ºâ€”â€”  " + score_str, Logger::INFO);
 
 						auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
 						Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
 						return;
 					}
-					if (msg.wParam == 2) { // shift+s±ÀÀ£
-						if (!is_crashed) continue; // Ã»±ÀÀ£°´ÁËÃ»·´Ó¦
-						// ÕÒÓÎÏ·
+					if (msg.wParam == 2) { // shift+så´©æºƒ
+						if (!is_crashed) continue; // æ²¡å´©æºƒæŒ‰äº†æ²¡ååº”
+						// æ‰¾æ¸¸æˆ
 						DWORD pid = ProcessOpener::Open();
 						if (!pid) continue;
-						logger_data.log("ÏÖÒÑ»Ö¸´´æµµ,Çë¼ÌĞøÓÎÏ·...", Logger::INFO);
+						logger_data.log("ç°å·²æ¢å¤å­˜æ¡£,è¯·ç»§ç»­æ¸¸æˆ...", Logger::INFO);
 
-						// 2. ÖØĞÂÄÃÒ»ÏÂboard
+						// 2. é‡æ–°æ‹¿ä¸€ä¸‹board
 						GameControl game_controler2(pid);
 						game_controler = std::move(game_controler2);
 						if (!game_controler.is_in_ize()) continue;
 
 						current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 
-						// ½ûÅ®ÆÍ, ½ûµôÓÎÏ·Éú³ÉÖ²Îï£¬½ûµôÖ²ÎïÖÖÖ²ÒôĞ§
+						// ç¦å¥³ä»†, ç¦æ‰æ¸¸æˆç”Ÿæˆæ¤ç‰©ï¼Œç¦æ‰æ¤ç‰©ç§æ¤éŸ³æ•ˆ
 						game_controler.clear_reverse_all_plants();
 						game_controler.disable_maidCheat();
 						game_controler.setInjectors();
@@ -2698,22 +2831,22 @@ private:
 						std::string layout_code = vec[current_flag];
 						int theme_index = 0; int flower_num = 0; int sun = 0;
 						std::array<int, 25> orders = {};
-						// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
+						// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
 						if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
-							std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
+							std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
 							return;
 						}
 						game_controler.set_layout_test(layout_code, theme_index, flower_num, sun, orders);
 						leveldata.setlayout_time = TimeStruct::getNow();
 
 
-						// ¼ÆËã»¹ÓµÓĞµÄÊ±¼ä: Ê¹ÓÃµÄÊ±¼ä, µÚÒ»¸ö½©Ê¬ÊÍ·ÅµÄÊ±¼äÒ²¾ÍÊÇstart_time£¬ÉÏÒ»´Î´æµµµÄÊ±¼ä
+						// è®¡ç®—è¿˜æ‹¥æœ‰çš„æ—¶é—´: ä½¿ç”¨çš„æ—¶é—´, ç¬¬ä¸€ä¸ªåƒµå°¸é‡Šæ”¾çš„æ—¶é—´ä¹Ÿå°±æ˜¯start_timeï¼Œä¸Šä¸€æ¬¡å­˜æ¡£çš„æ—¶é—´
 						start_time = TimeStruct::getNow() - leveldata.current_use_time;
 						leveldata.last_brain_eaten_time = TimeStruct::getNow() - leveldata.current_use_time;
 
-						if (is_cheat_check) logger_cheat->log("ÓÎÏ·±ÀÀ£ÁË, ÏÖÔÚ¶ÔµÚ" + std::to_string(current_flag) + "¹ØÖØĞÂ½øĞĞ²¼Õó,»¨Êı:" + std::to_string(flower_num) + ", ²¼ÕóÂë:" + ls, Logger::DEBUG);
+						if (is_cheat_check) logger_cheat->log("æ¸¸æˆå´©æºƒäº†, ç°åœ¨å¯¹ç¬¬" + std::to_string(current_flag) + "å…³é‡æ–°è¿›è¡Œå¸ƒé˜µ,èŠ±æ•°:" + std::to_string(flower_num) + ", å¸ƒé˜µç :" + ls, Logger::DEBUG);
 
-						// 2. »Ö¸´Ñô¹â£¬¹ØÊı, »ÆÓÍÊı£¬³ÔÄÔÊı
+						// 2. æ¢å¤é˜³å…‰ï¼Œå…³æ•°, é»„æ²¹æ•°ï¼Œåƒè„‘æ•°
 						game_controler.board->Sun = sun;
 						leveldata.eaten_brain_count = 0;
 						leveldata.released_zombies_count = 0;
@@ -2723,8 +2856,8 @@ private:
 						processed_coin_ids.clear();
 						processed_zombie_ids.clear();
 
-						// 3. ĞŞ¸Ä¼ÆÊ±£º
-						//Çå¿Õ³ÔÄÔÊ±¼ä, ×îºó³ÔÄÔÊ±¼ä£¬²¼ÕóÊ±¼ä
+						// 3. ä¿®æ”¹è®¡æ—¶ï¼š
+						//æ¸…ç©ºåƒè„‘æ—¶é—´, æœ€ååƒè„‘æ—¶é—´ï¼Œå¸ƒé˜µæ—¶é—´
 						leveldata.brain_eaten_times.clear();
 
 						is_crashed = false;
@@ -2734,29 +2867,29 @@ private:
 				DispatchMessage(&msg);
 			}
 
-			// ¼à²âÖØ¿ª: ÖØĞÂ½øĞĞ²¼Õó£»»á²»Ğ¡ĞÄ°Ñ±ÀÀ£Ò²Ëã½øÀ´¡¾ ¡¿
+			// ç›‘æµ‹é‡å¼€: é‡æ–°è¿›è¡Œå¸ƒé˜µï¼›ä¼šä¸å°å¿ƒæŠŠå´©æºƒä¹Ÿç®—è¿›æ¥ã€ ã€‘
 			do {
-				// board²»ÕıÈ·²ÅÊÇ
+				// boardä¸æ­£ç¡®æ‰æ˜¯
 				if (PVZ::Memory::ReadPointer(0x6a9ec0, 0x768) == 0
 					|| current_address == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)
 					|| game_controler.pvz->GameState != PVZGameState::Playing
 					) continue;
 				//if (current_address == PVZ::Memory::ReadPointer(0x6a9ec0, 0x768)) continue;
-				// ÖØ¿ªÁË
+				// é‡å¼€äº†
 				GameControl game_controler2(pid);
 				game_controler = std::move(game_controler2);
 				current_address = PVZ::Memory::ReadPointer(0x6a9ec0, 0x768);
 
-				if (is_cheat_check) logger_cheat->log("Ê¹ÓÃÁËÓÎÏ·ÄÚµÄrestart", Logger::DEBUG);
+				if (is_cheat_check) logger_cheat->log("ä½¿ç”¨äº†æ¸¸æˆå†…çš„restart", Logger::DEBUG);
 
-				// Í¨¹Ø: if(current_flag+1>=15)
-				// Ìø¹Ø: ÈÃÌø¹Ø´¦ÀíÈ¥½øĞĞ²¼Õó
+				// é€šå…³: if(current_flag+1>=15)
+				// è·³å…³: è®©è·³å…³å¤„ç†å»è¿›è¡Œå¸ƒé˜µ
 				game_controler.board->GetMiscellaneous()->Round = current_flag + 1;
 
 			} while (0);
 
 
-			// 2. ¿ç¹Ø¸üĞÂ
+			// 2. è·¨å…³æ›´æ–°
 			if (game_controler.board &&
 				!is_crashed &&
 				game_controler.board->GetBaseAddress() &&
@@ -2765,13 +2898,13 @@ private:
 
 				if (game_controler.board->GetMiscellaneous()->Round >= 15) {
 					logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger_data.log(std::string("²Ğ¾ÖÄ£Ê½½áÊø!"), Logger::INFO);
+					logger_data.log(std::string("æ®‹å±€æ¨¡å¼ç»“æŸ!"), Logger::INFO);
 
 					std::ostringstream oss;
 					oss << std::fixed << std::setprecision(1) << ((eaten_brain_count*0.2*10.0) / 10.0);
 					std::string score_str = oss.str();
-					logger_data.log("×îºó³ÔÄÔÊ±¼äÎª: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
-					logger_data.log("ÓÎÏ·½áÊø! ×îÖÕµÃ·ÖÎª¡ª¡ª  " + score_str, Logger::INFO);
+					logger_data.log("æœ€ååƒè„‘æ—¶é—´ä¸º: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+					logger_data.log("æ¸¸æˆç»“æŸ! æœ€ç»ˆå¾—åˆ†ä¸ºâ€”â€”  " + score_str, Logger::INFO);
 
 					auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ")+ score_str;
 					Creator::CreateCaption(timeStr.c_str(), timeStr.size(), CaptionStyle::Lowermiddle);
@@ -2779,37 +2912,37 @@ private:
 					return;
 				}
 
-				// 2.0 ÏÈ²¼Õó
+				// 2.0 å…ˆå¸ƒé˜µ
 				current_flag = game_controler.board->GetMiscellaneous()->Round;
 				std::string layout_code = vec[current_flag];
 				int theme_index = 0; int flower_num = 0; int sun = 0;
 				std::array<int, 25> orders = {};
-				// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
+				// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
 				if (!GenerateLayoutCode::decode_layout_string(layout_code, theme_index, flower_num, sun, orders)) {
-					std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
+					std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
 					return;
 				}
 				game_controler.set_layout_test(layout_code, theme_index, flower_num, sun, orders);
-				if (is_cheat_check) logger_cheat->log("ÏÖÔÚ¶ÔµÚ" + std::to_string(current_flag) + "¹Ø½øĞĞ²¼Õó,»¨Êı:" + std::to_string(flower_num) + ", ²¼ÕóÂë:" + layout_code, Logger::DEBUG);
+				if (is_cheat_check) logger_cheat->log("ç°åœ¨å¯¹ç¬¬" + std::to_string(current_flag) + "å…³è¿›è¡Œå¸ƒé˜µ,èŠ±æ•°:" + std::to_string(flower_num) + ", å¸ƒé˜µç :" + layout_code, Logger::DEBUG);
 				leveldata.setlayout_time = TimeStruct::getNow();
 
 
 				if (!has_started) continue;
-				// 2.1 ´æµµ
+				// 2.1 å­˜æ¡£
 				save_data.push_back(leveldata);
 				eaten_brain_count += leveldata.eaten_brain_count;
 				std::ostringstream oss;
 				oss << std::fixed << std::setprecision(1) << ((eaten_brain_count * 0.2 * 10.0) / 10.0);
 				std::string score_str = oss.str();
 
-				// 2.2 ´òÓ¡Êı¾İ
+				// 2.2 æ‰“å°æ•°æ®
 				logger_data.log((TimeStruct::getNow() - start_time).enPrint()
-					+ " ½áÊøµÚ" + std::to_string(game_controler.board->GetMiscellaneous()->Round)
-					+ "¹Ø£¬Ä¿Ç°µÃ·Ö " + score_str,
+					+ " ç»“æŸç¬¬" + std::to_string(game_controler.board->GetMiscellaneous()->Round)
+					+ "å…³ï¼Œç›®å‰å¾—åˆ† " + score_str,
 					Logger::INFO);
 
 
-				// 2.3 ³õÊ¼»¯Êı¾İ
+				// 2.3 åˆå§‹åŒ–æ•°æ®
 				processed_projectile_ids.clear();
 				processed_coin_ids.clear();
 				processed_zombie_ids.clear();
@@ -2819,81 +2952,81 @@ private:
 				leveldata.brain_eaten_times.clear();
 			}
 
-			// 3. ¼ì²âÊÇ·ñ¿ªÊ¼ÓÎÏ·
+			// 3. æ£€æµ‹æ˜¯å¦å¼€å§‹æ¸¸æˆ
 			if (!has_started) {
-				// ²¢Ã»¿ªÊ¼ÓÎÏ·
+				// å¹¶æ²¡å¼€å§‹æ¸¸æˆ
 				if (!leveldata.released_zombies_count &&
 					!game_controler.pvz->GetBaseAddress() ||
 					game_controler.pvz->LevelId != PVZLevel::I_Zombie_Endless ||
 					game_controler.pvz->GameState != PVZGameState::Playing)
 					continue;
 
-				// ¿ªÊ¼ÓÎÏ·ÁË
-				// ÅĞ¶ÏÊÍ·Å½©Ê¬Ìõ¼ş
+				// å¼€å§‹æ¸¸æˆäº†
+				// åˆ¤æ–­é‡Šæ”¾åƒµå°¸æ¡ä»¶
 				if (game_controler.board->ZombiesCount != 1) continue;
 
 				has_started = true;
 				start_time = TimeStruct::getNow();
 				leveldata.current_use_time = TimeStruct(0);
-				// ¿ªÊ¼Ê±¼ä
+				// å¼€å§‹æ—¶é—´
 				leveldata.first_zombie_release_time = start_time;
 				leveldata.reaction_time = leveldata.setlayout_time - leveldata.first_zombie_release_time;
 				leveldata.last_brain_eaten_time = start_time;
-				logger_data.log("¿ªÊ¼ÓÎÏ·!  ÏÖÊµÊ±¼äÎª: " + start_time.getCurrentTime(), Logger::INFO);
+				logger_data.log("å¼€å§‹æ¸¸æˆ!  ç°å®æ—¶é—´ä¸º: " + start_time.getCurrentTime(), Logger::INFO);
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 			}
 		
-			// 4. ¶¨Ê±·´×÷±×¼ì²â
+			// 4. å®šæ—¶åä½œå¼Šæ£€æµ‹
 			if (is_cheat_check) {
 				if ((TimeStruct::getNow() - check_time).second >= game_cheat_checker.check_interval) {
 					if (game_cheat_checker.check_all()) {
-						logger_cheat->log("¼ì²âµ½×÷±×!", Logger::INFO);
+						logger_cheat->log("æ£€æµ‹åˆ°ä½œå¼Š!", Logger::INFO);
 					}
-					check_time = TimeStruct::getNow(); // ÕâÒ»´ÎµÄ¼ì²âÊ±¼ä
+					check_time = TimeStruct::getNow(); // è¿™ä¸€æ¬¡çš„æ£€æµ‹æ—¶é—´
 				}
 			}
 
-			// 5. ¼à²â·ÅÖÃµÄ½©Ê¬¡¢ÊÍ·ÅÊ±¼äÒÔ¼°¼ÆËã»¨·Ñ¡¢·´Ó¦Ê±¼ä
+			// 5. ç›‘æµ‹æ”¾ç½®çš„åƒµå°¸ã€é‡Šæ”¾æ—¶é—´ä»¥åŠè®¡ç®—èŠ±è´¹ã€ååº”æ—¶é—´
 			std::vector<SPT<PVZ::Zombie>> zombies = game_controler.board->GetAllZombies();
 			for (auto& zombie : zombies) {
-				// µÚÒ»¹ØµÄ»°¶àµÈÒ»»á¶ùÓÎÏ·×Ô¶¯Çå³ıÑ¡¿¨½çÃæµÄ½©Ê¬
+				// ç¬¬ä¸€å…³çš„è¯å¤šç­‰ä¸€ä¼šå„¿æ¸¸æˆè‡ªåŠ¨æ¸…é™¤é€‰å¡ç•Œé¢çš„åƒµå°¸
 				if (game_controler.board->GetMiscellaneous()->Round == 0)  Sleep(100);
-				// Èç¹û½©Ê¬ËÀÁË£¬Ìø¹ı
+				// å¦‚æœåƒµå°¸æ­»äº†ï¼Œè·³è¿‡
 				if (zombie->NotExist) {
 					processed_zombie_ids.erase(zombie->Id);
 					continue;
 				}
-				// Èç¹û²»ÊÇ¸Õ·ÅÖÃµÄ½©Ê¬, Ìø¹ı
-				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // Ö»¼ì²éĞÂÉú³ÉµÄ
-				// Èç¹ûÕâ¸ö½©Ê¬ÒÑ¾­´¦Àí¹ıÁË, Ìø¹ı
-				if (processed_zombie_ids.count(zombie->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
+				// å¦‚æœä¸æ˜¯åˆšæ”¾ç½®çš„åƒµå°¸, è·³è¿‡
+				if (zombie->ExistedTime < 0 || zombie->ExistedTime > 200) continue; // åªæ£€æŸ¥æ–°ç”Ÿæˆçš„
+				// å¦‚æœè¿™ä¸ªåƒµå°¸å·²ç»å¤„ç†è¿‡äº†, è·³è¿‡
+				if (processed_zombie_ids.count(zombie->Id)) continue; // å·²å¤„ç†åˆ™è·³è¿‡
 
-				processed_zombie_ids.insert(zombie->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+				processed_zombie_ids.insert(zombie->Id); // è®°å½•å·²å¤„ç†
 
-				// Èç¹û²»ÊÇizeÖĞµÄ½©Ê¬£¬¶øÇÒÏÖÔÚÓÖ²»ÊÇ¿ª¾ÖµÄ»°, ¼ÇÂ¼ÏÂÀ´
+				// å¦‚æœä¸æ˜¯izeä¸­çš„åƒµå°¸ï¼Œè€Œä¸”ç°åœ¨åˆä¸æ˜¯å¼€å±€çš„è¯, è®°å½•ä¸‹æ¥
 				if (!game_controler.ZombieSunCost.count(zombie->Type)) {
-					// ÖØ¿ªµÄ»°ĞèÒªÏÈÇå³ıÑ¡¿¨½çÃæµÄ½©Ê¬
-					if (is_cheat_check) logger_cheat->log("¼ì²âµ½ÔÚµÚ" + std::to_string(zombie->Row + 1) + "ĞĞ·ÅÖÃÁË·Çize¹Ø¿¨µÄ½©Ê¬,½©Ê¬ÀàĞÍÎª" + ZombieType::ToString(zombie->Type), Logger::INFO);
+					// é‡å¼€çš„è¯éœ€è¦å…ˆæ¸…é™¤é€‰å¡ç•Œé¢çš„åƒµå°¸
+					if (is_cheat_check) logger_cheat->log("æ£€æµ‹åˆ°åœ¨ç¬¬" + std::to_string(zombie->Row + 1) + "è¡Œæ”¾ç½®äº†éizeå…³å¡çš„åƒµå°¸,åƒµå°¸ç±»å‹ä¸º" + ZombieType::ToString(zombie->Type), Logger::INFO);
 					continue;
 				}
-				// Èç¹ûÊÇizeÖĞµÄ½©Ê¬£¬µ«ÓÖ²»ÊÇ°éÎè½©Ê¬£¬ÈÕÖ¾¼ÇÂ¼²¢ÇÒ¼ÆËã»¨·Ñ¡¾Ã¿Ò»¹Ø½áÊø¸³Öµ¡¿
+				// å¦‚æœæ˜¯izeä¸­çš„åƒµå°¸ï¼Œä½†åˆä¸æ˜¯ä¼´èˆåƒµå°¸ï¼Œæ—¥å¿—è®°å½•å¹¶ä¸”è®¡ç®—èŠ±è´¹ã€æ¯ä¸€å…³ç»“æŸèµ‹å€¼ã€‘
 				if (zombie->Type == ZombieType::BackupDancer) continue;
 
 				auto zombie_info = game_controler.ZombieSunCost[zombie->Type];
 				leveldata.zombie_cost += zombie_info.first;
 				leveldata.released_zombies_count += 1;
-				if (is_cheat_check) logger_cheat->log("ÔÚµÚ" + std::to_string(zombie->Row + 1) + "ĞĞ·ÅÖÃÁË" + std::string(zombie_info.second) + ",Ä¿Ç°Ò»¹²·ÅÁË" + std::to_string(leveldata.released_zombies_count) + "¸ö½©Ê¬", Logger::DEBUG);
+				if (is_cheat_check) logger_cheat->log("åœ¨ç¬¬" + std::to_string(zombie->Row + 1) + "è¡Œæ”¾ç½®äº†" + std::string(zombie_info.second) + ",ç›®å‰ä¸€å…±æ”¾äº†" + std::to_string(leveldata.released_zombies_count) + "ä¸ªåƒµå°¸", Logger::DEBUG);
 
-				// ¼ÇÂ¼·´Ó¦Ê±¼ä
+				// è®°å½•ååº”æ—¶é—´
 				if (leveldata.released_zombies_count == 1) {
 					leveldata.first_zombie_release_time = TimeStruct::getNow();
 					leveldata.reaction_time = leveldata.first_zombie_release_time - leveldata.setlayout_time;
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(current_flag + 1) + "¹Ø£¬µÚÒ»¸ö½©Ê¬ÊÍ·ÅÊ±¼ä: " + (leveldata.first_zombie_release_time - start_time).enPrint(), Logger::DEBUG);
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(current_flag + 1) + "¹Ø£¬·´Ó¦Ê±¼ä: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
+					if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(current_flag + 1) + "å…³ï¼Œç¬¬ä¸€ä¸ªåƒµå°¸é‡Šæ”¾æ—¶é—´: " + (leveldata.first_zombie_release_time - start_time).enPrint(), Logger::DEBUG);
+					if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(current_flag + 1) + "å…³ï¼Œååº”æ—¶é—´: " + leveldata.reaction_time.enPrint(), Logger::DEBUG);
 				}
 			}
 
-			// 6. ¼ì²âÓñÃ×Á£ºÍ»ÆÓÍ
+			// 6. æ£€æµ‹ç‰ç±³ç²’å’Œé»„æ²¹
 			for (auto& projectile : game_controler.board->GetAllProjectile()) {
 
 				if (projectile->NotExist) {
@@ -2901,29 +3034,29 @@ private:
 					continue;
 				}
 
-				if (projectile->ExistedTime < 0 || projectile->ExistedTime > 2000) continue; // Ö»¼ì²éĞÂÉú³ÉµÄ
+				if (projectile->ExistedTime < 0 || projectile->ExistedTime > 2000) continue; // åªæ£€æŸ¥æ–°ç”Ÿæˆçš„
 
-				if (processed_projectile_ids.count(projectile->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
-				processed_projectile_ids.insert(projectile->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+				if (processed_projectile_ids.count(projectile->Id)) continue; // å·²å¤„ç†åˆ™è·³è¿‡
+				processed_projectile_ids.insert(projectile->Id); // è®°å½•å·²å¤„ç†
 
 				// 
 				if (projectile->Type == ProjectileType::Kernel) {
 					leveldata.kernel_count += 1;
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(projectile->Row + 1) + "ĞĞ" + std::to_string(projectile->ImageX) + "×ø±ê´¦³öÏÖÁËÒ»¸öÓñÃ×Á£", Logger::DEBUG);
+					if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(projectile->Row + 1) + "è¡Œ" + std::to_string(projectile->ImageX) + "åæ ‡å¤„å‡ºç°äº†ä¸€ä¸ªç‰ç±³ç²’", Logger::DEBUG);
 				}
 				else if (projectile->Type == ProjectileType::Butter) {
 					leveldata.butter_count += 1;
-					if (is_cheat_check) logger_cheat->log("µÚ" + std::to_string(projectile->Row + 1) + "ĞĞ" + std::to_string(projectile->ImageX) + "×ø±ê´¦³öÏÖÁËÒ»¸ö»ÆÓÍ", Logger::DEBUG);
+					if (is_cheat_check) logger_cheat->log("ç¬¬" + std::to_string(projectile->Row + 1) + "è¡Œ" + std::to_string(projectile->ImageX) + "åæ ‡å¤„å‡ºç°äº†ä¸€ä¸ªé»„æ²¹", Logger::DEBUG);
 				}
 			}
 
-			// 7. ¼ì²âÊÕ¼¯µÄÑô¹â
+			// 7. æ£€æµ‹æ”¶é›†çš„é˜³å…‰
 			for (auto& coin : game_controler.board->GetAllCoins()) {
-				if (processed_coin_ids.count(coin->Id)) continue; // ÒÑ´¦ÀíÔòÌø¹ı
+				if (processed_coin_ids.count(coin->Id)) continue; // å·²å¤„ç†åˆ™è·³è¿‡
 				if (!coin->NotExist && coin->Type == CoinType::NormalSun && coin->Collected) {
-					if (is_cheat_check) logger_cheat->log("µãÁËÑô¹â", Logger::DEBUG);
-					leveldata.collected_sun += 25; // È·ÊµÊÇ×Ô¼ºÊÖ¶¯µãµÄ£¬µ«ÊÇÒ²ÓĞ×Ô¼ºÊÕ¼¯µÄ
-					processed_coin_ids.insert(coin->Id); // ¼ÇÂ¼ÒÑ´¦Àí
+					if (is_cheat_check) logger_cheat->log("ç‚¹äº†é˜³å…‰", Logger::DEBUG);
+					leveldata.collected_sun += 25; // ç¡®å®æ˜¯è‡ªå·±æ‰‹åŠ¨ç‚¹çš„ï¼Œä½†æ˜¯ä¹Ÿæœ‰è‡ªå·±æ”¶é›†çš„
+					processed_coin_ids.insert(coin->Id); // è®°å½•å·²å¤„ç†
 				}
 				if (coin->NotExist) {
 					processed_coin_ids.erase(coin->Id);
@@ -2931,7 +3064,7 @@ private:
 				}
 			}
 
-			// 8. ¼à²âÄÔ×Ó±ä»¯
+			// 8. ç›‘æµ‹è„‘å­å˜åŒ–
 			if (leveldata.eaten_brain_count != game_controler.countEatenBrain()
 				&& game_controler.countEatenBrain() != 0) {
 				leveldata.score = game_controler.board->GetMiscellaneous()->Round + game_controler.countEatenBrain() * 0.2;
@@ -2939,43 +3072,43 @@ private:
 				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
   				leveldata.eaten_brain_count = game_controler.countEatenBrain();
 
-				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "³ÔÁËµÚ" + std::to_string(game_controler.countEatenBrain()) + "¸öÄÔ×Ó", Logger::DEBUG);
+				logger_data.log((leveldata.last_brain_eaten_time - start_time).enPrint() + "åƒäº†ç¬¬" + std::to_string(game_controler.countEatenBrain()) + "ä¸ªè„‘å­", Logger::DEBUG);
 			}
 
-			// 9. ³¬Ê±: Õı³£ÊÇ30£¬Èç¹û±ÀÀ£µÄ»°
+			// 9. è¶…æ—¶: æ­£å¸¸æ˜¯30ï¼Œå¦‚æœå´©æºƒçš„è¯
 			if ((TimeStruct::getNow() - start_time).minute >= 30)
 			{
-				auto over_time = TimeStruct::getNow() - start_time; // ÓÃÊ±
+				auto over_time = TimeStruct::getNow() - start_time; // ç”¨æ—¶
 				logger_data.log(std::string(get_terminal_width(), '-'), Logger::INFO);
 
-				logger_data.log("³¬Ê±£¬ÓÎÏ·½áÊø!", Logger::DEBUG); 
-				if(is_cheat_check) logger_cheat->log("Íæ¼ÒÓÉÓÚ³¬Ê±½áÊøÓÎÏ·!", Logger::DEBUG);
+				logger_data.log("è¶…æ—¶ï¼Œæ¸¸æˆç»“æŸ!", Logger::DEBUG); 
+				if(is_cheat_check) logger_cheat->log("ç©å®¶ç”±äºè¶…æ—¶ç»“æŸæ¸¸æˆ!", Logger::DEBUG);
 
 				std::ostringstream oss;
 				oss << std::fixed << std::setprecision(1) << (std::round(leveldata.score * 10) / 10.0);
 				std::string score_str = oss.str();
-				logger_data.log("ÓÎÏ·½áÊø! ×îÖÕµÃ·ÖÎª¡ª¡ª  " + score_str, Logger::INFO);
-				logger_data.log("×îºó³ÔÄÔÊ±¼äÎª: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
+				logger_data.log("æ¸¸æˆç»“æŸ! æœ€ç»ˆå¾—åˆ†ä¸ºâ€”â€”  " + score_str, Logger::INFO);
+				logger_data.log("æœ€ååƒè„‘æ—¶é—´ä¸º: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 
 
 				auto time_str = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ") + score_str;
-				Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // È¥µô¸¡µãÊıµÄÁ½Î»Ğ¡Êı
+				Creator::CreateCaption(time_str.c_str(), time_str.size(), CaptionStyle::Lowermiddle); // å»æ‰æµ®ç‚¹æ•°çš„ä¸¤ä½å°æ•°
 
 				return;
 			}
 
-			// ¼à²â±ÀÀ£
-			if (!ProcessOpener::Open()) {//ÕÒ²»µ½ÓÎÏ·
-				if (!is_crashed) { // ±ÀÀ£Ê±´òÓ¡Ò»´Î
-					logger_data.log("ÓÎÏ·±ÀÀ£! ½øÈëizeºó°´shift+s»Ö¸´, µÈ´ıÖĞ...", Logger::DEBUG);
+			// ç›‘æµ‹å´©æºƒ
+			if (!ProcessOpener::Open()) {//æ‰¾ä¸åˆ°æ¸¸æˆ
+				if (!is_crashed) { // å´©æºƒæ—¶æ‰“å°ä¸€æ¬¡
+					logger_data.log("æ¸¸æˆå´©æºƒ! è¿›å…¥izeåæŒ‰shift+sæ¢å¤, ç­‰å¾…ä¸­...", Logger::DEBUG);
 					logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
-					logger_data.log("¼ì²âµ½ÓÎÏ·Òì³£¹Ø±Õ", Logger::INFO);
+					logger_data.log("æ£€æµ‹åˆ°æ¸¸æˆå¼‚å¸¸å…³é—­", Logger::INFO);
 					//std::cout << leveldata.score << std::endl;
 					logger_data.log(
-						"´æµµÊı¾İÎª: Í¨¹ı" + std::to_string(int(leveldata.score)) + "¹Ø, ÓÃÊ± " + leveldata.current_use_time.enPrint() + ", Ñô¹â " + std::to_string(leveldata.initial_sun)
+						"å­˜æ¡£æ•°æ®ä¸º: é€šè¿‡" + std::to_string(int(leveldata.score)) + "å…³, ç”¨æ—¶ " + leveldata.current_use_time.enPrint() + ", é˜³å…‰ " + std::to_string(leveldata.initial_sun)
 						, Logger::INFO
 					);
-					logger_data.log("Çë½øÈëpvz²¢½øÈëizeºó£¬°´shift+s¼ÌĞøÓÎÏ·", Logger::INFO);
+					logger_data.log("è¯·è¿›å…¥pvzå¹¶è¿›å…¥izeåï¼ŒæŒ‰shift+sç»§ç»­æ¸¸æˆ", Logger::INFO);
 					logger_data.log(std::string(get_terminal_width(), '*'), Logger::INFO);
 					is_crashed = true;
 					game_controler.board = nullptr;
@@ -2990,21 +3123,21 @@ private:
 
 	}
 
-	// ¼ì²âµ±Ç°ÕóĞÍÊÇ·ñºÏ¹æ£¬ºÏ¹æÔò×ªÎª²¼ÕóÂë
+	// æ£€æµ‹å½“å‰é˜µå‹æ˜¯å¦åˆè§„ï¼Œåˆè§„åˆ™è½¬ä¸ºå¸ƒé˜µç 
 	bool export_layout_string(std::string& result) {
 		DWORD pid = ProcessOpener::Open();
 		if (!pid) return false;
 		PVZ::InitPVZ(pid);
 		GameControl game_controler(pid);
 		if (!game_controler.is_in_ize()) {
-			std::cout << "ÇëÏÈ½øÈëize.." << std::endl;
+			std::cout << "è¯·å…ˆè¿›å…¥ize.." << std::endl;
 			return false;
 		}
 
 		if (game_controler.is_in_ize()) {
-			std::array<int, 25> positions = {};               // ¶ÔÓ¦Î»ÖÃ
+			std::array<int, 25> positions = {};               // å¯¹åº”ä½ç½®
 
-			// 1.ÅĞ¶Ïµ±Ç°Ö÷Ìâ
+			// 1.åˆ¤æ–­å½“å‰ä¸»é¢˜
 			std::unordered_map<PlantType::PlantType, int> plantCount;
 			for (auto plant : game_controler.board->GetAllPlants()) {
 				if (plant->NotExist) continue;
@@ -3012,7 +3145,7 @@ private:
 			}
 
 			int theme_index = 0;
-			// 1.1 »ñÈ¡Ö÷Ìâ
+			// 1.1 è·å–ä¸»é¢˜
 			{
 				if (
 					plantCount[PlantType::SnowPea] == 9 && plantCount[PlantType::Peashooter] == 4 && plantCount[PlantType::SplitPea] == 4
@@ -3040,7 +3173,7 @@ private:
 					&& plantCount[PlantType::Sunflower] >= 1 + 5 && plantCount[PlantType::Puffshroom] >= 1
 					) theme_index = 8;
 
-				// ÅĞ¶ÏA : ËäÈ»ÏÂÃæµÄÌõ¼şĞ§ÂÊ²»¸ß£¬µ«ÊÇ¼òµ¥°¡£¨
+				// åˆ¤æ–­A : è™½ç„¶ä¸‹é¢çš„æ¡ä»¶æ•ˆç‡ä¸é«˜ï¼Œä½†æ˜¯ç®€å•å•Šï¼ˆ
 				if (
 					(plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
 					&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 0
@@ -3084,32 +3217,32 @@ private:
 					) theme_index = 3;
 			}
 
-			// 1.2 ¼ì²âÖ÷ÌâÊÇ·ñºÏ·¨
+			// 1.2 æ£€æµ‹ä¸»é¢˜æ˜¯å¦åˆæ³•
 			if (theme_index > 9 || theme_index < 1) {
-				std::cout << "Ö÷Ìâ²»ºÏ¹æ, Çë¼ì²é!" << std::endl;
-				return false; // ·µ»ØÊ§°Ü
+				std::cout << "ä¸»é¢˜ä¸åˆè§„, è¯·æ£€æŸ¥!" << std::endl;
+				return false; // è¿”å›å¤±è´¥
 			}
 
 
-			// µ¨Ğ¡ÌØÊâ´¦Àí
+			// èƒ†å°ç‰¹æ®Šå¤„ç†
 			int flower_num = theme_index == 8 ? plantCount[PlantType::Sunflower] - 5 : plantCount[PlantType::Sunflower];
 
-			// 2. ÒÀ´Î»ñÈ¡Ö²ÎïË³Ğò
+			// 2. ä¾æ¬¡è·å–æ¤ç‰©é¡ºåº
 			std::array<PlantType::PlantType, 25> plant_types =
 				GenerateLayoutCode::get_theme_plants(flower_num, static_cast<Theme>(theme_index));
 
-			// Ê¹ÓÃvector´æ´¢Ö²ÎïÀàĞÍ¼°ÆäÎ»ÖÃ
+			// ä½¿ç”¨vectorå­˜å‚¨æ¤ç‰©ç±»å‹åŠå…¶ä½ç½®
 			std::vector<std::pair<PlantType::PlantType, std::vector<int>>> plants_position;
 
-			// ÊÕ¼¯Ö²ÎïÎ»ÖÃ
+			// æ”¶é›†æ¤ç‰©ä½ç½®
 			for (auto plant : game_controler.board->GetAllPlants()) {
 				if (plant->NotExist) continue;
 				bool found = false;
 				for (auto& plant_pair : plants_position) {
 					if (plant_pair.first == plant->Type) {
 						if ((plant->Type == PlantType::Wallnut || plant->Type == PlantType::Torchwood) && plant->Column < 2) {
-							std::cout << "¼á¹û»ğ¾æ²»ºÏ¹æ!" << plant->Column + 1 << std::endl;
-							return false; // ·µ»ØÊ§°Ü
+							std::cout << "åšæœç«ç‚¬ä¸åˆè§„!" << plant->Column + 1 << std::endl;
+							return false; // è¿”å›å¤±è´¥
 						}
 
 						plant_pair.second.push_back(plant->Row * 5 + plant->Column);
@@ -3122,39 +3255,39 @@ private:
 				}
 			}
 
-			// 3. Ëæ»ú´òÂÒÃ¿¸öÀàĞÍµÄÎ»ÖÃ
+			// 3. éšæœºæ‰“ä¹±æ¯ä¸ªç±»å‹çš„ä½ç½®
 			std::random_device rd;
 			std::mt19937 rng(rd());
 			for (auto& pair : plants_position) {
 				std::shuffle(pair.second.begin(), pair.second.end(), rng);
 			}
-			// Èç¹ûÊÇµ¨Ğ¡£¬ÔòĞèÒª´Óplant_position[0].secondÖĞÈ¡³ö5¸ö£¬²¢ÇÒÉ¾³ıÔ­ÓĞµÄ£¬×îºóÈûµ½positionsºóÃæ5¸ö
-			 // 3. µ¨Ğ¡Ä£Ê½ÌØÊâ´¦Àí£º´Óplant_position[0].secondÖĞÈ¡³ö5¸öÖ²Îï²¢½«ÆäÉ¾³ı£¬×îºóÌí¼Óµ½positionsºóÃæ5¸ö
+			// å¦‚æœæ˜¯èƒ†å°ï¼Œåˆ™éœ€è¦ä»plant_position[0].secondä¸­å–å‡º5ä¸ªï¼Œå¹¶ä¸”åˆ é™¤åŸæœ‰çš„ï¼Œæœ€åå¡åˆ°positionsåé¢5ä¸ª
+			 // 3. èƒ†å°æ¨¡å¼ç‰¹æ®Šå¤„ç†ï¼šä»plant_position[0].secondä¸­å–å‡º5ä¸ªæ¤ç‰©å¹¶å°†å…¶åˆ é™¤ï¼Œæœ€åæ·»åŠ åˆ°positionsåé¢5ä¸ª
 			if (theme_index == 8) {
 				std::vector<int> shy_plants = {};
 
-				// »ñÈ¡Ç°5¸öÖ²ÎïµÄÎ»ÖÃ
+				// è·å–å‰5ä¸ªæ¤ç‰©çš„ä½ç½®
 				shy_plants = { plants_position[0].second.begin(), plants_position[0].second.begin() + 5 };
-				// É¾³ıÕâ5¸öÖ²ÎïµÄÎ»ÖÃ
+				// åˆ é™¤è¿™5ä¸ªæ¤ç‰©çš„ä½ç½®
 				plants_position[0].second.erase(plants_position[0].second.begin(), plants_position[0].second.begin() + 5);
 
-				// ½«Õâ5¸öÖ²ÎïµÄÎ»ÖÃÌí¼Óµ½positionsµÄºó5¸öÎ»ÖÃ
+				// å°†è¿™5ä¸ªæ¤ç‰©çš„ä½ç½®æ·»åŠ åˆ°positionsçš„å5ä¸ªä½ç½®
 				for (int i = 0; i < 5; ++i) {
 					positions[20 + i] = shy_plants[i];
 				}
 			}
 
-			// 4. °´Ö÷ÌâË³ĞòÌî³äÎ»ÖÃ
+			// 4. æŒ‰ä¸»é¢˜é¡ºåºå¡«å……ä½ç½®
 			int order = 0;
 
 			for (int i = 0; i < 25; ++i) {
 				PlantType::PlantType required_type = plant_types[i];
 				bool found = false;
 
-				// ÔÚplants_positionÖĞ²éÕÒ¸ÃÀàĞÍ
+				// åœ¨plants_positionä¸­æŸ¥æ‰¾è¯¥ç±»å‹
 				for (auto& pair : plants_position) {
 					if (pair.first == required_type && !pair.second.empty()) {
-						// È¡³ö×îºóÒ»¸öÎ»ÖÃ£¨ÒÑËæ»ú´òÂÒ£©
+						// å–å‡ºæœ€åä¸€ä¸ªä½ç½®ï¼ˆå·²éšæœºæ‰“ä¹±ï¼‰
 						positions[order++] = pair.second.back();
 						pair.second.pop_back();
 						found = true;
@@ -3162,11 +3295,11 @@ private:
 					}
 				}
 
-				// ´¦ÀíÎ´ÕÒµ½µÄÇé¿ö
+				// å¤„ç†æœªæ‰¾åˆ°çš„æƒ…å†µ
 				if (!found && theme_index != 8) {
-					std::cerr << "´íÎó£ºÀàĞÍ " << PlantType::ToString(required_type)
-						<< " ÔÚÎ»ÖÃ " << i << " Ã»ÓĞ¿ÉÓÃÖ²Îï" << std::endl;
-					positions[order++] = -1; // ÓÃ-1±ê¼Ç´íÎó
+					std::cerr << "é”™è¯¯ï¼šç±»å‹ " << PlantType::ToString(required_type)
+						<< " åœ¨ä½ç½® " << i << " æ²¡æœ‰å¯ç”¨æ¤ç‰©" << std::endl;
+					positions[order++] = -1; // ç”¨-1æ ‡è®°é”™è¯¯
 				}
 			}
 			int sun = game_controler.board->Sun / 25;
@@ -3174,90 +3307,90 @@ private:
 			oss << std::setw(2) << std::setfill('0') << sun;
 			std::string sun_str = oss.str();
 
-			// 5. ·µ»Ø²¼ÕóÂë
+			// 5. è¿”å›å¸ƒé˜µç 
 			result = std::to_string(theme_index)
 				+ std::to_string(flower_num)
 				+ sun_str
 				+ GenerateLayoutCode::encrypt_to_base25(positions);
 
-			return true; // ·µ»Ø³É¹¦
+			return true; // è¿”å›æˆåŠŸ
 		}
 
 		PVZ::QuitPVZ();
-		return false; // Èç¹û²»ÔÚizeÄ£Ê½ÏÂ
+		return false; // å¦‚æœä¸åœ¨izeæ¨¡å¼ä¸‹
 	}
 
-	// µ¥¹Ø²¼Õó
+	// å•å…³å¸ƒé˜µ
 	void set_oneLevel_layout(const std::string ls) {
 		DWORD pid = ProcessOpener::Open();
 		if (!pid) {
-			std::cout << "Î´ÕÒµ½pvz!" << std::endl;
-			return; // ½áÊø
+			std::cout << "æœªæ‰¾åˆ°pvz!" << std::endl;
+			return; // ç»“æŸ
 		}
-		EnableBackgroundRunning(true); // ÆôÓÃpvzºóÌ¨ÔËĞĞ
+		EnableBackgroundRunning(true); // å¯ç”¨pvzåå°è¿è¡Œ
 		
-		// 2. ÊµÀı»¯ÓÎÏ·¿ØÖÆÆ÷
+		// 2. å®ä¾‹åŒ–æ¸¸æˆæ§åˆ¶å™¨
 		GameControl game_controler(pid);
 
-		// 3. Ò»Ö±¼ì²â£¬Ö±µ½½øÈëize
+		// 3. ä¸€ç›´æ£€æµ‹ï¼Œç›´åˆ°è¿›å…¥ize
 		while (!game_controler.is_in_ize()) {
 			Sleep(1);
 		}
 
 		int theme_index = 0; int flower_num = 0; int sun = 0;
 		std::array<int, 25> orders = {};
-		// ¼ì²â²¼ÕóÂëÊÇ·ñºÏ·¨
+		// æ£€æµ‹å¸ƒé˜µç æ˜¯å¦åˆæ³•
 		if (!GenerateLayoutCode::decode_layout_string(ls, theme_index, flower_num, sun, orders)) {
-			std::cout << "²¼ÕóÂë²»ºÏ·¨" << std::endl;
+			std::cout << "å¸ƒé˜µç ä¸åˆæ³•" << std::endl;
 			return;
 		}
-		// ³£¹æ²¼Õó²»ÄÜÉèÖÃÑô¹â£¬´«Èë0£¬·ÀÖ¹´«´í
+		// å¸¸è§„å¸ƒé˜µä¸èƒ½è®¾ç½®é˜³å…‰ï¼Œä¼ å…¥0ï¼Œé˜²æ­¢ä¼ é”™
 		game_controler.set_layout_test(ls, theme_index, flower_num, 0, orders);
 		PVZ::QuitPVZ();
 		return;
 	}
 
-	// µ¯³ö30minµ¹¼ÆÊ±
+	// å¼¹å‡º30minå€’è®¡æ—¶
 	void pop_timer() {
-		// µ¹¼ÆÊ±1: »ñÈ¡»¹Ê£µÄÊ±¼ä: 
+		// å€’è®¡æ—¶1: è·å–è¿˜å‰©çš„æ—¶é—´: 
 	}
 
 public:
 	ConsoleControler() {
-		//²¼ÕóÆ÷ÊµÏÖ
-		setlocale(LC_ALL, ".936"); // ÉèÖÃ±àÂë¸ñÊ½
+		//å¸ƒé˜µå™¨å®ç°
+		setlocale(LC_ALL, ".936"); // è®¾ç½®ç¼–ç æ ¼å¼
 		SetConsoleTitle(WINDOW_NAME);
 	}
 	
 
-	// ²¼ÕóÆ÷Ñ­»·
+	// å¸ƒé˜µå™¨å¾ªç¯
 	void main() {
 		while (true) {
-			// ´òÓ¡¹¦ÄÜ¿¨
+			// æ‰“å°åŠŸèƒ½å¡
 			std::cout << std::string(get_terminal_width(), '*') << std::endl;
 			std::cout << INIT_WORDS << std::endl;
 			std::cout << std::string(get_terminal_width(), '*') << std::endl;
-			// ¶ÁÖ¸Áî
+			// è¯»æŒ‡ä»¤
 			std::string s;
 			std::cin >> s;
-			// Ö¸ÁîÊµÏÖ
+			// æŒ‡ä»¤å®ç°
 			{ 
-				// Ê¹ÓÃËµÃ÷
-				if (!s.compare("0")) {// Ê¹ÓÃËµÃ÷
+				// ä½¿ç”¨è¯´æ˜
+				if (!s.compare("0")) {// ä½¿ç”¨è¯´æ˜
 					std::cout << USE_GUIDES << std::endl;
 				}
-				// 30min²¼Õó
-				else if (!s.compare("1")) { // 30minÏŞÊ±Íæ·¨
-					std::cout << "ÇëÏÈÖØ¿ªÓÎÏ·, ²¢ÊäÈë²¼ÕóÂë: " << std::endl;
+				// 30minå¸ƒé˜µ
+				else if (!s.compare("1")) { // 30miné™æ—¶ç©æ³•
+					std::cout << "è¯·å…ˆé‡å¼€æ¸¸æˆä¿è¯ç¬¬ä¸€å…³æ ˆä½æ­£ç¡®, å¹¶è¾“å…¥å¸ƒé˜µç : " << std::endl;
 					std::string ls;
 					std::cin >> ls;
 
-					std::cout << "ÊÇ·ñ¿ªÆô·´×÷±×(1Îª¿ªÆô, 0Îª¹Ø±Õ): " << std::endl;
+					std::cout << "æ˜¯å¦å¼€å¯åä½œå¼Š(1ä¸ºå¼€å¯, 0ä¸ºå…³é—­): " << std::endl;
 					std::string cmd1;
 					std::cin >> cmd1;
 					bool is_cheat_check = !cmd1.compare("1") ? true : false;
 
-					// ´´½¨²¢Æô¶¯ĞÂÏß³Ì£¨Á¢¼´Ö´ĞĞ£©
+					// åˆ›å»ºå¹¶å¯åŠ¨æ–°çº¿ç¨‹ï¼ˆç«‹å³æ‰§è¡Œï¼‰
 					disable_quick_edit_mode();
 					register_RaceMode_hotkey();
 
@@ -3266,159 +3399,165 @@ public:
 					unregister_RaceMode_hotkey();
 					enable_quick_edit_mode();
 				}
-				// Éú³É25¹ØËæ»úÕóĞÍ´úÂë
+				// ç”Ÿæˆ25å…³éšæœºé˜µå‹ä»£ç 
 				else if (!s.compare("2")) { 
 					GenerateLayoutCode code_generator;
 					auto ls = code_generator.generate_ssb6_code();
 					std::cout << ls << std::endl;
 					copyToClipBoard(ls);
-					std::cout << "ÒÑ¸´ÖÆµ½¼ôÌù°å,¿ÉÖ±½ÓÕ³ÌùÊ¹ÓÃ" << std::endl;
+					std::cout << "å·²å¤åˆ¶åˆ°å‰ªè´´æ¿,å¯ç›´æ¥ç²˜è´´ä½¿ç”¨" << std::endl;
 					continue;
 				}
-				// ²Ğ¾ÖÍæ·¨
+				// é€‰æ‰‹ç”Ÿæˆå”¯ä¸€æœºå™¨ç  å‘ç»™è£åˆ¤
 				else if (!s.compare("3")) { 
-					std::cout << "ÇëÏÈÖØ¿ªÓÎÏ·, ²¢ÊäÈë²¼ÕóÂë: " << std::endl;
-					std::string ls;
-					std::cin >> ls;
-
-					std::cout << "ÊÇ·ñ¿ªÆô·´×÷±×(1Îª¿ªÆô, 0Îª¹Ø±Õ): " << std::endl;
-					std::string cmd1;
-					std::cin >> cmd1;
-					bool is_cheat_check = !cmd1.compare("1") ? true : false;
-
-					// ´´½¨²¢Æô¶¯ĞÂÏß³Ì£¨Á¢¼´Ö´ĞĞ£©
-					disable_quick_edit_mode();
-					register_IncompleteRaceMode_hotkey();
-					
-					SpeedRun30min_incompleteLevel(ls, is_cheat_check);
-					
-					unregister_IncompleteRaceMode_hotkey();
-					enable_quick_edit_mode();
-				}
-				// Éú³É²Ğ¾ÖÕóĞÍ´úÂë
-				else if (!s.compare("4")) {
-					GenerateLayoutCode code_generator;
-					auto ls = code_generator.generate_incompleteLevel_code();
-					std::cout << ls << std::endl;
-					copyToClipBoard(ls);
-					std::cout << "ÒÑ¸´ÖÆµ½¼ôÌù°å,¿ÉÖ±½ÓÕ³ÌùÊ¹ÓÃ" << std::endl;
-					continue;
-				}
-				// Ñ¡ÊÖÉú³ÉÎ¨Ò»»úÆ÷Âë ·¢¸ø²ÃÅĞ
-				else if (!s.compare("5")) { 
 					auto machine_code = EncryptUtils::generate_machine_code();
 					std::cout << machine_code << std::endl;
 					copyToClipBoard(machine_code);
-					std::cout << "±¾Ì¨»úÆ÷µÄ»úÆ÷ÂëÒÑ¸´ÖÆµ½¼ôÌù°å,ÇëË½·¢¸ø²ÃÅĞ" << std::endl;
+					std::cout << "æœ¬å°æœºå™¨çš„æœºå™¨ç å·²å¤åˆ¶åˆ°å‰ªè´´æ¿,è¯·ç§å‘ç»™è£åˆ¤" << std::endl;
 					continue;
 				}
-				// ²ÃÅĞÊäÈëË«»úÆ÷Âë¼°ÓĞĞ§ÆÚÉú³É¼ÓÃÜ»úÆ÷Âë
-				else if (!s.compare("6")) {
-					std::vector<std::string> machine_codes;
-					std::string input;
-					std::cout << "ÇëÊäÈë»úÆ÷Âë£¨ÊäÈë -1 ½áÊø£©£º" << std::endl;
-					while (true) {
+				// è£åˆ¤è¾“å…¥åŒæœºå™¨ç åŠæœ‰æ•ˆæœŸç”ŸæˆåŠ å¯†æœºå™¨ç 
+				else if (!s.compare("4")) {
+					std::vector<std::array<std::string, 3>> machine_code_info;
+
+					std::cout << "è¯·è¾“å…¥æœ¬æ¬¡ç«èµ›çš„ç©å®¶æ•°é‡:" << std::endl;
+					int player_num;
+					std::cin >> player_num;
+					if (player_num <= 0) {
+						std::cout << "è¾“å…¥ä¸åˆæ³•!" << std::endl;
+						continue;
+					};
+
+					bool input_correct = true;
+					for (int i = 0; i < player_num; i++) {
+						std::array<std::string, 3> player_info;
+						// 1. æ‹¿åˆ°æœºå™¨ç 
+						std::cout << "è¯·è¾“å…¥ç©å®¶" << i+1 << "çš„æœºå™¨ç :" ;
+						std::string input;
 						std::cin >> input;
-						if (input == "-1") break;
-						if (input.size() != 32) { // »úÆ÷Âë³¤¶È²»ºÏ·¨
-							std::cout << "ÊäÈë²»ºÏ·¨! ÇëÖØĞÂÊäÈë" << std::endl;
+						if (input.size() != 32) { // æœºå™¨ç é•¿åº¦ä¸åˆæ³•
+							std::cout << "æœºå™¨ç é•¿åº¦ä¸åˆæ³•ä¸åˆæ³•! è¯·é‡æ–°è¾“å…¥" << std::endl;
+							input_correct = false;
 							continue;
 						}
-						machine_codes.push_back(input);
+
+						// 2. æ‹¿åˆ°è¿™ä¸ªç©å®¶çš„å¼€å§‹å¸ƒé˜µæ—¶é—´æˆ³
+						std::string input2;
+						std::time_t startTs;
+						std::cout << "è¯·è®¾ç½®å…¶å¸ƒé˜µçš„æœ‰æ•ˆ èµ·å§‹ æ—¶é—´(å¦‚:2025-04-07-11-02-00) : ";
+						std::cin >> input2;
+						if (!TimeStruct::parseTimestamp(input2, startTs)) {
+							std::cout << "æ—¶é—´æ ¼å¼è§£æå¤±è´¥ï¼Œè¯·é‡æ–°è¾“å…¥..\n";
+							input_correct = false;
+							continue;
+						}
+
+						// 3. æ‹¿åˆ°è¿™ä¸ªç©å®¶çš„ç»“æŸå¸ƒé˜µæ—¶é—´æˆ³
+						std::string input3;
+						std::time_t endTs;
+						std::cout << "è¯·è®¾ç½®å…¶å¸ƒé˜µçš„æœ‰æ•ˆ ç»“æŸ æ—¶é—´(å¦‚:2025-04-07-11-02-00) : ";
+						std::cin >> input3;
+						if (!TimeStruct::parseTimestamp(input3, endTs)) {
+							std::cout << "æ—¶é—´æ ¼å¼è§£æå¤±è´¥ï¼Œè¯·é‡æ–°è¾“å…¥..\n";
+							input_correct = false;
+							continue;
+						}
+
+						// æ¯”è¾ƒå¼€å§‹å’Œç»“æŸæ—¶é—´
+						if (endTs <= startTs) {
+							std::cerr << "ç»“æŸæ—¶é—´å¿…é¡»æ™šäºå¼€å§‹æ—¶é—´ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚\n";
+							input_correct = false;
+							continue;
+						}
+
+						player_info[0] = input; player_info[1] = std::to_string(startTs); player_info[2] = std::to_string(endTs);
+						machine_code_info.push_back(player_info);
+						std::cout << std::string(get_terminal_width(), '-') << std::endl;
 					}
 
-					int expire_minute;
-					do{
-						std::cout << "ÊÇ·ñÉèÖÃ²¼ÕóÂëÓĞĞ§ÆÚ(0Ôò²»ÉèÖÃ): " << std::endl;
-						std::cin >> expire_minute;
-						if (expire_minute < 0) std::cout << "ÊäÈë²»ºÏ·¨!" << std::endl;
-					} while (expire_minute < 0);
+					if (!input_correct) continue;
 					
 
-					// »ñÈ¡µ±Ç°Ê±¼ä´Á
-					std::string timeSecond_expire = std::to_string(static_cast<std::size_t>(std::time(nullptr)));
-
-
-					GenerateLayoutCode code_geneator;
-					auto ls = code_geneator.generate_ssb6_code();
-
-					// Æ´½Ó¹æÔòºÍ¼ÓÃÜ
-					std::string encode_data = EncryptUtils::encode_ls(machine_codes, timeSecond_expire, std::to_string(expire_minute), ls);
+					// æ‹¼æ¥è§„åˆ™å’ŒåŠ å¯†
+					GenerateLayoutCode code_generator;
+					std::string ls = code_generator.generate_ssb6_code();
+					std::string encode_data = EncryptUtils::encode_ls(machine_code_info, ls);
 					copyToClipBoard(encode_data);
 					std::cout << encode_data << std::endl;
-					std::cout << "¼ÓÃÜ²¼ÕóÂëÒÑ¸´ÖÆµ½¼ôÌù°å,ÇëË½·¢¸øÑ¡ÊÖ" << std::endl;
+					std::cout << "åŠ å¯†å¸ƒé˜µç å·²å¤åˆ¶åˆ°å‰ªè´´æ¿,è¯·ç§å‘ç»™é€‰æ‰‹" << std::endl;
 				}
-				// Ñ¡ÊÖ½âÃÜºó½øĞĞ²¼Õó
-				else if (!s.compare("7")) {
-					// 1. ÊäÈë¼ÓÃÜÊı¾İ£¨±ÈÈç´Ó¼ôÌù°å»òÓÃ»§ÊäÈë»ñÈ¡£©
+				// é€‰æ‰‹è§£å¯†åè¿›è¡Œå¸ƒé˜µ
+				else if (!s.compare("5")) {
+					// 0. è¾“å…¥åŠ å¯†æ•°æ®ï¼ˆæ¯”å¦‚ä»å‰ªè´´æ¿æˆ–ç”¨æˆ·è¾“å…¥è·å–ï¼‰
 					std::string enc_ls;
-					std::cout << "ÇëÊäÈë¼ÓÃÜ²¼ÕóÂë£º" << std::endl;
+					std::cout << "è¯·è¾“å…¥åŠ å¯†å¸ƒé˜µç ï¼š" << std::endl;
 					std::cin >> enc_ls;
 
-					std::vector<std::string> machine_codes;
-					std::string timeSecond_expire;
-					std::string expire_minute;
+					std::vector<std::array<std::string, 3>> machine_code_info;
 					std::string ls;
 
-					if (!EncryptUtils::decode_ls(enc_ls, machine_codes, timeSecond_expire, expire_minute, ls)) {
-						std::cout << "½âÃÜÊ§°Ü!" << std::endl;
+					if (!EncryptUtils::decode_ls(enc_ls, machine_code_info, ls)) {
+						std::cout << "è§£å¯†å¤±è´¥, è¯·é‡æ–°å°è¯•!" << std::endl;
 						continue;
 					}
 
 					std::string machine_code = EncryptUtils::generate_machine_code();
-					// 1. Èç¹û»úÆ÷Âë²»ÔÚÁĞ±íÖĞ£¬²»ºÏ·¨continue
+					std::array<std::string, 3> play_info = {};
+					// 1. å¦‚æœæœºå™¨ç ä¸åœ¨åˆ—è¡¨ä¸­ï¼Œä¸åˆæ³•continue
 					bool found = false;
-					for (const auto& code : machine_codes) {
-						if (code == machine_code) {
+					for (const auto& it : machine_code_info) {
+						if (it[0] == machine_code) {
 							found = true;
+							play_info = it;
 							break;
 						}
 					}
 					if (!found) {
-						std::cout << "ÊäÈë²»ºÏ·¨!" << std::endl;
+						std::cout << "è¾“å…¥ä¸åˆæ³•,å½“å‰æœºå™¨ä¸æ»¡è¶³æ­¤å¸ƒé˜µç çš„æœ‰æ•ˆèº«ä»½!" << std::endl;
 						continue;
 					}
 					
-					// 2. Ê±¼ä´Á×ª»»³ÉÊı×Ö£¬±ØĞë±Èµ±Ç°Ê±¼äµÄÊ±¼ä´ÁĞ¡, µ±Ç°Ê±¼ä´ÁÊÇ: static_cast<std::size_t>(std::time(nullptr))
-					size_t ts = 0;
+					// 2. æ ¡éªŒæ˜¯å¦åœ¨æœ‰æ•ˆæœŸå†…
+					std::size_t ts_start = 0;
+					std::size_t ts_end = 0;
+					std::size_t ts_now = static_cast<std::size_t>(std::time(nullptr));
+
+					// è§£æå¼€å§‹æ—¶é—´æˆ³
 					try {
-						ts = std::stoull(timeSecond_expire);
+						ts_start = std::stoull(play_info[1]);
 					}
 					catch (...) {
-						std::cout << "ÊäÈë²»ºÏ·¨!" << std::endl;
-						continue;
-					}
-					size_t current_ts = static_cast<size_t>(std::time(nullptr));
-					if (ts > current_ts) {
-						std::cout << "ÊäÈë²»ºÏ·¨!" << std::endl;
-						continue;
-					}
-					// 3. ÓĞĞ§ÆÚ·ÖÖÓÊı×ª»»³ÉÊı×Ö£¬±ØĞë>=0, Èç¹ûÊÇ0Ôò¼ÌĞøºóĞø²Ù×÷£»Èç¹û²»ÊÇ0£¬ÔòÒªÇóµ±Ç°Ê±¼ä-ÄÃµ½µÄÊ±¼ä´ÁµÄ·ÖÖÓÊı<ÓĞĞ§ÆÚ
-					int expireMin = 0;
-					try {
-						expireMin = std::stoi(expire_minute);
-					}
-					catch (...) {
-						std::cout << "ÓĞĞ§ÆÚ¸ñÊ½´íÎó!" << std::endl;
+						std::cout << "èµ·å§‹æ—¶é—´é”™è¯¯!" << std::endl;
 						continue;
 					}
 
-					if (expireMin < 0) {
-						std::cout << "ÓĞĞ§ÆÚ²»ÄÜÎª¸ºÊı!" << std::endl;
+					// ç°åœ¨å¸ƒé˜µçš„æ—¶é—´å¿…é¡»å¤§äºç­‰äºèµ·å§‹æ—¶é—´
+					if (ts_now < ts_start ) {
+						std::cout << "å¸ƒé˜µç å°šæœªç”Ÿæ•ˆï¼Œè¯·åœ¨æŒ‡å®šæ—¶é—´åå†ä½¿ç”¨!" << std::endl;
 						continue;
 					}
-					if (expireMin != 0) { // Èç¹ûÉèÖÃÁË0´ú±íÊÇ²»¼ÓÓĞĞ§ÆÚ£¬Èç¹ûÃ»ÉèÖÃ¾ÍÊÇÉèÖÃÁËÓĞĞ§ÆÚµÄ
-						if ((TimeStruct::getNow() - TimeStruct(ts)).minute > expireMin) {
-							std::cout << "²¼ÕóÂëÒÑ¾­³¬¹ıÓĞĞ§ÆÚ:" << expire_minute << "min! Çë²ÃÅĞÖØĞÂË¢Ò»¸ö" << std::endl;
-							continue;
-						}
-						else {
-							std::cout << "´Ë²¼ÕóÂëÓĞĞ§ÆÚÎª" << expire_minute << "min" << std::endl;
-						}
+
+					// è§£æç»“æŸæ—¶é—´æˆ³
+					try {
+						ts_end = std::stoull(play_info[2]);
 					}
+					catch (...) {
+						std::cout << "ç»“æŸæ—¶é—´æˆ³æ ¼å¼é”™è¯¯!" << std::endl;
+						continue;
+					}
+
+					// æ ¡éªŒæ˜¯å¦è¿‡æœŸ
+					if (ts_now > ts_end) {
+						std::cout << "æ­¤å¸ƒé˜µç å¯¹äºæœ¬å°æœºå™¨å·²ç»è¿‡æœŸ!" << std::endl;
+						continue;
+					}
+
+					int left_min = static_cast<int>((ts_end - ts_now) / 60);
+					int left_second = static_cast<int>((ts_end - ts_now) % 60);
+					std::cout << "å½“å‰æ—¶é—´ä¿¡æ¯: " << TimeStruct::getCurrentTime() << " å¸ƒé˜µç æœ‰æ•ˆæœŸå‰©ä½™ï¼š" << left_min<<":"<< left_second << std::endl;
 
 					bool is_cheat_check = true;
-					// ´´½¨²¢Æô¶¯ĞÂÏß³Ì£¨Á¢¼´Ö´ĞĞ£©
+					// åˆ›å»ºå¹¶å¯åŠ¨æ–°çº¿ç¨‹ï¼ˆç«‹å³æ‰§è¡Œï¼‰
 					disable_quick_edit_mode();
 					register_RaceMode_hotkey();
 					
@@ -3428,40 +3567,69 @@ public:
 					enable_quick_edit_mode();
 
 				}
-				// ËõÖ÷ÌâËø»¨ÊıÁ·Ï°
-				else if (!s.compare("8")) { // Ö¸¶¨Ö÷ÌâÖ¸¶¨»¨ÊıÁ·Ï°
-					std::cout << "ÇëÊäÈëÖ÷ÌâºÅ(1-8): " << std::endl;
+				// æ®‹å±€ç©æ³•
+				else if (!s.compare("6")) {
+					std::cout << "è¯·å…ˆé‡å¼€æ¸¸æˆ, å¹¶è¾“å…¥å¸ƒé˜µç : " << std::endl;
+					std::string ls;
+					std::cin >> ls;
+
+					std::cout << "æ˜¯å¦å¼€å¯åä½œå¼Š(1ä¸ºå¼€å¯, 0ä¸ºå…³é—­): " << std::endl;
+					std::string cmd1;
+					std::cin >> cmd1;
+					bool is_cheat_check = !cmd1.compare("1") ? true : false;
+
+					// åˆ›å»ºå¹¶å¯åŠ¨æ–°çº¿ç¨‹ï¼ˆç«‹å³æ‰§è¡Œï¼‰
+					disable_quick_edit_mode();
+					register_IncompleteRaceMode_hotkey();
+
+					SpeedRun30min_incompleteLevel(ls, is_cheat_check);
+
+					unregister_IncompleteRaceMode_hotkey();
+					enable_quick_edit_mode();
+					}
+					// ç”Ÿæˆæ®‹å±€é˜µå‹ä»£ç 
+				else if (!s.compare("7")) {
+						GenerateLayoutCode code_generator;
+						auto ls = code_generator.generate_incompleteLevel_code();
+						std::cout << ls << std::endl;
+						copyToClipBoard(ls);
+						std::cout << "å·²å¤åˆ¶åˆ°å‰ªè´´æ¿,å¯ç›´æ¥ç²˜è´´ä½¿ç”¨" << std::endl;
+						continue;
+						}
+				// é”ä¸»é¢˜é”èŠ±æ•°ç»ƒä¹ 
+				else if (!s.compare("8")) { // æŒ‡å®šä¸»é¢˜æŒ‡å®šèŠ±æ•°ç»ƒä¹ 
+					std::cout << "è¯·è¾“å…¥ä¸»é¢˜å·(1-8): " << std::endl;
 					int theme;
 					std::cin >> theme;
 
-					// ¼ì²âÊäÈëÊÇ·ñÊ§°Ü»òÕßÊı×Ö·¶Î§²»ºÏ·¨
+					// æ£€æµ‹è¾“å…¥æ˜¯å¦å¤±è´¥æˆ–è€…æ•°å­—èŒƒå›´ä¸åˆæ³•
 					if (std::cin.fail() || theme < 1 || theme > 8) {
-						std::cout << "ÊäÈë²»ºÏ·¨!\n";
-						// Çå³ı´íÎó±êÖ¾
+						std::cout << "è¾“å…¥ä¸åˆæ³•!\n";
+						// æ¸…é™¤é”™è¯¯æ ‡å¿—
 						std::cin.clear();
-						// ºöÂÔµ±Ç°ĞĞÊ£ÓàµÄÊäÈë
+						// å¿½ç•¥å½“å‰è¡Œå‰©ä½™çš„è¾“å…¥
 						std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 						continue;
 					}
 
-					std::cout << "ÇëÊäÈë»¨Êı(1-8):" << std::endl;
+					std::cout << "è¯·è¾“å…¥èŠ±æ•°(1-8):" << std::endl;
 					int flower_num;
 					std::cin >> flower_num;
 
 					if (std::cin.fail() || flower_num < 1 || flower_num > 8) {
-						std::cout << "ÊäÈë²»ºÏ·¨!\n";
+						std::cout << "è¾“å…¥ä¸åˆæ³•!\n";
 						std::cin.clear();
 						std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 						continue;
 					}
 
-					// Èç¹ûÊäÈë¶¼ºÏ·¨£¬¿ÉÒÔÌø³öÑ­»·»òÕß½øĞĞºóĞø²Ù×÷
-					std::cout << "ÄãÊäÈëµÄÖ÷ÌâºÅÎª: " << theme
-						<< "£¬»¨ÊıÎª: " << flower_num << std::endl;
+					// å¦‚æœè¾“å…¥éƒ½åˆæ³•ï¼Œå¯ä»¥è·³å‡ºå¾ªç¯æˆ–è€…è¿›è¡Œåç»­æ“ä½œ
+					std::cout << "ä½ è¾“å…¥çš„ä¸»é¢˜å·ä¸º: " << theme
+						<< "ï¼ŒèŠ±æ•°ä¸º: " << flower_num << std::endl;
 
 
 
-					// ´´½¨²¢Æô¶¯ĞÂÏß³Ì£¨Á¢¼´Ö´ĞĞ£©
+					// åˆ›å»ºå¹¶å¯åŠ¨æ–°çº¿ç¨‹ï¼ˆç«‹å³æ‰§è¡Œï¼‰
 					disable_quick_edit_mode();
 					register_reviewMode_hotkey();
 					
@@ -3471,16 +3639,16 @@ public:
 					enable_quick_edit_mode();
 
 				}
-				// ³å¹ØÍæ·¨
+				// å†²å…³ç©æ³•
 				else if (!s.compare("9")) {
-					// ´¦ÀíÓÃ»§ÊäÈë
-					std::cout << "ÓĞÅ®ÆÍÊäÈë1(1Îª¿ªÆô, 0Îª¹Ø±Õ): " << std::endl;
+					// å¤„ç†ç”¨æˆ·è¾“å…¥
+					std::cout << "æœ‰å¥³ä»†è¾“å…¥1(1ä¸ºå¼€å¯, 0ä¸ºå…³é—­): " << std::endl;
 					std::string cmd1;
 					std::cin >> cmd1;
 					bool is_ban_maidCheat = (cmd1 != "1");
 
-					// ´´½¨²¢Æô¶¯ĞÂÏß³Ì£¨Á¢¼´Ö´ĞĞ£©
-					disable_quick_edit_mode(); // ²¼ÕóÆ÷½ûÓÃ±à¼­¹¦ÄÜ£º°üÀ¨¸´ÖÆÊ²Ã´µÄ
+					// åˆ›å»ºå¹¶å¯åŠ¨æ–°çº¿ç¨‹ï¼ˆç«‹å³æ‰§è¡Œï¼‰
+					disable_quick_edit_mode(); // å¸ƒé˜µå™¨ç¦ç”¨ç¼–è¾‘åŠŸèƒ½ï¼šåŒ…æ‹¬å¤åˆ¶ä»€ä¹ˆçš„
 					register_RushMode_hotkey();
 					
 					LevelRush(is_ban_maidCheat);
@@ -3489,18 +3657,19 @@ public:
 					enable_quick_edit_mode();
 
 				}
-				// µ¼³ö±¾¹ØizeÕóĞÍ´úÂë
+				// å¯¼å‡ºæœ¬å…³izeé˜µå‹ä»£ç 
 				else if (!s.compare("a")) {
 					std::string ls;
 					export_layout_string(ls);
 
 					copyToClipBoard(ls);
 					std::cout << ls << std::endl;
-					std::cout << "µ±Ç°ÕóĞÍÒÑµ¼³öÎªÕóĞÍ´úÂë,ÒÑ¸´ÖÆµ½¼ôÌù°å,¿ÉÖ±½ÓÕ³ÌùÊ¹ÓÃ" << std::endl;
+					std::cout << "å½“å‰é˜µå‹å·²å¯¼å‡ºä¸ºé˜µå‹ä»£ç ,å·²å¤åˆ¶åˆ°å‰ªè´´æ¿,å¯ç›´æ¥ç²˜è´´ä½¿ç”¨" << std::endl;
 					PVZ::QuitPVZ();
 				}
-				// ²¼Õó
+				// å¸ƒé˜µ
 				else if (!s.compare("b")) {
+					std::cout << "è¯·è¾“å…¥å¸ƒé˜µç : " << std::endl;
 					std::string ls;
 					std::cin >> ls;
 					set_oneLevel_layout(ls);
@@ -3515,8 +3684,9 @@ public:
 
 
 int main() {
-	// ÊµÀı»¯²¼ÕóÆ÷¿ØÖÆ
+	// å®ä¾‹åŒ–å¸ƒé˜µå™¨æ§åˆ¶
 	ConsoleControler console_controler;
 	console_controler.main();
+
 	return 0;
 };
