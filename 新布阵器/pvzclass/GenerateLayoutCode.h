@@ -111,10 +111,10 @@ private:
     //std::unordered_map<std::string, PlantType::PlantType> iztStr_type_dict;
 
     std::array<Theme, 25> generate_ssb6_theme_distribution();
-    int generate_LevelRush_theme_index(int flag);
 
 public:
     GenerateLayoutCode();
+	int generate_LevelRush_theme_index(int flag);
 
 
 	static int get_ssb6_flowerNum_distribution(int flag);
@@ -129,6 +129,7 @@ public:
 
     std::string generate_ssb6_code();
 	std::string generate_LevelRush_code(int flag);
+	std::string generate_incompleteLevel_one_code(int flag);
 	std::string generate_incompleteLevel_code();
 
 	static std::string encrypt_to_base25(const std::array<int, 25>& positions);

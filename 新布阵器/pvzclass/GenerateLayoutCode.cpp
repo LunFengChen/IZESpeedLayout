@@ -150,32 +150,38 @@ std::string GenerateLayoutCode::generate_LevelRush_code(int flag) {
 }
 
 // 生成残局阵型代码
+std::string GenerateLayoutCode::generate_incompleteLevel_one_code(int flag) {
+    std::string layout_code;
+    int theme_index = generate_LevelRush_theme_index(flag); // 原版冲关概率生成
+    Theme theme = static_cast<Theme>(theme_index);
+    int flower_num = get_random_in_range(1, 3);
+    int sun = 0;
+    //TODO: 根据不同主题设置合适阳光
+    // 要求 sun*25+flower_num*200在500->800之间
+    do {
+        sun = get_random_in_range(3, 12); // 直接赋值给外层变量
+    } while (
+        (sun * 25 + flower_num * 200) < 500 || // 总和太小
+        (sun * 25 + flower_num * 200) > 800    // 或太大时继续循环
+        );
+    // 格式化sun为两位: 9->09
+    std::ostringstream oss;
+    oss << std::setw(2) << std::setfill('0') << sun;
+    std::string sun_str = oss.str();
+
+    auto result = generate_IncompleteLevel_arr_seed(theme);
+    layout_code += std::to_string(theme_index)
+        + std::to_string(flower_num)
+        + sun_str
+        + encode_seed(result.second);
+    return layout_code;
+}
+
+// 生成残局阵型代码
 std::string GenerateLayoutCode::generate_incompleteLevel_code() {
     std::string layout_code;
     for (size_t flag = 0; flag < 15; flag++) {
-        int theme_index = generate_LevelRush_theme_index(flag); // 原版冲关概率生成
-        Theme theme = static_cast<Theme>(theme_index);
-        int flower_num = get_random_in_range(1, 3);
-        int sun = 0;
-        //TODO: 根据不同主题设置合适阳光
-        // 要求 sun*25+flower_num*200在300->675之间
-        do {
-            sun = get_random_in_range(3, 12); // 直接赋值给外层变量
-        } while (
-            (sun * 25 + flower_num * 200) < 500 || // 总和太小
-            (sun * 25 + flower_num * 200) > 800    // 或太大时继续循环
-            );
-        // 格式化sun为两位: 9->09
-        std::ostringstream oss;
-        oss << std::setw(2) << std::setfill('0') << sun;
-        std::string sun_str = oss.str();
-
-        auto result = generate_IncompleteLevel_arr_seed(theme);
-        layout_code += std::to_string(theme_index)
-            + std::to_string(flower_num)
-            + sun_str
-            + encode_seed(result.second)
-            + ".";
+        layout_code += generate_incompleteLevel_one_code(flag) + ".";
     }
     return layout_code.substr(0, layout_code.size() - 1);
 }
@@ -214,9 +220,10 @@ std::pair<std::array<int, 25>, size_t> GenerateLayoutCode::generate_IncompleteLe
             size_t seed = gen();
             auto arr = get_shuffled_array(seed);
             // 添加 arr[0] >= 3 的校验
-            if (get_plant_row_col(arr[8]).second >= 2 &&
-                get_plant_row_col(arr[9]).second >= 2 &&
-                get_plant_row_col(arr[0]).second >= 3) { // 新增条件
+            if (get_plant_row_col(arr[0]).second >= 3 &&
+                get_plant_row_col(arr[8]).second >= 2 &&
+                get_plant_row_col(arr[9]).second >= 2 
+                ) { // 新增条件
                 return { arr, seed };
             }
         }
@@ -225,8 +232,10 @@ std::pair<std::array<int, 25>, size_t> GenerateLayoutCode::generate_IncompleteLe
             size_t seed = gen();
             auto arr = get_shuffled_array(seed);
             // 添加 arr[0] >= 3 的校验
-            if (get_plant_row_col(arr[8]).second >= 2 &&
-                get_plant_row_col(arr[0]).second >= 3) { // 新增条件
+            if (get_plant_row_col(arr[0]).second >= 3 &&
+                get_plant_row_col(arr[8]).second >= 2 &&
+                get_plant_row_col(arr[9]).second >= 2
+                ) { // 新增条件
                 return { arr, seed };
             }
         }

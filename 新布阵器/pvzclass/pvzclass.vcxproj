@@ -241,7 +241,6 @@
     <ClCompile Include="GenerateLayoutCode.cpp" />
     <ClCompile Include="LogDecryptor.cpp" />
     <ClCompile Include="pvzclass.cpp" />
-    <ClCompile Include="LevelData.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ProcessOpener.cpp" />
     <ClCompile Include="Classes\Projectile.cpp" />
@@ -331,7 +330,7 @@
     <ClInclude Include="Events\PlantRemoveEvent.h" />
     <ClInclude Include="Enums\MagnetItemType.h" />
     <ClInclude Include="Events\PlantReloadEvent.h" />
-    <ClInclude Include="LevelData.h" />
+    <ClInclude Include="LevelData.hpp" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="ProcessOpener.h" />
     <ClInclude Include="Events\PlantShootEvent.h" />

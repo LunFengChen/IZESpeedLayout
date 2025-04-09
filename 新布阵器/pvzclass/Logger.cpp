@@ -42,9 +42,14 @@ Logger::Logger(const std::string& filename, LogLevel level, bool encrypt)
     if (!logFile.is_open()) {
         std::cerr << "Failed to open log file: " << logFilePath << std::endl;
     }
+
+    // ------------------ 开始时记录日志 ------------------------------------
+    log("------------------------------- 开始记录日志 ----------------------------", Logger::DEBUG);
 }
 
 Logger::~Logger() {
+    // ------------------ 结束时记录日志 ------------------------------------
+    log("------------------------------- 结束记录日志 ----------------------------", Logger::DEBUG);
     if (logFile.is_open()) {
         logFile.close();
     }

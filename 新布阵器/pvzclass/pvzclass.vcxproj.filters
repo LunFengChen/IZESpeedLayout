@@ -288,9 +288,6 @@
     <ClCompile Include="GenerateLayoutCode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="LevelData.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Logger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -599,7 +596,7 @@
     <ClInclude Include="GenerateLayoutCode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LevelData.h">
+    <ClInclude Include="LevelData.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Logger.h">
