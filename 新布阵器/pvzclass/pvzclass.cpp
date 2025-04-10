@@ -1669,7 +1669,7 @@ public:
 
 				// ---------------------- 2.8 间隔时间反作弊检查一次 ------------------------
 				do{
-					if ((TimeStruct::getNow() - check_time).second < check_interval)  continue;
+					if ((TimeStruct::getNow() - check_time).second < this->check_interval)  continue;
 					// 检测
 					check_time = TimeStruct::getNow();
 					if (check_all()) {
