@@ -1405,7 +1405,10 @@ public:
 		while (!game_controler.is_in_ize()) { Sleep(1); };
 		logger_cheat->log("已进入ize!", Logger::DEBUG);
 		TimeStruct check_time = TimeStruct::getNow();
+		logger_layout->log("----------------反作弊检测已开启------------------", Logger::DEBUG);
+		game_controler.modify_pvz_handle_title("Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
 
+		
 		// ----------------- 1.最开始记录一次详细信息 -----------------------
 		logger_cheat->log(
 			std::string("玩家已经进入ize, ")
@@ -1682,6 +1685,11 @@ public:
 				continue;
 			}
 		}
+
+
+		logger_layout->log("----------------反作弊检测已结束------------------", Logger::DEBUG);
+		game_controler.modify_pvz_handle_title("Plants vs. Zombies"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
+
 	}
 };
 
@@ -2087,9 +2095,8 @@ private:
 				true
 			);
 			game_cheat_checker.logger_cheat = logger_cheat; // 重新赋值一下，拿到正确指针
-			game_controler.modify_pvz_handle_title("Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
 			game_cheat_checker.check_envirnoment();
-
+			stop_flag = false; pause_flag = false;
 			// 正确的方式：传递成员函数指针和对象地址
 			std::thread t(&GameCheatCheck::cheat_check_thread, &game_cheat_checker, vec);
 			t.detach();
@@ -3117,8 +3124,12 @@ public:
 			std::string s;
 			std::cin >> s;
 			{
+				// 使用说明
+				if (!s.compare("0")) {// 使用说明
+					std::cout << USE_GUIDES << std::endl;
+				}
 				// 30min限时玩法布阵
-				if (!s.compare("1")) {
+				else if (!s.compare("1")) {
 					std::cout << "请先重开游戏保证第一关栈位正确, 并输入布阵码: " << std::endl;
 					std::string ls;
 					std::cin >> ls;

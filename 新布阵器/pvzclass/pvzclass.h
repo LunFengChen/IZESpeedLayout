@@ -58,12 +58,12 @@
 
 
 // 布阵器描述
-constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器";
+constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器v1.1.0";
 
 constexpr char INIT_WORDS[] = "\
-欢迎使用IZE竞速布阵器 = v = \n\
+欢迎使用IZE竞速布阵器v1.1.0 = v = \n\
 作者: 解不出积分的小风; github地址:LunFengChen/IZESpeedLayout\n\
-(IZE六届手速杯布阵器，作者：碳酸 天盟琉璃 qq交流群:1157197563)\n\
+(参考IZE六届手速杯布阵器，作者：碳酸 天盟琉璃 qq交流群:1157197563)\n\
 请在输入功能对应序号后按回车键：\n\
 1：布阵\n\
 2：生成随机阵型代码\n\
