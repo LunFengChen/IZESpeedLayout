@@ -15,6 +15,7 @@ public:
     float kernelpult_butter_rate;  // 玉米投手的黄油率, 没有则为0.00
     int eaten_brain_count;
     int collected_sun;
+    int lost_sun;
     int flower_num;
 
     // 时间相关数据
@@ -41,6 +42,7 @@ public:
         kernelpult_butter_rate = 0.0f;
         eaten_brain_count = 0;
         collected_sun = 0;
+        lost_sun = 0;
         flower_num = 0;
 
         // 时间相关重置为当前时间

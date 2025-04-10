@@ -21,6 +21,7 @@ public:
     // 构造函数，指定日志文件名和日志级别（默认 INFO）
     Logger(const std::string& filename, LogLevel level = INFO, bool encrypt = false);
     ~Logger();
+    std::string calc_hash();
 
     void setLogLevel(LogLevel level);
     // 线程安全的非阻塞输出函数
@@ -38,4 +39,5 @@ private:
 
     LogLevel logLevel;
     std::ofstream logFile;
+    std::string logFilePath;
 };

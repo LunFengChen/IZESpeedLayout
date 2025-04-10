@@ -35,12 +35,12 @@ Logger::Logger(const std::string& filename, LogLevel level, bool encrypt)
     }
 
     // 5. 拼接完整的日志文件路径
-    std::string logFilePath = logDir + "\\" + filename;
+    this->logFilePath = logDir + "\\" + filename;
 
     // 6. 打开日志文件（追加模式）
-    logFile.open(logFilePath, std::ios::app);
+    logFile.open(this->logFilePath, std::ios::app);
     if (!logFile.is_open()) {
-        std::cerr << "Failed to open log file: " << logFilePath << std::endl;
+        std::cerr << "Failed to open log file: " << this->logFilePath << std::endl;
     }
 
     // ------------------ 开始时记录日志 ------------------------------------
@@ -53,6 +53,18 @@ Logger::~Logger() {
     if (logFile.is_open()) {
         logFile.close();
     }
+}
+
+std::string Logger::calc_hash() {
+    std::ifstream file(this->logFilePath, std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << this->logFilePath << std::endl;
+        return "";
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();  // 读取整个文件内容
+    std::string file_content = buffer.str();  // 获取文件内容的字符串
+    return EncryptUtils::sha256(file_content);  // 使用已有接口计算SHA-256
 }
 
 void Logger::setLogLevel(LogLevel level) {
