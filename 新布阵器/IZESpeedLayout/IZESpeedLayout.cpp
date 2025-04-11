@@ -1342,7 +1342,7 @@ public:
 			logger_layout->log("当前pvz环境检测结果: 异常!", Logger::INFO);
 		}
 		else {
-			logger_layout->log("当	前pvz环境检测结果: 正常，请继续游戏!", Logger::INFO);
+			logger_layout->log("当前pvz环境检测结果: 正常，请继续游戏!", Logger::INFO);
 		}
 		return;
 	}

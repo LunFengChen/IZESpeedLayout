@@ -57,8 +57,11 @@ std::pair<int, int> GenerateLayoutCode::get_plant_row_col(int order) {
     return { order / 5, order % 5 };
 }
 
-// 获取六届手速杯主题分布【修改后】: 每5关必出一个B类，2-12必出胆小
+// 获取六届手速杯主题分布【修改后】: 每5关必出一个B类，2-12必出胆小; 3A必须至少一个
 std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
+    std::array<Theme, 25> ret = {};
+
+    // ----------------------------- B类阵位置 ----------------------------
     std::array<Theme, 5> BOrder = {
         Theme::PEAS,
         Theme::STAR_AND_SPIKE,
@@ -66,13 +69,11 @@ std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
         Theme::MAGNAT_AND_FUME,
         Theme::SCARDY
     };
-
+    // 前3个B出胆小
     while (BOrder[0] != Theme::SCARDY && BOrder[1] != Theme::SCARDY && BOrder[2] != Theme::SCARDY) {
         std::shuffle(BOrder.begin(), BOrder.end(), gen);
     }
-
-    std::array<Theme, 25> ret = {};
-    // 动态生成位置索引
+    // 胆小设置2-12
     std::array<int, 5> tmp1;
     for (size_t i = 0; i < 5; ++i) {
         // 特殊处理 BOrder[2] 为 SCARDY 的情况
@@ -85,21 +86,44 @@ std::array<Theme, 25> GenerateLayoutCode::generate_ssb6_theme_distribution() {
             tmp1[i] = (i == 0) ? get_random_in_range(1, 4) : get_random_in_range(0, 4);
         }
     }
-
+    // 塞入B类阵
     for (size_t i = 0; i < 5; i++) {
         ret[tmp1[i] + 5 * i] = BOrder[i];
     }
 
-    std::uniform_int_distribution<unsigned> d3(0, 5);
-    for (auto& it : ret) {
-        if (it != Theme::NIL) continue;
-        int i = d3(gen);
-        if (i == 5) it = Theme::INSTANT_KILL;
-        else if (i == 4 || i == 3) it = Theme::CONTROL;
-        else if (i <= 2) it = Theme::COMPOSITE;
+    // -------------------------- A类阵位置 ----------------------------------------
+    std::array<Theme, 25> ret_tmp = {};
+    while (true) {
+        ret_tmp = ret;// 拿到B已经填充好的
+        int flag1 = 0, flag2 = 0, flag3 = 0; // 3A数量
+        // 正常塞入A类阵
+        std::uniform_int_distribution<unsigned> d3(0, 5);
+        for (auto& it : ret_tmp) {
+            if (it != Theme::NIL) continue;
+            int i = d3(gen);
+            if (i == 5) {
+                it = Theme::INSTANT_KILL;
+                flag3 += 1;
+            }
+            else if (i == 4 || i == 3) {
+                it = Theme::CONTROL;
+                flag2 += 1;
+            }
+            else if (i <= 2) {
+                it = Theme::COMPOSITE;
+                flag1 += 1;
+            };
+        }
+        // 要求3A至少一个
+        if (flag1 >= 1 && flag2 >= 1 && flag3 >= 1) {
+            ret = ret_tmp;
+            break;
+        }
     }
     return ret;
 }
+
+
 
 // 冲关主题分布
 int GenerateLayoutCode::generate_LevelRush_theme_index(int flag) {
@@ -115,37 +139,24 @@ int GenerateLayoutCode::generate_LevelRush_theme_index(int flag) {
 
 // 生成六届手速杯阵型代码
 std::string GenerateLayoutCode::generate_ssb_code() {
-    int theme_index1 = 0, theme_index2 = 0, theme_index3=0;
     std::string layout_code;
-
-    // A类主题必须至少一个
-    while (true) {
-        if (theme_index1 > 1 && theme_index2 >= 1 && theme_index3 >= 1) break;
-        theme_index1 = 0, theme_index2 = 0, theme_index3 = 0;
-
-        auto themes = generate_ssb6_theme_distribution();
-        for (size_t flag = 0; flag < 25; flag++) {
-            auto theme = themes[flag];
-            {
-                if (theme == Theme::COMPOSITE) theme_index1 += 1;
-                if (theme == Theme::CONTROL) theme_index2 += 1;
-                if (theme == Theme::INSTANT_KILL) theme_index3 += 1;
-            }
-            auto result = generate_arr_seed(theme);
-            auto plant_order_arr = result.first;
-            auto seed = result.second;
-            int flower_num = get_ssb6_flowerNum_distribution(flag);
-            auto plants_types_dict = get_theme_plants(flower_num, theme);
-            std::array<PlantType::PlantType, 25> plants_types_arr;
-            for (size_t i = 0; i < 25; i++) {
-                plants_types_arr[i] = plants_types_dict[plant_order_arr[i]];
-            }
-            layout_code += std::to_string(static_cast<int>(theme))
-                + std::to_string(flower_num)
-                + "00"
-                + encode_seed(seed)
-                + ".";
+    auto themes = generate_ssb6_theme_distribution();
+    for (size_t flag = 0; flag < 25; flag++) {
+        auto theme = themes[flag];
+        auto result = generate_arr_seed(theme);
+        auto plant_order_arr = result.first;
+        auto seed = result.second;
+        int flower_num = get_ssb6_flowerNum_distribution(flag);
+        auto plants_types_dict = get_theme_plants(flower_num, theme);
+        std::array<PlantType::PlantType, 25> plants_types_arr;
+        for (size_t i = 0; i < 25; i++) {
+            plants_types_arr[i] = plants_types_dict[plant_order_arr[i]];
         }
+        layout_code += std::to_string(static_cast<int>(theme))
+            + std::to_string(flower_num)
+            + "00"
+            + encode_seed(seed)
+            + ".";
     }
     return layout_code.substr(0, layout_code.size() - 1);
 }

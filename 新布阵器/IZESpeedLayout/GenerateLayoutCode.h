@@ -110,13 +110,13 @@ private:
     //std::unordered_map<PlantType::PlantType, std::string> type_iztStr_dict;
     //std::unordered_map<std::string, PlantType::PlantType> iztStr_type_dict;
 
+	// 获取手速杯主题分布
     std::array<Theme, 25> generate_ssb6_theme_distribution();
 
 public:
     GenerateLayoutCode();
+	// 获取冲关主题分布
 	int generate_LevelRush_theme_index(int flag);
-
-
 	static int get_ssb6_flowerNum_distribution(int flag);
 
 	std::pair<std::array<int, 25>, size_t> generate_arr_seed(Theme theme);
@@ -127,12 +127,15 @@ public:
     static std::array<int, 25> get_shuffled_array(size_t seed);
     static std::pair<int, int> get_plant_row_col(int order);
 
+	// 生成布阵码
     std::string generate_ssb_code();
 	std::string generate_LevelRush_code(int flag);
 	std::string generate_incompleteLevel_one_code(int flag);
 	std::string generate_incompleteLevel_code();
 
+	// 植物种植顺序转为25进制字符串
 	static std::string encrypt_to_base25(const std::array<int, 25>& positions);
+	// 25进制字符串解析成植物种植顺序
 	static std::array<int, 25> decrypt_from_base25(const std::string& encrypted);
 	// 指定ascii码转换为[0, BASE)范围内的数字
 	static size_t char_to_number(char c);
@@ -140,7 +143,8 @@ public:
 	static char number_to_char(size_t i);
 	// size_t范围内的整数指数幂
 	static size_t calc_power(size_t base, size_t power);
+	// 把种子转为66进制字符串
 	static std::string encode_seed(const size_t& seed);
-
+	// 解析布阵码
 	static bool decode_layout_string(const std::string& ls, int& theme_index, int& flower_num, int& sun, std::array<int, 25>& orders);
 };

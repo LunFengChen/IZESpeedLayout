@@ -59,12 +59,12 @@
 
 
 // 布阵器窗口名
-constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器v1.1.0";
+constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器v1.1.1";
 // 日志文件村地方文件夹
 constexpr const char* FILE_DIR = "IZESpeedLayoutDatas";
 
 
-constexpr char INIT_WORDS[] = "欢迎使用IZE竞速布阵器v1.1.0 = v = \n\
+constexpr char INIT_WORDS[] = "欢迎使用IZE竞速布阵器v1.1.1 = v = \n\
 作者: 解不出积分的小风; github地址:LunFengChen/IZESpeedLayout\n\
 (参考IZE六届手速杯布阵器，作者：碳酸 天盟琉璃 qq交流群:1157197563)\n\
 请在输入功能对应序号后按回车键：\n\

@@ -127,33 +127,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\pvzclass\AES.h" />
-    <ClInclude Include="..\pvzclass\AsmCode.h" />
-    <ClInclude Include="..\pvzclass\EncryptUtils.h" />
-    <ClInclude Include="..\pvzclass\GenerateLayoutCode.h" />
-    <ClInclude Include="..\pvzclass\iMemory.hpp" />
-    <ClInclude Include="..\pvzclass\LevelData.hpp" />
-    <ClInclude Include="..\pvzclass\Logger.h" />
-    <ClInclude Include="..\pvzclass\IZESpeedLayout.h" />
-    <ClInclude Include="..\pvzclass\SHA256.h" />
-    <ClInclude Include="..\pvzclass\TimeStruct.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\pvzclass\AES.cpp" />
-    <ClCompile Include="..\pvzclass\disable_maid_cheat.cpp" />
-    <ClCompile Include="..\pvzclass\EncryptUtils.cpp" />
-    <ClCompile Include="..\pvzclass\GenerateLayoutCode.cpp" />
-    <ClCompile Include="..\pvzclass\get_internet_time.cpp" />
-    <ClCompile Include="..\pvzclass\LogDecryptor.cpp" />
-    <ClCompile Include="..\pvzclass\Logger.cpp" />
-    <ClCompile Include="..\pvzclass\IZESpeedLayout.cpp" />
-    <ClCompile Include="..\pvzclass\SHA256.cpp" />
-    <ClCompile Include="..\pvzclass\TimeStruct.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\pvzclass\pvzclass.vcxproj">
       <Project>{703410a4-a7e7-4fff-a8d0-c7b8b5329575}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AES.h" />
+    <ClInclude Include="AsmCode.h" />
+    <ClInclude Include="EncryptUtils.h" />
+    <ClInclude Include="GenerateLayoutCode.h" />
+    <ClInclude Include="iMemory.hpp" />
+    <ClInclude Include="IZESpeedLayout.h" />
+    <ClInclude Include="LevelData.hpp" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="SHA256.h" />
+    <ClInclude Include="TimeStruct.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AES.cpp" />
+    <ClCompile Include="AsmCode.cpp" />
+    <ClCompile Include="disable_maid_cheat.cpp" />
+    <ClCompile Include="EncryptUtils.cpp" />
+    <ClCompile Include="GenerateLayoutCode.cpp" />
+    <ClCompile Include="get_internet_time.cpp" />
+    <ClCompile Include="IZESpeedLayout.cpp" />
+    <ClCompile Include="LogDecryptor.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="SHA256.cpp" />
+    <ClCompile Include="TimeStruct.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

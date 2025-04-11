@@ -1,5 +1,5 @@
 #pragma once
-#include "PVZ.h"
+#include "../pvzclass/PVZ.h"
 #include <initializer_list>
 #include <vector>
 #include <deque>

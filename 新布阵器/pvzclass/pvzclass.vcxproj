@@ -161,7 +161,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AsmCode.cpp" />
     <ClCompile Include="Classes\ChallengeScreen.cpp" />
     <ClCompile Include="Classes\Animation.cpp" />
     <ClCompile Include="Classes\AttachEffect.cpp" />

@@ -15,66 +15,69 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\pvzclass\AsmCode.h">
+    <ClInclude Include="AES.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\EncryptUtils.h">
+    <ClInclude Include="AsmCode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\iMemory.hpp">
+    <ClInclude Include="EncryptUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\LevelData.hpp">
+    <ClInclude Include="GenerateLayoutCode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\Logger.h">
+    <ClInclude Include="IZESpeedLayout.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\IZESpeedLayout.h">
+    <ClInclude Include="Logger.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\SHA256.h">
+    <ClInclude Include="SHA256.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\AES.h">
+    <ClInclude Include="TimeStruct.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\TimeStruct.h">
+    <ClInclude Include="iMemory.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\pvzclass\GenerateLayoutCode.h">
+    <ClInclude Include="LevelData.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\pvzclass\AES.cpp">
+    <ClCompile Include="AES.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\disable_maid_cheat.cpp">
+    <ClCompile Include="AsmCode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\EncryptUtils.cpp">
+    <ClCompile Include="disable_maid_cheat.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\GenerateLayoutCode.cpp">
+    <ClCompile Include="EncryptUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\get_internet_time.cpp">
+    <ClCompile Include="GenerateLayoutCode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\LogDecryptor.cpp">
+    <ClCompile Include="get_internet_time.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\Logger.cpp">
+    <ClCompile Include="IZESpeedLayout.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\IZESpeedLayout.cpp">
+    <ClCompile Include="LogDecryptor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\SHA256.cpp">
+    <ClCompile Include="Logger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\pvzclass\TimeStruct.cpp">
+    <ClCompile Include="SHA256.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeStruct.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
