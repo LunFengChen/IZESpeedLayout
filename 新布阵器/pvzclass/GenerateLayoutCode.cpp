@@ -114,25 +114,38 @@ int GenerateLayoutCode::generate_LevelRush_theme_index(int flag) {
 }
 
 // 生成六届手速杯阵型代码
-std::string GenerateLayoutCode::generate_ssb6_code() {
+std::string GenerateLayoutCode::generate_ssb_code() {
+    int theme_index1 = 0, theme_index2 = 0, theme_index3=0;
     std::string layout_code;
-    auto themes = generate_ssb6_theme_distribution();
-    for (size_t flag = 0; flag < 25; flag++) {
-        auto theme = themes[flag];
-        auto result = generate_arr_seed(theme);
-        auto plant_order_arr = result.first;
-        auto seed = result.second;
-        int flower_num = get_ssb6_flowerNum_distribution(flag);
-        auto plants_types_dict = get_theme_plants(flower_num, theme);
-        std::array<PlantType::PlantType, 25> plants_types_arr;
-        for (size_t i = 0; i < 25; i++) {
-            plants_types_arr[i] = plants_types_dict[plant_order_arr[i]];
+
+    // A类主题必须至少一个
+    while (true) {
+        if (theme_index1 > 1 && theme_index2 >= 1 && theme_index3 >= 1) break;
+        theme_index1 = 0, theme_index2 = 0, theme_index3 = 0;
+
+        auto themes = generate_ssb6_theme_distribution();
+        for (size_t flag = 0; flag < 25; flag++) {
+            auto theme = themes[flag];
+            {
+                if (theme == Theme::COMPOSITE) theme_index1 += 1;
+                if (theme == Theme::CONTROL) theme_index2 += 1;
+                if (theme == Theme::INSTANT_KILL) theme_index3 += 1;
+            }
+            auto result = generate_arr_seed(theme);
+            auto plant_order_arr = result.first;
+            auto seed = result.second;
+            int flower_num = get_ssb6_flowerNum_distribution(flag);
+            auto plants_types_dict = get_theme_plants(flower_num, theme);
+            std::array<PlantType::PlantType, 25> plants_types_arr;
+            for (size_t i = 0; i < 25; i++) {
+                plants_types_arr[i] = plants_types_dict[plant_order_arr[i]];
+            }
+            layout_code += std::to_string(static_cast<int>(theme))
+                + std::to_string(flower_num)
+                + "00"
+                + encode_seed(seed)
+                + ".";
         }
-        layout_code += std::to_string(static_cast<int>(theme))
-            + std::to_string(flower_num)
-            + "00"
-            + encode_seed(seed)
-            + ".";
     }
     return layout_code.substr(0, layout_code.size() - 1);
 }

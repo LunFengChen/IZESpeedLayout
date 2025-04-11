@@ -1,5 +1,5 @@
 #pragma once
-#include "pvzclass.h"
+#include "IZESpeedLayout.h"
 
 
 constexpr size_t BASE = 66;
@@ -127,7 +127,7 @@ public:
     static std::array<int, 25> get_shuffled_array(size_t seed);
     static std::pair<int, int> get_plant_row_col(int order);
 
-    std::string generate_ssb6_code();
+    std::string generate_ssb_code();
 	std::string generate_LevelRush_code(int flag);
 	std::string generate_incompleteLevel_one_code(int flag);
 	std::string generate_incompleteLevel_code();

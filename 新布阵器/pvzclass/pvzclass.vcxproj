@@ -46,7 +46,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -157,10 +157,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AES.cpp" />
     <ClCompile Include="AsmCode.cpp" />
     <ClCompile Include="Classes\ChallengeScreen.cpp" />
     <ClCompile Include="Classes\Animation.cpp" />
@@ -190,9 +190,7 @@
     <ClCompile Include="Classes\Widget.cpp" />
     <ClCompile Include="Classes\ZenGarden.cpp" />
     <ClCompile Include="Creators.cpp" />
-    <ClCompile Include="disable_maid_cheat.cpp" />
     <ClCompile Include="Draw.cpp" />
-    <ClCompile Include="EncryptUtils.cpp" />
     <ClCompile Include="Enums\CaptionStyle.cpp" />
     <ClCompile Include="Enums\CardType.cpp" />
     <ClCompile Include="Enums\ChallengePage.cpp" />
@@ -238,10 +236,6 @@
     <ClCompile Include="Events\PlantSquishEvent.cpp" />
     <ClCompile Include="Events\PuzzlePhaseCompleteEvent.cpp" />
     <ClCompile Include="Events\ImitaterPlantEvent.cpp" />
-    <ClCompile Include="GenerateLayoutCode.cpp" />
-    <ClCompile Include="LogDecryptor.cpp" />
-    <ClCompile Include="pvzclass.cpp" />
-    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ProcessOpener.cpp" />
     <ClCompile Include="Classes\Projectile.cpp" />
     <ClCompile Include="PVZ.cpp" />
@@ -251,16 +245,11 @@
     <ClCompile Include="Enums\SeedState.cpp" />
     <ClCompile Include="Events\VaseOpenEvent.cpp" />
     <ClCompile Include="Sexy.cpp" />
-    <ClCompile Include="SHA256.cpp" />
-    <ClCompile Include="TimeStruct.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AES.h" />
-    <ClInclude Include="AsmCode.h" />
     <ClInclude Include="Classes\ChallengeScreen.hpp" />
     <ClInclude Include="Classes.hpp" />
     <ClInclude Include="Draw.h" />
-    <ClInclude Include="EncryptUtils.h" />
     <ClInclude Include="Enums\ChallengePage.hpp" />
     <ClInclude Include="Enums\ThreeState.h" />
     <ClInclude Include="Events\BaseEvent.h" />
@@ -323,15 +312,11 @@
     <ClInclude Include="Enums\AnimationType.h" />
     <ClInclude Include="Flags.h" />
     <ClInclude Include="Events\ImitaterPlantEvent.h" />
-    <ClInclude Include="GenerateLayoutCode.h" />
-    <ClInclude Include="iMemory.hpp" />
     <ClInclude Include="Events\PlantCreateEvent.h" />
     <ClInclude Include="Events\CoinCreateEvent.h" />
     <ClInclude Include="Events\PlantRemoveEvent.h" />
     <ClInclude Include="Enums\MagnetItemType.h" />
     <ClInclude Include="Events\PlantReloadEvent.h" />
-    <ClInclude Include="LevelData.hpp" />
-    <ClInclude Include="Logger.h" />
     <ClInclude Include="ProcessOpener.h" />
     <ClInclude Include="Events\PlantShootEvent.h" />
     <ClInclude Include="Events\PeaOnFireEvent.h" />
@@ -342,12 +327,9 @@
     <ClInclude Include="Enums\PVZLevelEnum.h" />
     <ClInclude Include="Enums\PVZVersionEnum.h" />
     <ClInclude Include="Extensions.h" />
-    <ClInclude Include="pvzclass.h" />
     <ClInclude Include="Enums\SeedState.h" />
     <ClInclude Include="Events\UpdateGameObjectsEvent.h" />
     <ClInclude Include="Sexy.h" />
-    <ClInclude Include="SHA256.h" />
-    <ClInclude Include="TimeStruct.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="Events\ZombieBlastEvent.h" />
     <ClInclude Include="Events\ZombieButterEvent.h" />

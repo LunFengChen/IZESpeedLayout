@@ -1,5 +1,5 @@
-#include "PVZ.h"
-#include "ProcessOpener.h"
+#include "../pvzclass/PVZ.h"
+#include "../pvzclass/ProcessOpener.h"
 #include <iostream>
 #include <thread>
 #include <atomic>

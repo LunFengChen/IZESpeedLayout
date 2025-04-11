@@ -1,52 +1,53 @@
 ﻿#pragma once
-#include "ProcessOpener.h"
-#include "PVZ.h"
-#include "Classes.hpp"
-#include "Creators.h"
-#include "Draw.h"
-#include "Extensions.h"
-#include "utils.h"
-#include "Sexy.h"
+// ---------------------- pvzclass 框架 ----------------------------
+#include "../pvzclass/Classes.hpp"
+#include "../pvzclass/Creators.h"
+#include "../pvzclass/Draw.h"
+#include "../pvzclass/Extensions.h"
+#include "../pvzclass/ProcessOpener.h"
+#include "../pvzclass/PVZ.h"
+#include "../pvzclass/Sexy.h"
+#include "../pvzclass/utils.h"
 
 
-
+// ---------------------- 自带头文件 -------------------------------
 #include <algorithm>
 #include <array>
+#include <iomanip>
 #include <iostream>
+#include <limits>
+#include <numeric>
 #include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
-#include <limits>
-#include <iomanip>
-#include <numeric>
-#include<unordered_set>
 
 #include <intrin.h>
 #include <iphlpapi.h>
+#include <tlhelp32.h>
 #include <VersionHelpers.h>
 #include <wincrypt.h>
 #include <windows.h>
-#include <tlhelp32.h>
 
 #include <comdef.h>
-#include <Wbemidl.h>
-#include <fstream>
-#include <ctime>
 #include <conio.h>
+#include <ctime>
+#include <fstream>
 #include <memory> // 需要包含此头文件
+#include <Wbemidl.h>
 
-#include <thread>
 #include <atomic>
 #include <chrono>
+#include <thread>
 
-#include <condition_variable>
-#include <queue>
 #include "mutex"
+#include <condition_variable>
 #include <dbghelp.h>
 #include <psapi.h>
+#include <queue>
 
 
 #pragma comment(lib, "Dbghelp.lib")
@@ -57,11 +58,13 @@
 
 
 
-// 布阵器描述
+// 布阵器窗口名
 constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器v1.1.0";
+// 日志文件村地方文件夹
+constexpr const char* FILE_DIR = "IZESpeedLayoutDatas";
 
-constexpr char INIT_WORDS[] = "\
-欢迎使用IZE竞速布阵器v1.1.0 = v = \n\
+
+constexpr char INIT_WORDS[] = "欢迎使用IZE竞速布阵器v1.1.0 = v = \n\
 作者: 解不出积分的小风; github地址:LunFengChen/IZESpeedLayout\n\
 (参考IZE六届手速杯布阵器，作者：碳酸 天盟琉璃 qq交流群:1157197563)\n\
 请在输入功能对应序号后按回车键：\n\

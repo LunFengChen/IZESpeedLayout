@@ -279,34 +279,7 @@
     <ClCompile Include="Classes\Zombie.cpp">
       <Filter>源文件\Classes</Filter>
     </ClCompile>
-    <ClCompile Include="pvzclass.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="AsmCode.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GenerateLayoutCode.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="TimeStruct.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="AES.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="EncryptUtils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="SHA256.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="disable_maid_cheat.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="LogDecryptor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -327,9 +300,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Extensions.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="pvzclass.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
@@ -589,33 +559,6 @@
     </ClInclude>
     <ClInclude Include="Events\UpdateAppEvent.h">
       <Filter>头文件\Events</Filter>
-    </ClInclude>
-    <ClInclude Include="AsmCode.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GenerateLayoutCode.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="LevelData.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="TimeStruct.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="AES.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="EncryptUtils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="SHA256.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="iMemory.hpp">
-      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿#include "pvzclass.h"
+﻿#include "IZESpeedLayout.h"
 
 // 加密类：不公布
 #include "EncryptUtils.h"
@@ -632,8 +632,6 @@ public:
 	}
 
 };
-
-
 
 // 反作弊检测
 class GameCheatCheck {
@@ -1298,6 +1296,7 @@ private:
 			}, reinterpret_cast<LPARAM>(&valid_count));
 
 		if (valid_count != 1) {
+			logger_cheat->log("检测到多个pvz窗口, 请关闭多余的!", Logger::INFO);
 			logger_cheat->log("检测到 " + std::to_string(valid_count) + " 个 PvZ 窗口!", Logger::DEBUG);
 			return true;
 		}
@@ -1305,14 +1304,10 @@ private:
 		return false;
 	}
 
-
-
-
-
 public:
 	int check_interval;
-	Logger* logger_layout;
-	Logger* logger_cheat;
+	Logger* logger_layout; // 布阵器日志类
+	Logger* logger_cheat; // 反作弊检测日志类
 
 	// 类实例化：检测间隔(s)，日志记录类引用
 	GameCheatCheck(int interval, Logger* logger_ref1, Logger* logger_ref2)
@@ -1341,18 +1336,18 @@ public:
 		return false;
 	}
 
-
+	// 开启反作弊检测的环境初检测
 	void check_envirnoment() {
 		if (check_all()) {
 			logger_layout->log("当前pvz环境检测结果: 异常!", Logger::INFO);
-			return;
 		}
 		else {
-			logger_layout->log("当前pvz环境检测结果: 正常，请继续游戏!", Logger::INFO);
+			logger_layout->log("当	前pvz环境检测结果: 正常，请继续游戏!", Logger::INFO);
 		}
-	} 
+		return;
+	}
 
-	// 统计阳光的线程
+	// 统计阳光的线程启动函数
 	void count_sun_thread() {
 		GameControl game_controler;
 		while (!game_controler.find_pvz()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -1395,7 +1390,7 @@ public:
 		}
 	}
 
-	// 反作弊检测类
+	// 反作弊检测类的线程启动函数
 	void cheat_check_thread(const std::vector<std::string> ls_vec) {
 		// 设定检测时间
 		// ----------------- 0. 找到pvz -------------------------
@@ -1568,12 +1563,20 @@ public:
 						|| game_controler.countEatenBrain() == 0 // 刚进入新的一关
 						) continue;
 
+					// 如果是同时吃脑子, 一次塞入多个: 当前5原来是3，代表同时吃脑子,则需要塞入5-3次
+					if (game_controler.countEatenBrain() - leveldata.eaten_brain_count > 1) {
+						for (int i = 0; i < game_controler.countEatenBrain() - leveldata.eaten_brain_count; i++) {
+							leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
+						}
+					}
+					else { // 正常一个就行
+						leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
+					}
 					leveldata.score = game_controler.board->GetMiscellaneous()->Round + game_controler.countEatenBrain() * 0.2;
 					leveldata.last_brain_eaten_time = TimeStruct::getNow();
-					leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
 					leveldata.eaten_brain_count = game_controler.countEatenBrain();
 
-					logger_cheat->log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.board->GetMiscellaneous()->Round) + "关的第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
+					logger_cheat->log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 吃了第" + std::to_string(game_controler.board->GetMiscellaneous()->Round) + "关的第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
 				} while (0);
 
 
@@ -1598,6 +1601,8 @@ public:
 						// 如果不是ize中的僵尸，而且现在又不是开局的话, 记录下来
 						if (!game_controler.ZombieSunCost.count(zombie->Type)) {
 							// 重开的话需要先清除选卡界面的僵尸
+							if (current_flag == 0) continue;
+							logger_layout->log("检测到僵尸异常!", Logger::INFO);
 							logger_cheat->log("检测到在第" + std::to_string(zombie->Row + 1) + "行放置了非ize关卡的僵尸,僵尸类型为" + ZombieType::ToString(zombie->Type), Logger::DEBUG);
 							logger_cheat->log("检测到异常, 赛后仲裁, 请继续游戏...", Logger::DEBUG);
 							continue;
@@ -1654,8 +1659,7 @@ public:
 					has_start_collect_sun_thread = true;
 				}
 				do {
-					// 检查是否有数据待处理
-					{
+					{ // 检测阳光被收集
 						std::lock_guard<std::mutex> lock(g_mutex);
 						while (!g_data_queue.empty()) {
 							int data = g_data_queue.front();
@@ -1692,8 +1696,6 @@ public:
 
 	}
 };
-
-
 
 // 布阵器控制
 class ConsoleControler {
@@ -1757,23 +1759,6 @@ private:
 
 		return width;
 	}
-
-	// 把字符串丢进剪切板
-	void copyToClipBoard(const std::string& str)
-	{
-		auto hGlobalMemorry = GlobalAlloc(GPTR, static_cast<DWORD>(str.length()) + 1);
-		auto hWnd = FindWindow(NULL, WINDOW_NAME);
-		if (OpenClipboard(hWnd))
-		{
-			EmptyClipboard();
-			strcpy_s(static_cast<char*>(hGlobalMemorry), str.length() + 1, str.c_str());
-			SetClipboardData(CF_TEXT, hGlobalMemorry);
-			CloseClipboard();
-			return;
-		}
-		else return;
-	}
-
 
 	// 获取当前 exe 所在的目录
 	std::string GetExeDirectory() {
@@ -2265,7 +2250,7 @@ private:
 				if (game_controler.board->GetMiscellaneous()->Round >= 25) {
 					// 布阵器报通关
 					logger_layout->log(std::string(get_terminal_width(), '-'), Logger::INFO);
-					logger_layout->log(std::string("恭喜打通!!!! 现实时间: " + TimeStruct::getCurrentTime()), Logger::INFO);
+					logger_layout->log(TimeStruct::getCurrentTime() + " 恭喜打通!!!!", Logger::INFO);
 					logger_layout->log("最后吃脑时间为: " + (leveldata.last_brain_eaten_time - start_time).cnPrint(), Logger::INFO);
 					// 游戏报字幕
 					auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint().append("     ").append(std::string("Congrats!"));
@@ -2370,7 +2355,7 @@ private:
 				// 布阵器提示
 				logger_layout->log(std::string(get_terminal_width(), '-'), Logger::INFO);
 				auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint(); 
-				logger_layout->log(TimeStruct::getCurrentTime() + "超时, 游戏结束!", Logger::INFO);
+				logger_layout->log(TimeStruct::getCurrentTime() + " 超时, 游戏结束!", Logger::INFO);
 				logger_layout->log("最后吃脑时间为: " + timeStr + " 最终得分为——  " + score_str, Logger::INFO);
 
 				auto caption_str = timeStr.append("     ") + score_str;
@@ -2400,7 +2385,7 @@ private:
 
 					logger_layout->log(std::string(get_terminal_width(), '-'), Logger::INFO);
 					auto timeStr = (leveldata.last_brain_eaten_time - start_time).enPrint();
-					logger_layout->log(TimeStruct::getCurrentTime() + "阳光用完, 游戏结束!", Logger::INFO);
+					logger_layout->log(TimeStruct::getCurrentTime() + " 阳光用完, 游戏结束!", Logger::INFO);
 					logger_layout->log("最后吃脑时间为: " + timeStr + " 最终得分为——  " + score_str, Logger::INFO);
 
 					auto caption_str = timeStr.append("     ") + score_str;
@@ -3108,11 +3093,33 @@ private:
 
 
 public:
+	// 实例化布阵器
 	ConsoleControler() {
-		//布阵器实现
+		// 布阵器实现
 		setlocale(LC_ALL, ".936"); // 设置编码格式
 		SetConsoleTitle(WINDOW_NAME);
 	}
+
+	bool clean_log() {
+		// 布阵器定期清理日志文件
+	}
+
+	// 把字符串丢进剪切板
+	void copyToClipBoard(const std::string& str)
+	{
+		auto hGlobalMemorry = GlobalAlloc(GPTR, static_cast<DWORD>(str.length()) + 1);
+		auto hWnd = FindWindow(NULL, WINDOW_NAME);
+		if (OpenClipboard(hWnd))
+		{
+			EmptyClipboard();
+			strcpy_s(static_cast<char*>(hGlobalMemorry), str.length() + 1, str.c_str());
+			SetClipboardData(CF_TEXT, hGlobalMemorry);
+			CloseClipboard();
+			return;
+		}
+		else return;
+	}
+
 	// 布阵器循环测试
 	void main() {
 		while(true){
@@ -3149,7 +3156,7 @@ public:
 				// 生成25关随机阵型代码
 				else if (!s.compare("2")) {
 					GenerateLayoutCode code_generator;
-					auto ls = code_generator.generate_ssb6_code();
+					auto ls = code_generator.generate_ssb_code();
 					std::cout << ls << std::endl;
 					copyToClipBoard(ls);
 					std::cout << "已复制到剪贴板,可直接粘贴使用" << std::endl;
@@ -3225,9 +3232,9 @@ public:
 					if (!input_correct) continue;
 
 
-					// 拼接规则和加密
+					// 拼接规则加密
 					GenerateLayoutCode code_generator;
-					std::string ls = code_generator.generate_ssb6_code();
+					std::string ls = code_generator.generate_ssb_code();
 					std::string encode_data = EncryptUtils::encode_ls(machine_code_info, ls);
 					copyToClipBoard(encode_data);
 					std::cout << encode_data << std::endl;
@@ -3319,9 +3326,6 @@ public:
 						continue;
 					}
 					std::cout << "已打开日志文件所处文件夹，请妥善保存双日志文件！" << std::endl;
-
-
-
 				}
 				// 残局练习
 				else if (!s.compare("6")) {
@@ -3565,7 +3569,6 @@ public:
 	}
 
 };
-
 
 
 int main() {

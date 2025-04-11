@@ -1,9 +1,10 @@
 #include "Logger.h"
+#include "EncryptUtils.h"
+#include "IZESpeedLayout.h"
+
 #include <sstream>
 #include <chrono>
 #include <iomanip>
-#include "EncryptUtils.h"
-
 
 Logger::Logger(const std::string& filename, LogLevel level, bool encrypt)
     : logLevel(level), encryptLogs(encrypt)
@@ -23,7 +24,7 @@ Logger::Logger(const std::string& filename, LogLevel level, bool encrypt)
     }
 
     // 3. 拼接日志目录路径
-    std::string logDir = exeDir + "\\IZESpeedLayoutDatas";
+    std::string logDir = exeDir + "\\" + FILE_DIR;
 
     // 4. 创建日志目录（如果不存在）
     if (!CreateDirectoryA(logDir.c_str(), NULL)) {
