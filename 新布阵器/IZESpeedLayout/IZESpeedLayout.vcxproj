@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -146,15 +146,18 @@
   <ItemGroup>
     <ClCompile Include="AES.cpp" />
     <ClCompile Include="AsmCode.cpp" />
-    <ClCompile Include="disable_maid_cheat.cpp" />
+    <ClCompile Include="DisableMaidCheat.cpp" />
     <ClCompile Include="EncryptUtils.cpp" />
     <ClCompile Include="GenerateLayoutCode.cpp" />
-    <ClCompile Include="get_internet_time.cpp" />
+    <ClCompile Include="LayoutStringDecryptor.cpp" />
     <ClCompile Include="IZESpeedLayout.cpp" />
     <ClCompile Include="LogDecryptor.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="TimeStruct.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Release\IZESpeedLayout.exe" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

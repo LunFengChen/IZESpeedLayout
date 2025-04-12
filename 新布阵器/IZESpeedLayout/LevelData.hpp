@@ -7,16 +7,19 @@
 class LevelData {
 public:
     int initial_sun;               // 每关起始阳光
-    int released_zombies_count;    // 每关释放的僵尸数量
-    int zombie_cost;               // 本关僵尸花费
     float score;                   // 更新分数：当前 flag + 吃的脑子数
-    float kernel_count;              // 每一局游戏的玉米数
-    float butter_count;
-    float kernelpult_butter_rate;  // 玉米投手的黄油率, 没有则为0.00
-    int eaten_brain_count;
-    int collected_sun;
+    int eaten_brain_count; // 吃脑数
     int lost_sun;
     int flower_num;
+    
+    // ------------------------ 游戏数据统计: 黄油率, 时间，初始阳光，收集阳光, 解法 ----------------------
+    int kernel_count;              // 每一局游戏的玉米数
+    int butter_count;
+    float kernelpult_butter_rate;  // 玉米投手的黄油率, 没有则为0.00
+    int collected_sun; // 收集的阳光
+    int released_zombies_count;    // 每关释放的僵尸数量
+    int zombie_cost;               // 本关僵尸花费
+    std::vector<std::tuple<ZombieType::ZombieType, int, TimeStruct>> solve_info;
 
     // 时间相关数据
     TimeStruct setlayout_time = TimeStruct::getNow();             // (1) 每关的开始时间：布阵时间
@@ -46,11 +49,10 @@ public:
         flower_num = 0;
 
         // 时间相关重置为当前时间
-        setlayout_time = TimeStruct::getNow();
         current_use_time = TimeStruct(0).getNow();
-        first_zombie_release_time = TimeStruct::getNow();
         reaction_time = TimeStruct(0).getNow();
         last_brain_eaten_time = TimeStruct::getNow();
         brain_eaten_times.clear();  // 清空吃脑时间记录
+        solve_info.clear();
     }
 };

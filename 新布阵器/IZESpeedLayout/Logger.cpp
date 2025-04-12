@@ -56,10 +56,10 @@ Logger::~Logger() {
     }
 }
 
-std::string Logger::calc_hash() {
-    std::ifstream file(this->logFilePath, std::ios::binary);
+std::string Logger::calc_hash(std::string log_file_path) {
+    std::ifstream file(log_file_path, std::ios::binary);
     if (!file.is_open()) {
-        std::cerr << "Failed to open file: " << this->logFilePath << std::endl;
+        std::cerr << "Failed to open file: " << log_file_path << std::endl;
         return "";
     }
     std::stringstream buffer;

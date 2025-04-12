@@ -808,6 +808,7 @@ namespace PVZ
 	public:
 		IZBrain(int indexoraddress) :Griditem(indexoraddress) {};
 		INT_PROPERTY(Hp, __get_Hp, __set_Hp, 0x18);
+		T_PROPERTY(FLOAT, X, __get_X, __set_X, 0x24);
 		T_PROPERTY(FLOAT, Y, __get_Y, __set_Y, 0x28);
 	};
 	// 在非传送门关卡中只有画面效果不会触发传送
