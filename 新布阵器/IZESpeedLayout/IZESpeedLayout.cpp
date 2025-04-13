@@ -1585,10 +1585,7 @@ public:
 					else {
 						leveldata.kernelpult_butter_rate = (float)leveldata.butter_count / (leveldata.kernel_count + leveldata.butter_count);
 					}
-					std::ostringstream oss;
-					oss << std::fixed << std::setprecision(4) << (std::round(leveldata.kernelpult_butter_rate * 10) / 10.0);
-					std::string rate_str = oss.str();
-					rate_str = "黄油率: " + rate_str + "=" + std::to_string(leveldata.butter_count) + "/(" + std::to_string(leveldata.kernel_count) + "+" + std::to_string(leveldata.butter_count) + ")";
+					std::string rate_str = "黄油率: " + std::to_string(leveldata.kernelpult_butter_rate) + "=" + std::to_string(leveldata.butter_count) + "/(" + std::to_string(leveldata.kernel_count) + "+" + std::to_string(leveldata.butter_count) + ")";
 					logger_layout->log(rate_str, Logger::DEBUG);
 					logger_cheat->log(rate_str, Logger::DEBUG);
 

@@ -60,7 +60,7 @@
 
 // 布阵器窗口名
 constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器v1.1.1";
-// 日志文件村地方文件夹
+// 日志文件存放文件夹
 constexpr const char* FILE_DIR = "IZESpeedLayoutDatas";
 
 

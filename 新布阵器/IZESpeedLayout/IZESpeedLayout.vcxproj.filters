@@ -9,7 +9,7 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="主文件">
+    <Filter Include="源文件\主文件">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
@@ -69,21 +69,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DisableMaidCheat.cpp">
-      <Filter>主文件</Filter>
+      <Filter>源文件\主文件</Filter>
     </ClCompile>
     <ClCompile Include="LayoutStringDecryptor.cpp">
-      <Filter>主文件</Filter>
+      <Filter>源文件\主文件</Filter>
     </ClCompile>
     <ClCompile Include="IZESpeedLayout.cpp">
-      <Filter>主文件</Filter>
+      <Filter>源文件\主文件</Filter>
     </ClCompile>
     <ClCompile Include="LogDecryptor.cpp">
-      <Filter>主文件</Filter>
+      <Filter>源文件\主文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Release\IZESpeedLayout.exe">
-      <Filter>主文件</Filter>
+      <Filter>源文件\主文件</Filter>
     </None>
   </ItemGroup>
 </Project>
