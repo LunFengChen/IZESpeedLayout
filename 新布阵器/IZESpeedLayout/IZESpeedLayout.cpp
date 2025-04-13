@@ -1948,7 +1948,7 @@ private:
 		// 1.1 获取主题
 			{
 			if (
-				plantCount[PlantType::SnowPea] == 9 && plantCount[PlantType::Peashooter] == 4 && plantCount[PlantType::SplitPea] == 4
+				plantCount[PlantType::SnowPea] == 9 && plantCount[PlantType::Repeater] == 4 && plantCount[PlantType::SplitPea] == 4
 				&& (plantCount[PlantType::Sunflower] + plantCount[PlantType::Puffshroom] == 8)
 				&& plantCount[PlantType::Sunflower] >= 1 && plantCount[PlantType::Puffshroom] >= 1
 				) theme_index = 4;
