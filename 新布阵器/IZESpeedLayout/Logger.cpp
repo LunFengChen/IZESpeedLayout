@@ -133,10 +133,14 @@ void Logger::error(const std::string& message) {
 std::string Logger::getCurrentTime() {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()
+    ) % 1000; // 提取毫秒部分
 
     std::stringstream ss;
     tm local_time;
-    localtime_s(&local_time, &in_time_t);  // 使用 localtime_s 获取线程安全的本地时间
-    ss << std::put_time(&local_time, "%Y-%m-%d %X");
+    localtime_s(&local_time, &in_time_t); // Windows 安全函数
+    ss << std::put_time(&local_time, "%Y-%m-%d %H:%M:%S"); // 固定格式到秒
+    ss << "." << std::setfill('0') << std::setw(3) << milliseconds.count(); // 补零到3位
     return ss.str();
 }

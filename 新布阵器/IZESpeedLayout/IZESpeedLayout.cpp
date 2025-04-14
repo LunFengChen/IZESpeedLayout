@@ -1329,6 +1329,8 @@ public:
 	int check_interval;
 	Logger* logger_layout; // 布阵器日志类
 	Logger* logger_cheat; // 反作弊检测日志类
+	DWORD cheat_check_thread_id;
+	DWORD count_sun_thread_id;
 
 	// 类实例化：检测间隔(s)，日志记录类引用
 	GameCheatCheck(int interval, Logger* logger_ref1, Logger* logger_ref2)
@@ -1370,6 +1372,7 @@ public:
 
 	// 统计阳光的线程启动函数
 	void count_sun_thread() {
+		this->count_sun_thread_id = GetCurrentThreadId();
 		GameControl game_controler;
 		while (!game_controler.find_pvz()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -1412,6 +1415,7 @@ public:
 	}
 
 
+
 	// 反作弊检测类的线程启动函数
 	void cheat_check_thread(const std::vector<std::string> ls_vec) {
 
@@ -1423,7 +1427,9 @@ public:
 		while (!game_controler.is_in_ize()) { Sleep(1); };
 		logger_cheat->log("已进入ize!", Logger::DEBUG);
 		TimeStruct check_time = TimeStruct::getNow();
-		logger_layout->log("----------------反作弊检测已开启------------------", Logger::DEBUG);
+		this->cheat_check_thread_id = GetCurrentThreadId();
+
+		logger_layout->log("----------------反作弊检测已开启(" + std::to_string(this->cheat_check_thread_id) + ")------------------", Logger::DEBUG);
 		game_controler.modify_pvz_handle_title("Plants vs. Zombies(cheatCheck: open, maidCheat: disable)"); // 禁掉一些寻找游戏是通过窗口名的：如算血器
 
 		
@@ -1431,7 +1437,7 @@ public:
 		logger_cheat->log(
 			std::string("玩家已经进入ize, ")
 			+ "当前日期与时间为: " + TimeStruct::getCurrentDateTime() + "\n"
-			+ "执行本次计时的线程号: " + std::to_string(GetCurrentThreadId()) + " 游戏进程号: " + std::to_string(game_controler.pid) + "\n"
+			+ "执行本次计时的线程号: " + std::to_string(this->cheat_check_thread_id) + " 游戏进程号: " + std::to_string(game_controler.pid) + "\n"
 			+ "游戏宽高: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc0)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0xc4)) + "\n"
 			+ "游戏窗口坐标: " + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x30)) + "-" + std::to_string(PVZ::Memory::ReadPointer(0x6a9ec0, 0x320, 0x94, 0x34)) + "\n"
 			+ "游戏内玩家名字为: " + game_controler.get_player_name()
@@ -1924,6 +1930,24 @@ private:
 		return (pos != std::string::npos) ? fullPath.substr(0, pos) : fullPath;
 	}
 
+	// 查看线程是否关闭
+	bool isThreadFinished(DWORD thread_id) {
+		HANDLE hThread = OpenThread(THREAD_QUERY_LIMITED_INFORMATION, FALSE, thread_id);
+		if (hThread == NULL) {
+			// 无法打开线程句柄，可能线程已结束
+			return true;
+		}
+
+		DWORD exitCode;
+		if (!GetExitCodeThread(hThread, &exitCode)) {
+			CloseHandle(hThread);
+			return false; // 获取状态失败
+		}
+
+		CloseHandle(hThread);
+		return (exitCode != STILL_ACTIVE);
+	}
+
 	// 检测当前阵型是否合规，合规则转为布阵码
 	bool export_layout_string(std::string& result) {
 		// --------------------- 1.找到pvz ---------------------------
@@ -2178,6 +2202,7 @@ private:
 		bool has_started = false; // 还没开始游戏
 		bool is_crashed = false; // 标记游戏是否崩溃
 		bool is_timePaused = false; TimeStruct pause_time = TimeStruct::getNow();
+		stop_flag = false; pause_flag = false;
 
 
 		// ---------------------- 5. 游戏前准备：停掉游戏种植, 禁用女仆 -----------------
@@ -2234,7 +2259,6 @@ private:
 			);
 			game_cheat_checker.logger_cheat = logger_cheat; // 重新赋值一下，拿到正确指针
 			game_cheat_checker.check_envirnoment();
-			stop_flag = false; pause_flag = false;
 			// 正确的方式：传递成员函数指针和对象地址
 			std::thread t(&GameCheatCheck::cheat_check_thread, &game_cheat_checker, vec);
 			t.detach();
@@ -2560,7 +2584,10 @@ private:
 			logger_layout->log("本次IZE竞速结束，日志文件名为: " + current_time , Logger::INFO);
 			stop_flag = true; pause_flag = true;
 			if (is_cheat_check) {
+				// 检测线程结束
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				logger_layout->log("反作弊检测线程(" +std::to_string(game_cheat_checker.cheat_check_thread_id) + ", status:" + std::string(isThreadFinished(game_cheat_checker.cheat_check_thread_id) ? "exit" : "running") 
+					+ ") 阳光统计线程(" + std::to_string(game_cheat_checker.count_sun_thread_id) + ", status:" + std::string(isThreadFinished(game_cheat_checker.count_sun_thread_id) ? "exit" : "running") + ")", Logger::DEBUG);
 				// 结束日志文件并且计算hash值
 				std::string log_file_path = logger_cheat->logFilePath;
 				logger_cheat->~Logger();  std::string hash = Logger::calc_hash(log_file_path);
