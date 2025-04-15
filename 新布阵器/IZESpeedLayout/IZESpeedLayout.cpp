@@ -1141,6 +1141,14 @@ private:
 		return false;
 	}
 
+	// 检测红线位置
+	bool check_redline() {
+		if ((PVZ::Memory::ReadMemory<int>(0x004253F7) - 10) / 83 != 5) {
+			return true;
+		}
+		return false;
+	}
+
 	// 扫描内存中常修改的数据
 	bool check_memory() {
 		// 游戏速度
@@ -1212,6 +1220,11 @@ private:
 		// 植物状态是否异常：被秒吃，虚弱
 		else if (check_plant_status()) {
 			logger_cheat->log("检测出僵尸状态异常", Logger::DEBUG);
+			return true;
+		}
+		// 红线位置
+		else if (check_redline()) {
+			logger_cheat->log("检测出红线异常", Logger::DEBUG);
 			return true;
 		}
 		return false;
@@ -1656,20 +1669,16 @@ public:
 						) continue;
 					leveldata.score = game_controler.board->GetMiscellaneous()->Round + game_controler.countEatenBrain() * 0.2;
 					leveldata.last_brain_eaten_time = TimeStruct::getNow();
-					leveldata.eaten_brain_count = game_controler.countEatenBrain();
 
 					// 如果是同时吃脑子, 一次塞入多个: 当前5原来是3，代表同时吃脑子,则需要塞入5-3次
-					if (game_controler.countEatenBrain() - leveldata.eaten_brain_count > 1) {
-						for (int i = 0; i < game_controler.countEatenBrain() - leveldata.eaten_brain_count; i++) {
-							leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
-						}
-					}
-					else { // 正常一个就行
+					while (leveldata.eaten_brain_count != game_controler.countEatenBrain()) {
+						logger_cheat->log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 吃了第" + std::to_string(game_controler.board->GetMiscellaneous()->Round) + "关的第" + std::to_string(leveldata.eaten_brain_count) + "个脑子", Logger::DEBUG);
+						logger_layout->log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 吃了第" + std::to_string(game_controler.board->GetMiscellaneous()->Round) + "关的第" + std::to_string(leveldata.eaten_brain_count) + "个脑子", Logger::DEBUG);
+						
 						leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
+						leveldata.eaten_brain_count += 1;
 					}
 
-					logger_cheat->log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 吃了第" + std::to_string(game_controler.board->GetMiscellaneous()->Round) + "关的第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
-					logger_layout->log((leveldata.last_brain_eaten_time - start_time).enPrint() + " 吃了第" + std::to_string(game_controler.board->GetMiscellaneous()->Round) + "关的第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
 				} while (0);
 
 
@@ -2522,8 +2531,6 @@ private:
 				leveldata.last_brain_eaten_time = TimeStruct::getNow();
 				leveldata.brain_eaten_times.push_back(leveldata.last_brain_eaten_time);
 				leveldata.eaten_brain_count = game_controler.countEatenBrain();
-
-				// logger_layout->log((leveldata.last_brain_eaten_time - start_time).enPrint() + "吃了第" + std::to_string(game_controler.countEatenBrain()) + "个脑子", Logger::DEBUG);
 			} while (0);
 
 
