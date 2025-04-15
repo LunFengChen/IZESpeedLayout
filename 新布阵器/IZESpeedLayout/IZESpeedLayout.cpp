@@ -1339,20 +1339,25 @@ private:
 	}
 
 public:
-	int check_interval;
+	float check_interval;
 	Logger* logger_layout; // 布阵器日志类
 	Logger* logger_cheat; // 反作弊检测日志类
 	DWORD cheat_check_thread_id;
 	DWORD count_sun_thread_id;
 
 	// 类实例化：检测间隔(s)，日志记录类引用
-	GameCheatCheck(int interval, Logger* logger_ref1, Logger* logger_ref2)
-		: check_interval(interval), logger_layout(logger_ref1), logger_cheat(logger_ref2) // 初始化列表
+	GameCheatCheck(Logger* logger_ref1, Logger* logger_ref2)
+		: logger_layout(logger_ref1), logger_cheat(logger_ref2) // 初始化列表
 	{
 	}
 
 	// 检测和扫描所有可疑项目：游戏速度，内存数据，植物和僵尸数据，后台进程，是否多开pvz
 	bool check_all() {
+		// 每次检查完之后修改检测间隔随机
+		std::mt19937 gen(rd()); 
+		std::normal_distribution<> dist(3.0, 2.0); // 正态分布
+		this->check_interval = std::max<float>(dist(gen), 1.0);
+
 		// 扫描鼠标
 		log_mouse();
 		// 扫描植物
@@ -2256,7 +2261,7 @@ private:
 		// -----------------------------------    反作弊日志：在外部作用域声明指针和引用别名
 		Logger* logger_cheat = nullptr;  // 原始指针
 		// 先检测环境是否异常
-		GameCheatCheck game_cheat_checker(2, logger_layout, logger_cheat); // 每2s检测一次
+		GameCheatCheck game_cheat_checker(logger_layout, logger_cheat); // 每2s检测一次
 		TimeStruct check_time = TimeStruct::getNow();
 		// 反作弊日志
 		if (is_cheat_check) {
