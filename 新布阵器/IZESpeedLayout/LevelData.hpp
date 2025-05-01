@@ -51,7 +51,6 @@ public:
         // 时间相关重置为当前时间
         current_use_time = TimeStruct(0).getNow();
         reaction_time = TimeStruct(0).getNow();
-        last_brain_eaten_time = TimeStruct::getNow();
         brain_eaten_times.clear();  // 清空吃脑时间记录
         solve_info.clear();
     }

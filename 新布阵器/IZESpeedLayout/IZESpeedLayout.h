@@ -62,7 +62,11 @@
 constexpr wchar_t WINDOW_NAME[] = L"IZE竞速布阵器v1.1.1";
 // 日志文件存放文件夹
 constexpr const char* FILE_DIR = "IZESpeedLayoutDatas";
-
+// 签名校验
+const std::unordered_map<std::string, std::string> signatureMap = {
+		{"1.0.0", "182110e338a554bac0a8b94490ba9c792b80f914f0c3ea9d7d287765b3e48fb0"},
+		{"1.1.1", "signature2"},
+};
 
 constexpr char INIT_WORDS[] = "欢迎使用IZE竞速布阵器v1.1.1 = v = \n\
 作者: 解不出积分的小风; github地址:LunFengChen/IZESpeedLayout\n\
